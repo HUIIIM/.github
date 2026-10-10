@@ -1,0 +1,7 @@
+# GitHub Discussions is not enabled on these repos yet — blank issues are
+# off so every report goes through a structured form instead of free text.
+blank_issues_enabled: false
+contact_links:
+  - name: vertciti.com
+    url: https://vertciti.com
+    about: Build logs, narrative, and contact links.
