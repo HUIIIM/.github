@@ -8,7 +8,7 @@ description: >-
   rounded/webfont app to the house style, making a product "match the website / 官网 DNA",
   or when the user asks for the vertciti look, 高大上 / 机构级 / institutional, or references
   BlackRock. Produces black-and-white editorial layouts: orange = pointer only, yellow =
-  attention only, green = ok-status only; square corners, system fonts, 8px grid, left-
+  attention only, green = ok-status only; square corners, self-hosted Nunito Sans (same files as the website), 8px grid, left-
   aligned, bilingual (zh/en), honest provenance. NOT for choosing chart colors or building
   a chart — pair this with the dataviz skill for that.
 ---
@@ -33,7 +33,8 @@ description: >-
    **绝不**做按钮、链接、进度条、大色块——那是最常见的"丑"。主操作一律黑底白字。
 5. **左对齐。** 标题、导语、正文、表头全部左对齐。居中只给极少数独立 CTA / 空状态单行 / 版权行。
 6. **直角。** 圆角 = 0。结构线三档：1px 分隔 / 2px 控件边 / 4px 卡片顶线。圆点状态灯 → 方块。
-7. **系统字体。** 用 `--font` 系统栈（含 Noto Sans SC），**不请求 webfont**（删掉 Inter/Geist 的 `<link>`）。
+7. **官网字体：自托管 Nunito Sans。** `--font` = Nunito Sans + 系统 CJK 回落。字体文件随 DNA 一起 vendor
+   （`design/dist/fonts/`，SIL OFL），**绝不从 Google Fonts / CDN 请求**；删掉 Inter/Geist 等其他 webfont 的 `<link>`。
 8. **字重即层级。** 800 标题/按钮，700 标签/导航，400 正文，300 大数字。不用颜色分层级。
 9. **8px 间距。** 所有间距是 8 的倍数（8/16/24/32/40/48/56/64/72/80/88/120）。
 10. **诚实。** 每个数字带"来源 · 截至 YYYY-MM-DD"；状态用三档（■已验证/■建设中/■计划中）；
@@ -47,7 +48,7 @@ description: >-
   --line:#DEDEDE; --strong:#000000; --card:#FFFFFF;
   --ok:#1D8348; --warn:#FFCE00; --on-warn:#000000; --bad:#C62828; --info:#2B7363;
   --orange:#FF4713; --yellow:#FFCE00;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI","Helvetica Neue",Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;
+  --font:"Nunito Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;
   --mono:ui-monospace,"SFMono-Regular","Cascadia Code",Menlo,Consolas,"Liberation Mono",monospace;
   --radius:0; --focus:3px solid #FF4713;
 }
@@ -99,7 +100,8 @@ description: >-
    墨黑/中性；**主操作按钮改黑底白字**（别让它变绿/变青——这是最常见的翻车点）；
    链接改 `color:inherit` + 橙色下划线。绿色只留给 ok 状态方块。
 4. 修少量**硬编码深色十六进制**（如 `#0d1526`、`#060a13`）→ 白/中性；圆点 `border-radius:50%` → `0`。
-5. 删 webfont `<link>`（Inter/Geist）。
+5. 删其他 webfont `<link>`（Inter/Geist）；把 `design/dist/fonts/`（woff2 + OFL.txt）拷进 App 的静态目录，
+   在皮肤块前加 `@font-face`（模板里有）。
 6. 三视口（390/768/1440）+ 明暗 + 中英 截图自检。
 
 ## 双语（所有对外界面都要）
@@ -114,7 +116,7 @@ description: >-
 - [ ] 明 + 暗两主题都正确（`body` 有显式背景；无只在一种主题可读的颜色）。
 - [ ] 中 + 英两版都通：EN 不漏翻、不撑破布局。
 - [ ] 对比度 ≥ AA（正文 4.5:1 / 大字 3:1），用 `design/build.py --check` 口径算，不靠肉眼。
-- [ ] 无 DNA 外颜色、无圆角、无 webfont 请求（`dna-drift` + grep）。
+- [ ] 无 DNA 外颜色、无圆角、无外部字体请求（只允许自托管 Nunito Sans；`dna-drift` + grep）。
 - [ ] 触控目标 ≥ 44×44；焦点环可见；`prefers-reduced-motion` 下动效关闭。
 - [ ] 诚实：每个数字有出处；演示数据标注；截图真实。
 
@@ -122,7 +124,7 @@ description: >-
 
 1. **绿/青按钮** → 主操作必须黑底白字；绿只做 ok 状态。
 2. **居中版式** → 全部左对齐。
-3. **圆角 + webfont** → 直角 + 系统字体。
+3. **圆角 + 杂牌 webfont** → 直角 + 自托管 Nunito Sans（和官网同一份文件）。
 4. **彩色面积过大** → 橙/黄/绿都是"点睛"，一屏彩色 ≤ 10%。
 5. **编数字 / 无出处 / 演示数据不标** → 诚实是硬门禁。
 
