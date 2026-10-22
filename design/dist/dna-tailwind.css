@@ -192,6 +192,13 @@ html[lang^="zh"] .dna-eyebrow { text-transform: none; letter-spacing: .08em; }
 .dna-dot--warn { background: var(--warn); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
 .dna-dot--bad { background: var(--bad); }
 .dna-dot--plan { background: transparent; box-shadow: inset 0 0 0 1.5px var(--fg-3); }
+/* Evidence tier (standards/EVIDENCE.md): verified / estimate / demo / missing. Text always rides along. */
+.dna-ev { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--fg-2); }
+.dna-ev::before { content: ""; width: 8px; height: 8px; flex-shrink: 0; background: var(--fg-3); }
+.dna-ev--verified::before { background: var(--ok); }
+.dna-ev--demo::before { background: var(--warn); box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.dna-ev--missing { color: var(--fg-3); }
+.dna-ev--missing::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--fg-3); }
 .dna-status { display: inline-flex; align-items: center; gap: 8px; }
 
 /* Segmented control: square joined buttons, selected = ink */
