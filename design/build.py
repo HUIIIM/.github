@@ -37,6 +37,8 @@ CONTRAST_PAIRS = [
     ("dark.fg-3", "dark.card", 4.5), ("dark.ok", "dark.bg", 4.5), ("dark.bad", "dark.bg", 4.5),
     ("dark.info", "dark.bg", 4.5), ("dark.on-warn", "dark.warn", 4.5), ("dark.fg", "dark.card", 4.5),
     ("brand.orange", "light.bg", 3.0), ("brand.orange", "dark.bg", 3.0),
+    # disabled controls (fg-2 on soft) and placeholders (fg-3 on soft) must stay readable
+    ("light.fg-2", "light.soft", 4.5), ("dark.fg-2", "dark.soft", 4.5), ("dark.fg-3", "dark.soft", 4.5),
 ]
 SCALE_TEXT_STEPS = (600, 700, 800, 900)  # must pass 4.5 on white and on step 50
 SCALE_DARK_STEPS = (200, 300)            # must pass 4.5 on neutral-900 (dark-mode text)
