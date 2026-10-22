@@ -1,0 +1,23 @@
+name: design
+
+on:
+  pull_request:
+    paths: ["design/**"]
+  push:
+    branches: [main]
+    paths: ["design/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: dist/ matches tokens.json and every contrast pair passes WCAG AA
+        run: python3 design/build.py --check

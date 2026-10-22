@@ -1,0 +1,26 @@
+{
+  "_doc": "Portfolio registry. kind decides which checks apply (see STANDARDS.md). status: active | archive | placeholder | fork. Keep in sync with profile/README.md.",
+  "repos": {
+    "anomalies-autogpt":        {"kind": "app",        "status": "active",      "product": "Miao engine",             "ui": "next", "vendored": ["vertcity/", "vertciti/"]},
+    "vertciti-translator":      {"kind": "app",        "status": "active",      "product": "Translator 王牌翻译器",    "ui": "next"},
+    "vertciti-chat":            {"kind": "app",        "status": "active",      "product": "vertciti Assistant",      "ui": "static"},
+    "echowatch":                {"kind": "app",        "status": "active",      "product": "EchoWatch",               "ui": "jinja"},
+    "vertciti-dealdesk":        {"kind": "app",        "status": "active",      "product": "DealDesk 核保台",          "ui": "static"},
+    "vertciti-code-translator": {"kind": "app",        "status": "active",      "product": "Code Translator (legacy)", "ui": "next"},
+    "phonehands":               {"kind": "library",    "status": "active",      "product": "PhoneHands"},
+    "founder-visual-director":  {"kind": "skill",      "status": "active",      "product": "founder-visual-director"},
+    "think-tank":               {"kind": "skill",      "status": "active",      "product": "think-tank"},
+    "website-qa-gates":         {"kind": "skill",      "status": "active",      "product": "website-qa-gates",        "ui": "static"},
+    "vertciti-security-watch":  {"kind": "tool",       "status": "active",      "product": "security-watch"},
+    "vertciti":                 {"kind": "site",       "status": "active",      "product": "vertciti.com source mirror"},
+    "Miao":                     {"kind": "docs",       "status": "active",      "product": "Miao public lab"},
+    "HUIIIM":                   {"kind": "profile",    "status": "active"},
+    ".github":                  {"kind": "meta",       "status": "active"},
+    "vertciti-sp07-builder":    {"kind": "tool",       "status": "archive"},
+    "vertcity-prototype":       {"kind": "app",        "status": "archive"},
+    "vertciti-website":         {"kind": "site",       "status": "archive"},
+    "vertciti-ts-spaces":       {"kind": "docs",       "status": "placeholder"},
+    "tenacity":                 {"kind": "library",    "status": "fork"},
+    "pgvector-python":          {"kind": "library",    "status": "fork"}
+  }
+}
