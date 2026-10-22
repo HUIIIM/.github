@@ -69,7 +69,8 @@ const click = opt('--click', null);
       return true; };
     const out = []; const seen = new Set();
     const check = (el, text, color, kind) => {
-      if (!text.trim() || !visible(el)) return;
+      // WCAG 1.4.3 exempts logotypes: mark them data-contrast-exempt="logo" (explicit, reviewable)
+      if (!text.trim() || !visible(el) || el.closest('[data-contrast-exempt="logo"]')) return;
       const s = getComputedStyle(el); const fg = parse(color); if (!fg) return;
       const bg = bgOf(el); const eff = over({ ...fg, a: fg.a * opac(el) }, bg);
       const size = parseFloat(s.fontSize), bold = Number(s.fontWeight) >= 700;
