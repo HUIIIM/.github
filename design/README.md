@@ -22,7 +22,9 @@
 4. **直角。** 全站 `border-radius: 0`；唯一例外是圆点/头像 (`rounded-full`)。
 5. **粗标题、松正文。** 标题 800/700 字重、负字距；正文 16px、行高 1.75、等宽数字
    (`tabular-nums`)；中文加 `.01em` 字距。
-6. **系统字体，零外部请求。** 不加载 Google Fonts / CDN 字体——与官网 CSP 和隐私承诺一致。
+6. **自托管 Nunito Sans，零外部请求。** 与官网同一字体文件（`dist/fonts/*.woff2`，SIL OFL，许可见 `dist/fonts/OFL.txt`）；
+   拉丁字符走 Nunito Sans，中文回落系统栈（苹方/雅黑/Noto Sans SC）。**绝不**从 Google Fonts / CDN 加载——与官网 CSP 和隐私承诺一致。
+   引入时把 `dist/fonts/` 整个目录和 `dna.css` 放在一起（`@font-face` 用相对路径）。
 7. **克制的动效。** 0.15–0.25s；尊重 `prefers-reduced-motion`；阴影只有一种（`--shadow-pop`）。
 
 ## 状态色（应用扩展）

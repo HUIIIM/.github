@@ -97,6 +97,16 @@ def theme_block(mode):
     return "".join(f"--{k}:{v};" for k, v in T["color"][mode].items())
 
 
+def font_faces():
+    # Self-hosted, same files as vertciti.com /assets/site/fonts/. URLs are relative to the CSS file,
+    # so vendor dist/fonts/ next to dna.css. CJK falls through to the system stack (no CJK webfont).
+    return "".join(
+        f'@font-face{{font-family:"{face["family"]}";font-style:normal;font-weight:{face["weight"]};'
+        f'font-display:swap;src:url({face["file"]}) format("woff2");unicode-range:{face["unicode-range"]}}}\n'
+        for face in T["font"]["faces"]
+    )
+
+
 def tokens_css():
     f, lay, sh, mo, z = T["font"], T["layout"], T["shape"], T["motion"], T["z"]
     brand = "".join(f"--{k}:{v};" for k, v in T["color"]["brand"].items())
@@ -144,9 +154,10 @@ def tailwind_theme():
 def build():
     base, components = split_base()
     toks = tokens_css()
-    plain = header("plain CSS (tokens + base + components)") + toks + base + components
+    plain = header("plain CSS (tokens + base + components)") + font_faces() + toks + base + components
     tw = (
         header("Tailwind v4 layer — import AFTER @import \"tailwindcss\"")
+        + font_faces()
         + tailwind_theme()
         + toks
         + "@layer base {\n" + base + "}\n"

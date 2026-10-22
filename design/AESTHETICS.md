@@ -1,11 +1,21 @@
-# vertciti 美学标准 v1.0
+# vertciti 美学标准 v1.1
 
 > **一句话：证据的美学。** 黑白编辑版式承载内容，橙色只负责"指向"，黄色只负责"注意"，
 > 每个数字都带出处和日期。看起来像一份可以被审计的年报，而不是一个后台模板。
 
+> **v1.1 校准（对标 BlackRock 公开设计系统）：** 我们核对了
+> [blackrock.com/design](https://www.blackrock.com/design) 的 foundation——其主色正是
+> 黑 / 白 / 橙 `#FF4713` / 黄 `#FFCE00`，与 vertciti DNA **同源**。据此把三条隐性约定
+> 明文立为硬规则：**全部左对齐**（§2）、**8px 命名间距阶**（§2）、**标题/正文禁手动换行**（§6）。
+> 所有对外产品统一走**浅色机构版**（像官网、像一份年报），深色仅作 DNA dark-mode 按需启用。
+
 本标准从生产官网 [vertciti.com](https://vertciti.com)（官网 v4/v6）逐屏提取，适用于
 **所有**对外界面：官网、产品 Web 应用、仪表盘、报告、README 截图。token 见
 [`tokens.json`](tokens.json)，组件见 [`src/base.css`](src/base.css)，接入见 [`README.md`](README.md)。
+
+> **把这套语言落到某个界面上**：用 `vertciti-dna` skill
+> （[`.claude/skills/vertciti-dna/`](../.claude/skills/vertciti-dna/SKILL.md)）——新建界面的令牌与
+> 应用壳、改造已有 App 的"皮肤覆盖层"手法、双语要求、发布前质量门，都在里面；图表配色再叠 `dataviz` skill。
 
 对标的行业标杆（取其长处，不抄其皮）：BlackRock corporate（编辑版式与信息层级）、
 GOV.UK Design System（克制、可访问、文案即设计）、IBM Carbon（产品界面网格与密度）、
@@ -32,6 +42,22 @@ Stripe / Linear（细节完成度与状态设计）。
    全部 ≤ 250ms，`prefers-reduced-motion` 下全部关闭。不做数字滚动、不做入场表演。
 
 ## 2. 版式系统
+
+**对齐铁律：全部左对齐。** 标题、导语、正文、标签、表格表头——一律左对齐（对标 BlackRock：
+headlines / subheads / body copy 一律 left-aligned）。居中只允许用于：极少数独立 CTA 区、
+空状态的单行提示、页脚版权行。**禁止**居中正文段落、居中区块标题、居中卡片正文——那是"后台模板"味的根源。
+
+**间距走 8px 命名阶**（源自 BlackRock spacing tokens，落在 8px 基线网格上）：
+
+| 名 | 值 | 典型用途 |
+|---|---|---|
+| space-1 | 8px | 控件内元素、图标与文字 |
+| space-2 | 16px | 控件之间、表单项内 |
+| space-3 | 24px | 组件内边距、卡片内段落 |
+| space-4 | 32px | 卡片之间、小节内 |
+| space-5 / 6 | 40 / 48px | 页头各层之间 |
+| space-7 / 8 | 56 / 64px | 区块下边界起步 |
+| space-9–12 | 72 / 80 / 88 / 120px | 大区块 `--sec` 区间 |
 
 | 元素 | 规格 |
 |---|---|
@@ -113,6 +139,8 @@ Stripe / Linear（细节完成度与状态设计）。
 - 不说"即将上线""业界领先"。说清楚现在能做什么、不能做什么。
 - 错误信息 = 发生了什么 + 你能做什么："连不上服务器。检查网络后重试。"
 - 品牌名永远小写 `vertciti`，句号形式 `vertciti.` 只用于标识。
+- **禁止用 `<br>` 在标题/正文里造视觉换行**（对标 BlackRock）。换行交给响应式栅格和
+  `text-wrap:balance`；需要分两行就拆成两个元素，不要硬断。
 
 ## 7. 质量门禁（发布前必须全部通过）
 

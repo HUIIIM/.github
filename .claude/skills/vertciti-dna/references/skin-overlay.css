@@ -1,0 +1,61 @@
+/* ============================================================================
+ * vertciti DNA — 浅色「机构级」皮肤覆盖层（模板）
+ * 用法：追加到目标 App 主样式表的【末尾】。后写的同特异性规则覆盖早先的主题令牌，
+ * 不改动原有结构规则。改造完成于 vertciti-dealdesk（d.css / style.css）即用此法。
+ * 对标 BlackRock 设计系统，调色板同源：黑 / 白 / 橙 #FF4713 / 黄 #FFCE00。
+ *
+ * 落地三步：
+ *   1) 把下面 :root 里的变量名换成目标 App 实际用的变量名（grep `:root` 看它定义了哪些）。
+ *   2) 把原来的青/蓝/紫等强调色变量，一律重映射到墨黑/中性（见 ↓ "收敛杂色"）。
+ *   3) 补几条针对硬编码深色十六进制和圆点的覆盖（见 ↓ "硬编码修补"）。
+ * ========================================================================== */
+
+/* 官网字体：自托管 Nunito Sans（与 vertciti.com 同一份 woff2，SIL OFL）。
+   把 HUIIIM/.github design/dist/fonts/ 拷到 App 静态目录，按实际路径改 url()。绝不走 CDN。 */
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-sans-latin.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Nunito Sans";font-style:normal;font-weight:200 1000;font-display:swap;src:url(fonts/nunito-sans-latin-ext.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{
+  /* —— 基础面（按目标 App 的变量名对应改）—— */
+  --bg0:#FFFFFF; --bg1:#F3F3F3; --surface:#FFFFFF; --surface2:#F7F7F7; --surface3:#EFEFEF;
+  --line:#DEDEDE; --line-soft:#EAEAEA;
+  --ink:#000000; --ink2:#3F3F3F; --ink3:#6B6B6B; --muted:#6B6B6B;
+
+  /* —— 收敛杂色：原青/绿强调色 → 墨黑/中性（绿只留给 ok 状态，别让它上按钮）—— */
+  --teal:#000000; --teal-deep:#000000; --teal-dim:#F3F3F3; --teal-line:#DEDEDE;
+  --blue:#5F6B78;
+
+  /* —— 语义状态（白底上保证 AA）—— */
+  --green:#1D8348; --amber:#8A6A00; --red:#C62828;
+
+  /* —— 品牌强调（只做指针/注意）—— */
+  --orange:#FF4713; --yellow:#FFCE00;
+
+  --radius:0;
+  --font:"Nunito Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;
+}
+
+/* 基础：系统字体、白底、左对齐、直角 */
+body{font-family:var(--font);background:var(--bg0);color:var(--ink)}
+h1,h2,h3,h4{text-align:left}
+[class]{border-radius:0}                 /* 一把推平圆角；如误伤再按需收窄选择器 */
+.src i,.dot,.status-dot,.badge-dot{border-radius:0}   /* 圆点状态灯 → 方块 */
+
+/* 主操作 = 黑底白字（DNA primary）；别让它变绿/变青 */
+.btn.primary,button.primary,.primary,.seg button.on{background:#000;border-color:#000;color:#fff}
+.btn.primary:hover,button.primary:hover{background:#fff;color:#000;border-color:#000}
+
+/* 链接 = 墨色 + 橙色下划线（不用彩色链接） */
+a{color:inherit;text-decoration-color:var(--orange);text-decoration-thickness:2px;text-underline-offset:3px}
+a:hover{text-decoration-color:currentColor}
+
+/* 指针 = 橙：当前项下划线 / 焦点环 / 被选中 / 数据条端点 */
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+
+/* —— 硬编码修补（示例，按目标 App 实际出现的值改）——
+ * 顶栏/置顶栏深色底 → 白；青色发光阴影 → 去掉；黄色徽标 → 黄底黑字。 */
+/* .topbar,.z0,#stickyV{background:#FFFFFF} */
+/* .dot,.chip{box-shadow:none} */
+/* .badge.warn,.pf{background:var(--yellow);color:#000} */
+/* .badge.blocked{background:var(--red);color:#fff} */
+/* .badge.ok{background:var(--green);color:#fff} */
