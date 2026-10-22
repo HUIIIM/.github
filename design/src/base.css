@@ -155,8 +155,8 @@ html[lang^="zh"] .dna-eyebrow { text-transform: none; letter-spacing: .08em; }
 .dna-status { display: inline-flex; align-items: center; gap: 8px; }
 
 /* Segmented control: square joined buttons, selected = ink */
-.dna-seg { display: inline-flex; flex-wrap: wrap; }
-.dna-seg > * { min-height: var(--tap); padding: 0 18px; border: 2px solid var(--strong); margin-left: -2px; background: var(--bg); color: var(--fg); font-weight: 700; font-size: 14px; cursor: pointer; }
+.dna-seg { display: inline-flex; flex-wrap: nowrap; max-width: 100%; }
+.dna-seg > * { flex: 1 1 auto; min-width: 0; white-space: nowrap; min-height: var(--tap); padding: 0 clamp(10px, 2.5vw, 18px); border: 2px solid var(--strong); margin-left: -2px; background: var(--bg); color: var(--fg); font-weight: 700; font-size: 14px; cursor: pointer; }
 .dna-seg > *:first-child { margin-left: 0; }
 .dna-seg > [aria-pressed="true"], .dna-seg > [aria-checked="true"], .dna-seg > [aria-selected="true"] { background: var(--strong); color: var(--bg); position: relative; z-index: 1; }
 
