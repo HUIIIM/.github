@@ -61,7 +61,8 @@ main:focus { outline: none; }
 .dna-btn:active { transform: translateY(1px); }
 /* Disabled = clearly "off" AND still readable: never opacity (it took labels to ~2:1, worse on iOS).
    !important so variants (--secondary, :hover …) cannot mix their colours in. */
-.dna-btn[disabled], .dna-btn[aria-disabled="true"], .dna-btn[disabled]:hover, .dna-btn[aria-disabled="true"]:hover {
+.dna-btn[disabled], .dna-btn[aria-disabled="true"], .dna-btn[disabled]:hover, .dna-btn[aria-disabled="true"]:hover,
+.dna-seg button[disabled], .dna-seg button[disabled]:hover, .dna-tab[aria-disabled="true"] {
   opacity: 1 !important; cursor: not-allowed; transform: none !important;
   background: var(--soft) !important; color: var(--fg-2) !important; -webkit-text-fill-color: var(--fg-2);
   border: 2px dashed var(--fg-3) !important;
