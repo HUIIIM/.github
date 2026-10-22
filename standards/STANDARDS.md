@@ -77,6 +77,16 @@ python3 standards/audit.py ~/src --md     # 输出 markdown 记分卡
 - **OPS-3 SHOULD** 设安全响应头：CSP、`X-Content-Type-Options: nosniff`、`frame-ancestors`/`X-Frame-Options`、`Referrer-Policy`。
 - **OPS-4 SHOULD** 容器以非 root 用户运行。
 
+### 对外消息 MSG
+面向真人发邮件或短信的系统，按 [MESSAGING.md](MESSAGING.md) 逐条对齐（发信身份、内容、可靠性、短信、安全、合规、可观测）。
+- **MSG-1 MUST** 发信域通过 [`check_messaging_dns.py`](check_messaging_dns.py) 的 AUTH 检查（SPF/DKIM≥2048/DMARC 进档/MTA-STS/TLS-RPT/CAA）。
+- **MSG-2 MUST** 一次性验证码只在 dev 可落日志；生产日志不出现验证码/明文 token，邮箱手机号脱敏。
+- **MSG-3 MUST** 发送带幂等键、抑制表、退信/投诉回执；缺 provider 时显式报错而非降级写日志。
+
+```bash
+python3 standards/check_messaging_dns.py vertciti.com --selector resend --md
+```
+
 ## 诚实条款（高于一切检查项）
 
 vertciti 的品牌是"建造过程公开，接受验证"。因此：
