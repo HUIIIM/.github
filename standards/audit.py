@@ -99,6 +99,12 @@ CHECKS = [
      lambda r: "vertciti.com" in readme(r)),
     ("DOC-7", "SHOULD", {"app", "library", "skill", "tool"}, {"active"}, "README has security + license section",
      lambda r: has_section(readme(r), r"secur", r"安全") and has_section(readme(r), r"licen", r"许可")),
+    ("DOC-8", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README is left-aligned (no align=center / <center>)",
+     lambda r: not re.search(r"align=[\"']?center|<center>", readme(r), re.I)),
+    ("DOC-9", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)",
+     lambda r: not re.search(r"img\.shields\.io|badge\.svg|badgen\.net", readme(r), re.I)),
+    ("DOC-10", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README images are public https URLs (relative images break in private repos and the mobile app)",
+     lambda r: not re.search(r"!\[[^\]]*\]\((?!https://)[^)]+\)|<img[^>]+src=[\"'](?!https://)", readme(r), re.I)),
     # ---- design (UI repos) ----
     ("UI-1", "MUST", {"app", "skill", "site"}, {"active"}, "Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)",
      lambda r: ui_repo(r) is False or any(r.rglob("dna*.css"))),
