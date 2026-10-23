@@ -2,10 +2,10 @@ name: design
 
 on:
   pull_request:
-    paths: ["design/**"]
+    paths: ["design/**", "standards/a11y/**", ".github/workflows/design.yml"]
   push:
     branches: [main]
-    paths: ["design/**"]
+    paths: ["design/**", "standards/a11y/**", ".github/workflows/design.yml"]
 
 permissions:
   contents: read
@@ -21,3 +21,27 @@ jobs:
           python-version: "3.12"
       - name: dist/ matches tokens.json and every contrast pair passes WCAG AA
         run: python3 design/build.py --check
+
+  contrast:
+    # Renders every DNA component (design/preview/components.html) in a real browser, light + dark,
+    # phone + desktop, and fails if any visible text - incl. disabled controls, placeholders and text on
+    # inverse surfaces - is below WCAG AA at the colour actually painted.
+    # ubuntu-24.04, not -latest: Playwright 1.56 cannot install Chromium on ubuntu 26.04 runners
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install Playwright + Chromium
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.56.1 >/dev/null
+          npx playwright install --with-deps chromium
+      - name: Contrast gate (light/dark x 390/1280)
+        env:
+          NODE_PATH: /tmp/pw/node_modules
+        run: |
+          for scheme in light dark; do for width in 390 1280; do
+            node standards/a11y/contrast_audit.js "file://$GITHUB_WORKSPACE/design/preview/components.html" --scheme $scheme --width $width
+          done; done

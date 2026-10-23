@@ -152,6 +152,7 @@ headlines / subheads / body copy 一律 left-aligned）。居中只允许用于�
 | 对比度 | 全部文字 ≥ 4.5:1，大字与 UI ≥ 3:1 | `build.py --check` |
 | 触控 | 可点击目标 ≥ 44×44px | website-qa-gates G3 |
 | 性能 | Lighthouse 性能 ≥ 90、可访问性 ≥ 95、最佳实践 ≥ 95；CLS < 0.1 | Lighthouse CI |
+| 可读性 | 任何可见文字（含禁用控件、占位提示、反色卡片里的字）实际渲染对比度 ≥ AA；不用 opacity 表达禁用/过期 | `standards/a11y/contrast_audit.js`（[说明](../standards/a11y/README.md)） |
 | 一致性 | 无 DNA 外颜色、无圆角、无外部字体请求 | `dna-drift` + grep |
 | 诚实 | 每个数字有出处；状态用三档；截图为真实运行 | 人工审 |
 

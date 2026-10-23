@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>vertciti DNA · 组件全集（对比度门禁用）</title>
+<link rel="stylesheet" href="../dist/dna.css">
+</head>
+<body>
+<!-- Every DNA component in every state that shows text, incl. disabled / placeholder / inverse
+     surfaces. CI renders this in light + dark at 390 / 1280 and runs standards/a11y/contrast_audit.js:
+     any text below WCAG AA fails the design build. Add new components here when you add them. -->
+<header class="dna-header"><div class="dna-header__in"><a class="dna-logo" href="#"><span class="dna-logo__word">vertciti</span><span class="dna-logo__product">DNA</span></a>
+  <div class="dna-header__end"><a href="#">文档</a></div></div></header>
+<div class="dna-utility"><div class="dna-utility__in">工具条 · 实用链接<div class="dna-utility__end"><a href="#">EN</a></div></div></div>
+<main class="dna-wrap">
+  <section class="dna-section">
+    <p class="dna-eyebrow">组件全集 · COMPONENTS</p>
+    <h1 class="dna-h1 dna-display">一级标题</h1>
+    <p class="dna-lede">导语文字：说明这一页是什么。</p>
+    <h2 class="dna-h2">二级标题</h2><h3 class="dna-h3">三级标题</h3>
+    <p>正文 <a href="#">链接</a> <code class="dna-code">code</code> <span class="dna-mono">mono 123</span> <span class="dna-arrow">箭头 →</span></p>
+  </section>
+  <section class="dna-section">
+    <h2 class="dna-h2">按钮</h2>
+    <p><button class="dna-btn">主按钮</button> <button class="dna-btn dna-btn--secondary">次按钮</button> <button class="dna-btn dna-btn--text">文字按钮</button> <button class="dna-btn dna-btn--sm">小按钮</button></p>
+    <p><button class="dna-btn" disabled>禁用主按钮</button> <button class="dna-btn dna-btn--secondary" disabled>禁用次按钮</button> <a class="dna-btn" aria-disabled="true">aria 禁用</a> <button class="dna-btn dna-btn--text" disabled>禁用文字按钮</button></p>
+  </section>
+  <section class="dna-section">
+    <h2 class="dna-h2">表单</h2>
+    <div class="dna-field"><label class="dna-label" for="a">输入框</label><input class="dna-input" id="a" placeholder="占位提示文字"><p class="dna-hint">帮助文字</p></div>
+    <div class="dna-field"><label class="dna-label" for="b">已填</label><input class="dna-input" id="b" value="已填写的值"></div>
+    <div class="dna-field"><label class="dna-label" for="c">禁用（空）</label><input class="dna-input" id="c" disabled placeholder="演示站不可输入"></div>
+    <div class="dna-field"><label class="dna-label" for="d">禁用（有值）</label><input class="dna-input" id="d" disabled value="禁用的值"></div>
+    <div class="dna-field"><label class="dna-label" for="e">下拉</label><select class="dna-select" id="e"><option>选项一</option></select></div>
+    <div class="dna-field"><label class="dna-label" for="f">禁用下拉</label><select class="dna-select" id="f" disabled><option>禁用选项</option></select></div>
+    <div class="dna-field"><label class="dna-label" for="g">多行</label><textarea class="dna-textarea" id="g" placeholder="多行占位提示"></textarea></div>
+    <div class="dna-field"><label class="dna-label" for="h">禁用多行</label><textarea class="dna-textarea" id="h" disabled placeholder="禁用的多行占位"></textarea></div>
+    <div class="dna-field"><label class="dna-label" for="i">出错</label><input class="dna-input" id="i" aria-invalid="true" value="错误值"></div>
+    <div class="dna-seg"><button aria-pressed="true">分段一</button><button>分段二</button></div>
+    <div class="dna-seg"><button aria-pressed="true" disabled>禁用已选</button><button disabled>禁用分段</button></div>
+    <div class="dna-tabs"><a class="dna-tab" aria-disabled="true">禁用标签</a></div>
+    <div class="dna-tabs"><a class="dna-tab" aria-current="page" href="#">标签一</a><a class="dna-tab" href="#">标签二</a></div>
+  </section>
+  <section class="dna-section">
+    <h2 class="dna-h2">状态与证据</h2>
+    <p><span class="dna-badge">徽章</span> <span class="dna-badge dna-badge--ok">已验证</span> <span class="dna-badge dna-badge--bad">否决</span> <span class="dna-badge dna-badge--info">信息</span> <span class="dna-badge dna-badge--warn">注意</span></p>
+    <p class="dna-status"><span class="dna-dot dna-dot--ok"></span>已验证 <span class="dna-dot dna-dot--warn"></span>建设中 <span class="dna-dot dna-dot--plan"></span>计划中 <span class="dna-dot dna-dot--bad"></span>故障</p>
+    <p><span class="dna-ev dna-ev--verified">已核实 · FHFA · 2026-08-25</span> <span class="dna-ev dna-ev--estimate">估算 · 口径</span> <span class="dna-ev dna-ev--demo">演示数据</span> <span class="dna-ev dna-ev--missing">缺失 · 未配置</span></p>
+    <div class="dna-alert dna-alert--ok">成功提示</div><div class="dna-alert dna-alert--bad">错误提示</div><div class="dna-alert dna-alert--info">信息提示</div><div class="dna-alert dna-alert--warn">注意提示</div>
+    <div class="dna-announce"><div class="dna-announce__in">公告条文字</div></div>
+    <div class="dna-progress"><div class="dna-bar" style="width:60%"></div></div>
+  </section>
+  <section class="dna-section dna-grid">
+    <div class="dna-card"><h3 class="dna-h3">卡片</h3><p>卡片正文</p></div>
+    <div class="dna-card dna-card--accent"><h3 class="dna-h3">强调卡</h3><p>强调卡正文</p></div>
+    <div class="dna-card dna-card--flat"><h3 class="dna-h3">平卡</h3><p>平卡正文</p></div>
+    <div class="dna-card dna-card--ink"><p class="dna-eyebrow">墨色卡小标题</p><h3 class="dna-h3">墨色卡</h3><p>墨色卡正文 <a href="#">链接</a></p><button class="dna-btn dna-btn--secondary">墨色卡按钮</button></div>
+    <div class="dna-card dna-card--pop"><h3 class="dna-h3">浮层卡</h3><p>浮层卡正文</p></div>
+    <div class="dna-stat"><span class="dna-stat__label">关键数字</span><span class="dna-stat__num">42%</span><span class="dna-stat__src">来源 · 2026-10-22</span></div>
+  </section>
+  <section class="dna-section">
+    <table><thead><tr><th>表头</th><th>数值</th></tr></thead><tbody><tr><td>行</td><td>1,234</td></tr></tbody></table>
+    <hr class="dna-rule">
+  </section>
+</main>
+<footer class="dna-footer"><div class="dna-footer__in"><div class="dna-footer__row">页脚文字 · <a href="#">页脚链接</a></div></div></footer>
+</body>
+</html>
