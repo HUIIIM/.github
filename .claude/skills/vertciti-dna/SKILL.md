@@ -90,7 +90,7 @@ description: >-
 ## 两种落地方式
 
 **A. 新建界面** → 直接用上面的令牌 + 类型阶 + 应用壳从零搭。参考实现：
-`anomalies-autogpt/frontend/public/demo/index.html`（Miao 演示站，纯静态、动态可视化、明暗双主题）。
+`miao-ai/frontend/public/demo/index.html`（Miao 演示站，纯静态、动态可视化、明暗双主题）。
 
 **B. 改造已有 App**（最省力、低风险）——"皮肤覆盖层"手法，参考 `vertciti-dealdesk`：
 1. 看这个 App 是否已用 CSS 变量集中管理主题（大多数是）。
