@@ -66,6 +66,12 @@ python3 standards/audit.py ~/src --md     # 输出 markdown 记分卡
 - **DOC-5 SHOULD** README 有真实截图/GIF（不摆拍：真实运行录制）。
 - **DOC-6 MUST** README 回链 [vertciti.com](https://vertciti.com)。
 - **DOC-7 SHOULD** README 有"安全"与"许可证"小节。
+- **DOC-8 MUST** README 左对齐，机构文风：不用 `align="center"` / `<center>`，首屏是「名称 → 一句话说清是什么、给谁 → 事实表（状态 / 部署 / 许可证 / 演示 / 联系）」，
+  不放口号、感叹、无出处的竞品价格或比较（"别家一年五位数"这类话没有来源就不写）。骨架见 [`templates/README.md`](templates/README.md)。
+- **DOC-9 MUST** README 不放徽章条（shields.io / `badge.svg`）。私有仓的 Actions 徽章对没有权限的人、以及 GitHub 手机 App 一律显示成「?」，
+  而且徽章墙读起来像个人项目。CI、版本、许可证写进事实表，用文字。
+- **DOC-10 MUST** README 里的图片用公开可访问的 `https://` 地址（产品演示站或 vertciti.com 的静态资源）。私有仓的相对路径图片在手机 App、
+  包索引和转发出去的链接里都会坏成「?」。
 
 ### 设计 UI
 - **UI-1 MUST** 有界面的仓库 vendor DNA 样式表（见 [`../design/`](../design/README.md)），
