@@ -26,7 +26,8 @@ jobs:
     # Renders every DNA component (design/preview/components.html) in a real browser, light + dark,
     # phone + desktop, and fails if any visible text - incl. disabled controls, placeholders and text on
     # inverse surfaces - is below WCAG AA at the colour actually painted.
-    runs-on: ubuntu-latest
+    # ubuntu-24.04, not -latest: Playwright 1.56 cannot install Chromium on ubuntu 26.04 runners
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
