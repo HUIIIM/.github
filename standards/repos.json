@@ -1,25 +1,117 @@
 {
-  "_doc": "Portfolio registry. kind decides which checks apply (see STANDARDS.md). status: active | archive | placeholder | fork. Keep in sync with profile/README.md.",
+  "_doc": "Portfolio registry. kind decides which checks apply (see STANDARDS.md). status: active | archive | placeholder | fork. Keep in sync with profile/README.md. url/health: public deployment probed by audit.py --live (REL/SEC-9/PERF/PUB); omit when there is no public deployment (the live checks then read 'unprobed' and count as failed -- publish the gap, do not hide it). vendored: paths skipped by bootstrap's dependency scan (legacy/copied code of any origin). third_party: paths that are someone else's code and need THIRD_PARTY_NOTICES (LEGAL-1).",
   "repos": {
-    "miao-ai":                  {"kind": "app",        "status": "active",      "product": "Miao engine",             "ui": "next", "vendored": ["vertcity/", "vertciti/"]},
-    "vertciti-translator":      {"kind": "app",        "status": "active",      "product": "Translator 王牌翻译器",    "ui": "next"},
-    "vertciti-chat":            {"kind": "app",        "status": "active",      "product": "vertciti Assistant",      "ui": "static"},
-    "echowatch":                {"kind": "app",        "status": "active",      "product": "EchoWatch",               "ui": "jinja"},
-    "vertciti-dealdesk":        {"kind": "app",        "status": "active",      "product": "DealDesk 核保台",          "ui": "static"},
-    "phonehands":               {"kind": "library",    "status": "active",      "product": "PhoneHands"},
-    "founder-visual-director":  {"kind": "skill",      "status": "active",      "product": "founder-visual-director"},
-    "think-tank":               {"kind": "skill",      "status": "active",      "product": "think-tank"},
-    "website-qa-gates":         {"kind": "skill",      "status": "active",      "product": "website-qa-gates",        "ui": "static"},
-    "vertciti-security-watch":  {"kind": "tool",       "status": "active",      "product": "security-watch"},
-    "vertciti-website":         {"kind": "site",       "status": "active",      "product": "vertciti.com source (merge to main deploys production)"},
-    "fama":                     {"kind": "app",        "status": "active",      "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)"},
-    "Miao":                     {"kind": "docs",       "status": "active",      "product": "Miao public lab"},
-    "HUIIIM":                   {"kind": "profile",    "status": "active"},
-    ".github":                  {"kind": "meta",       "status": "active"},
-    "vertciti-sp07-builder":    {"kind": "tool",       "status": "archive"},
-    "vertciti-prototype":       {"kind": "app",        "status": "archive"},
-    "vertciti-ts-spaces":       {"kind": "docs",       "status": "placeholder"},
-    "tenacity":                 {"kind": "library",    "status": "fork"},
-    "pgvector-python":          {"kind": "library",    "status": "fork"}
+    "miao-ai": {
+      "kind": "app",
+      "status": "active",
+      "product": "Miao engine",
+      "ui": "next",
+      "vendored": [
+        "vertcity/",
+        "vertciti/"
+      ],
+      "public": false,
+      "public_reason": "owner-only console on the founder's VM; no public deployment by design (a public demo site is a roadmap item, see profile)",
+      "vendored_note": "vertcity/ and vertciti/ are vertciti's own earlier procurement-API prototypes (mock), kept read-only; not third-party code"
+    },
+    "vertciti-translator": {
+      "kind": "app",
+      "status": "active",
+      "product": "Translator 王牌翻译器",
+      "ui": "next",
+      "url": "https://vertciti-translator.vercel.app/",
+      "health": "https://vertciti-translator.vercel.app/health"
+    },
+    "vertciti-chat": {
+      "kind": "app",
+      "status": "active",
+      "product": "vertciti Assistant",
+      "ui": "static"
+    },
+    "echowatch": {
+      "kind": "app",
+      "status": "active",
+      "product": "EchoWatch",
+      "ui": "jinja",
+      "url": "https://echowatch-demo.netlify.app/",
+      "health": "https://echowatch-demo.netlify.app/healthz"
+    },
+    "vertciti-dealdesk": {
+      "kind": "app",
+      "status": "active",
+      "product": "DealDesk 核保台",
+      "ui": "static",
+      "url": "https://vertciti-dealdesk.vercel.app/app/"
+    },
+    "phonehands": {
+      "kind": "library",
+      "status": "active",
+      "product": "PhoneHands"
+    },
+    "founder-visual-director": {
+      "kind": "skill",
+      "status": "active",
+      "product": "founder-visual-director"
+    },
+    "think-tank": {
+      "kind": "skill",
+      "status": "active",
+      "product": "think-tank"
+    },
+    "website-qa-gates": {
+      "kind": "skill",
+      "status": "active",
+      "product": "website-qa-gates",
+      "ui": "static"
+    },
+    "vertciti-security-watch": {
+      "kind": "tool",
+      "status": "active",
+      "product": "security-watch"
+    },
+    "vertciti-website": {
+      "kind": "site",
+      "status": "active",
+      "product": "vertciti.com source (merge to main deploys production)",
+      "url": "https://vertciti.com/"
+    },
+    "fama": {
+      "kind": "app",
+      "status": "active",
+      "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)"
+    },
+    "Miao": {
+      "kind": "docs",
+      "status": "active",
+      "product": "Miao public lab"
+    },
+    "HUIIIM": {
+      "kind": "profile",
+      "status": "active"
+    },
+    ".github": {
+      "kind": "meta",
+      "status": "active"
+    },
+    "vertciti-sp07-builder": {
+      "kind": "tool",
+      "status": "archive"
+    },
+    "vertciti-prototype": {
+      "kind": "app",
+      "status": "archive"
+    },
+    "vertciti-ts-spaces": {
+      "kind": "docs",
+      "status": "placeholder"
+    },
+    "tenacity": {
+      "kind": "library",
+      "status": "fork"
+    },
+    "pgvector-python": {
+      "kind": "library",
+      "status": "fork"
+    }
   }
 }

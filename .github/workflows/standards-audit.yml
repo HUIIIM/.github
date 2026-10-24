@@ -1,0 +1,106 @@
+# Independent daily assessment of the portfolio (STANDARDS.md §考核).
+#
+# Clones every repository in standards/repos.json, runs standards/audit.py with
+# live probes, and commits the result as standards/SCORECARD.md +
+# standards/scorecard.json. Red grades are published too.
+#
+# Cross-repository incident filing (issues in the graded repos) needs a token
+# with issues:write on those repos: secret STANDARDS_TOKEN. Without it this job
+# still publishes the scorecard and prints the incident list; filing and the
+# auto-upgrade PRs are then done by the daily Miao/Claude "standards" routine.
+name: standards-audit
+
+on:
+  schedule:
+    - cron: "40 3 * * *"   # daily 03:40 UTC
+  workflow_dispatch:
+  pull_request:
+    paths: ["standards/audit.py", "standards/repos.json", ".github/workflows/standards-audit.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: standards-audit
+  cancel-in-progress: false
+
+jobs:
+  assess:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Clone every registered repository (read-only, default branch)
+        env:
+          GH_TOKEN: ${{ secrets.STANDARDS_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/portfolio
+          python3 - <<'PY' > /tmp/repos.txt
+          import json
+          reg = json.load(open("standards/repos.json"))["repos"]
+          for name, m in reg.items():
+              if m["status"] != "fork":
+                  print(name)
+          PY
+          while read -r name; do
+            if [ "$name" = ".github" ]; then ln -s "$GITHUB_WORKSPACE" /tmp/portfolio/.github; continue; fi
+            src="$name"; [ "$name" = "miao-ai" ] && src="anomalies-autogpt"
+            [ "$name" = "vertciti-prototype" ] && src="vertcity-prototype"
+            if ! gh repo clone "HUIIIM/$src" "/tmp/portfolio/$name" -- --depth 1 -q 2>/tmp/err; then
+              echo "::warning::$name: clone failed ($(tail -1 /tmp/err)) — graded as missing"
+            fi
+          done < /tmp/repos.txt
+          ls /tmp/portfolio
+
+      - name: Assess (live probes on)
+        run: |
+          set +e
+          python3 standards/audit.py /tmp/portfolio --live --json standards/scorecard.json --md > standards/SCORECARD.md
+          echo "audit exit code: $? (1 = at least one MUST failing; the scorecard is still published)"
+          python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
+          cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish scorecard
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add standards/SCORECARD.md standards/scorecard.json
+          git diff --cached --quiet && echo "no change" || \
+            (git commit -m "standards: daily scorecard $(date -u +%F) [skip ci]" && git push)
+
+      - name: File or update incidents (needs STANDARDS_TOKEN)
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.STANDARDS_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "STANDARDS_TOKEN not set: incidents are published in SCORECARD.md only; the daily standards routine files them."
+            cat /tmp/incidents.json
+            exit 0
+          fi
+          python3 - <<'PY'
+          import json, subprocess, os
+          reg = json.load(open("standards/repos.json"))["repos"]
+          alias = {"miao-ai": "anomalies-autogpt", "vertciti-prototype": "vertcity-prototype"}
+          for inc in json.load(open("/tmp/incidents.json")):
+              repo = alias.get(inc["repo"], inc["repo"])
+              if reg.get(inc["repo"], {}).get("status") != "active":
+                  continue
+              title = f"[standards] {inc['severity']}: score {inc['score']} ({inc['grade']}) below the A++ bar"
+              body = ("Independent assessment (HUIIIM/.github standards/audit.py). Failing checks: "
+                      + ", ".join(inc["failing"]) + (". Unprobed: " + ", ".join(inc["unprobed"]) if inc["unprobed"] else "")
+                      + ".\n\nFull card: https://github.com/HUIIIM/.github/blob/main/standards/SCORECARD.md\n"
+                      "Closes automatically when the next assessment finds the repo at or above the bar.")
+              existing = subprocess.run(["gh", "issue", "list", "-R", f"HUIIIM/{repo}", "-l", "standards-incident", "--state", "open",
+                                         "--json", "number", "-q", ".[0].number"], capture_output=True, text=True).stdout.strip()
+              if existing:
+                  subprocess.run(["gh", "issue", "edit", "-R", f"HUIIIM/{repo}", existing, "-t", title, "-b", body], check=False)
+              else:
+                  subprocess.run(["gh", "issue", "create", "-R", f"HUIIIM/{repo}", "-t", title, "-b", body,
+                                  "-l", f"standards-incident,{inc['severity']}"], check=False)
+          PY
