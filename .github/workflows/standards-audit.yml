@@ -92,6 +92,42 @@ jobs:
           git diff --cached --quiet && echo "website scorecard already current" || \
             (git commit -m "standards: daily scorecard sync $(date -u +%F)" -m "Machine-generated data sync from HUIIIM/.github standards-audit (single source). Authored under the fleet Claude identity so the Vercel author gate passes on the website production deploy." && git push)
 
+      - name: Sync grading line to profile repo (needs SCORECARD_SYNC_TOKEN)
+        if: github.event_name != 'pull_request'
+        env:
+          SYNC_TOKEN: ${{ secrets.SCORECARD_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "SCORECARD_SYNC_TOKEN not set: profile grading-line sync skipped."
+            exit 0
+          fi
+          rm -rf /tmp/profile-sync
+          git clone -q --depth 1 "https://x-access-token:${SYNC_TOKEN}@github.com/HUIIIM/HUIIIM.git" /tmp/profile-sync
+          python3 - <<'PYEOF'
+          import json, re
+          d = json.load(open('standards/scorecard.json'))
+          date = d['generated'].split(' ')[0]
+          repos = d['summary']['repos']; at_bar = d['summary']['at_bar']
+          line = (f"**Graded daily.** {repos} repos graded by the company's own assessor \u00b7 {date} \u00b7 "
+                  f"{at_bar}/{repos} at the bar (A++) \u2014 red grades published too: "
+                  f"[the daily scorecard](https://github.com/HUIIIM/.github/blob/main/standards/SCORECARD.md).")
+          p = '/tmp/profile-sync/README.md'
+          s = open(p).read()
+          s2 = re.sub(r'<!-- grading:start -->.*?<!-- grading:end -->',
+                      '<!-- grading:start -->' + line + '<!-- grading:end -->', s, flags=re.S)
+          if s2 != s:
+              open(p, 'w').write(s2)
+              print('grading line updated')
+          else:
+              print('grading line unchanged')
+          PYEOF
+          cd /tmp/profile-sync
+          git config user.name "Claude"
+          git config user.email "noreply@anthropic.com"
+          git add README.md
+          git diff --cached --quiet && echo "profile grading line already current" || \
+            (git commit -m "chore: daily grading line sync" && git push)
+
       - name: File or update incidents (needs STANDARDS_TOKEN)
         if: github.event_name != 'pull_request'
         env:
