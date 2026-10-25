@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25 08:43Z",
+ "generated": "2026-10-25 14:56Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -714,21 +714,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 96 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 136 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 120 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 85 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "96 ms total (budget 800 ms)"
+     "evidence": "136 ms total (budget 800 ms)"
     },
     {
      "id": "PUB-2",
