@@ -28,7 +28,7 @@ DEFAULT_TIMEOUT = 30
 
 def files(root, names):
     for p in root.rglob("*"):
-        if p.is_file() and p.name in names and not any(s in p.parts for s in SKIP):
+        if p.is_file() and p.name in names and not any(s in p.relative_to(root).parts for s in SKIP):
             yield p
 
 
@@ -45,8 +45,8 @@ def ecosystems(root):
         for p in files(root, {name}):
             if str(p.relative_to(root)).startswith(vendored) if vendored else False:
                 continue
-            d = "/" + str(p.parent.relative_to(root)).replace(".", "").strip("/")
-            d = "/" if d in ("/", "") else d
+            rel = p.parent.relative_to(root).as_posix()
+            d = "/" if rel == "." else "/" + rel
             if (eco, d) not in found:
                 found.append((eco, d))
     found.append(("github-actions", "/"))
