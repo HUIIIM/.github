@@ -65,7 +65,7 @@ jobs:
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish scorecard
-        if: github.event_name != 'pull_request'
+        if: ${{ always() && github.event_name != 'pull_request' }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -74,7 +74,7 @@ jobs:
             (git commit -m "standards: daily scorecard $(date -u +%F) [skip ci]" && git push)
 
       - name: Sync scorecard to website repo (needs SCORECARD_SYNC_TOKEN)
-        if: github.event_name != 'pull_request'
+        if: ${{ always() && github.event_name != 'pull_request' }}
         env:
           SYNC_TOKEN: ${{ secrets.SCORECARD_SYNC_TOKEN }}
         run: |
@@ -93,7 +93,7 @@ jobs:
             (git commit -m "standards: daily scorecard sync $(date -u +%F)" -m "Machine-generated data sync from HUIIIM/.github standards-audit (single source). Authored under the fleet Claude identity so the Vercel author gate passes on the website production deploy." && git push)
 
       - name: Sync grading line to profile repo (needs SCORECARD_SYNC_TOKEN)
-        if: github.event_name != 'pull_request'
+        if: ${{ always() && github.event_name != 'pull_request' }}
         env:
           SYNC_TOKEN: ${{ secrets.SCORECARD_SYNC_TOKEN }}
         run: |
@@ -158,4 +158,17 @@ jobs:
               else:
                   subprocess.run(["gh", "issue", "create", "-R", f"HUIIIM/{repo}", "-t", title, "-b", body,
                                   "-l", f"standards-incident,{inc['severity']}"], check=False)
+          PY
+
+      - name: Fail the job when registered repositories are missing
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          d = json.load(open("standards/scorecard.json"))
+          missing = d.get("missing_repos", [])
+          if missing:
+              print(f"::error::{len(missing)} registered repositories were not assessed (MISSING, scored 0/P0): {', '.join(missing)}")
+              sys.exit(1)
+          print("all registered repositories assessed")
           PY
