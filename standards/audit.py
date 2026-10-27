@@ -185,7 +185,11 @@ def bilingual(root):
 # ----------------------------------------------------------------------------- live probes
 
 class Probe:
-    """One HTTP fetch, remembered per URL so several checks share it."""
+    """One HTTP fetch, remembered per URL so several checks share it.
+
+    ms = time to first response (status line + headers received, after redirects),
+    not the time to download the body -- PERF-1 budgets the first response (首响).
+    """
     cache: dict[str, "Probe"] = {}
 
     def __init__(self, url):
@@ -195,6 +199,7 @@ class Probe:
         t0 = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=LIVE["timeout"], context=ctx) as r:
+                self.ms = round((time.monotonic() - t0) * 1000)
                 self.body = r.read(400_000)
                 self.status = r.status
                 self.headers = {k.lower(): v for k, v in r.headers.items()}
@@ -204,7 +209,8 @@ class Probe:
             self.error = f"HTTP {e.code}"
         except (urllib.error.URLError, socket.timeout, ssl.SSLError, OSError) as e:
             self.error = str(getattr(e, "reason", e))[:120]
-        self.ms = round((time.monotonic() - t0) * 1000)
+        if self.ms is None:  # error before or instead of a 2xx/3xx response
+            self.ms = round((time.monotonic() - t0) * 1000)
 
     @classmethod
     def get(cls, url):
@@ -265,7 +271,7 @@ def ttfb_ok(root):
     p = Probe.get(url)
     if p.status is None:
         return False, p.evidence()
-    return (p.ms <= 800), f"{p.ms} ms total (budget 800 ms)"
+    return (p.ms <= 800), f"{p.ms} ms to first response (budget 800 ms)"
 
 
 def discoverability_ok(root):
