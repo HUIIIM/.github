@@ -66,9 +66,18 @@ def read(root, *paths):
     return ""
 
 
+def skipped(root, p):
+    """True when p lies under a vendored/build directory *inside* the repository.
+
+    Judged on the path relative to root: the directory the portfolio is checked
+    out under (/tmp/build/..., ~/dist/...) must not change any grade.
+    """
+    return any(part in SKIP_DIRS for part in p.relative_to(root).parts)
+
+
 def iter_files(root, suffixes):
     for p in root.rglob("*"):
-        if any(part in SKIP_DIRS for part in p.parts):
+        if skipped(root, p):
             continue
         if p.is_file() and (p.name in suffixes or p.suffix in suffixes):
             yield p
@@ -85,9 +94,29 @@ def grep(root, pattern, suffixes):
     return False
 
 
+COMMENT = re.compile(r"(^|\s)#.*$", re.M)
+
+
 def workflows(root):
+    """All workflow files, YAML comments removed: a tool named in a comment is not a tool that runs."""
     d = root / ".github" / "workflows"
-    return "\n".join(f.read_text(encoding="utf-8", errors="replace") for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
+    return "\n".join(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+                     for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
+
+
+def substantive(root, *paths, min_chars=40):
+    """The file exists AND has real content: at least min_chars of text outside headings.
+
+    STANDARDS.md 诚实条款: a check that can be passed by faking (an empty CHANGELOG) counts as failed.
+    """
+    for p in paths:
+        f = root / p
+        if f.is_file():
+            body = "\n".join(l for l in f.read_text(encoding="utf-8", errors="replace").splitlines()
+                             if l.strip() and not l.lstrip().startswith("#"))
+            if len(re.sub(r"\s+", "", body)) >= min_chars:
+                return True
+    return False
 
 
 def readme(root):
@@ -124,10 +153,15 @@ def dependabot_ok(root):
 
 
 def all_workflows_have_permissions(root):
+    """SEC-6: every workflow declares permissions, and none grants write-all."""
     d = root / ".github" / "workflows"
     if not d.is_dir():
         return True
-    return all(re.search(r"^\s*permissions:", f.read_text(encoding="utf-8", errors="replace"), re.M) for f in d.glob("*.y*ml"))
+    for f in d.glob("*.y*ml"):
+        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        if not re.search(r"^\s*permissions:", text, re.M) or re.search(r"permissions:\s*write-all", text):
+            return False
+    return True
 
 
 def all_jobs_have_timeouts(root):
@@ -138,10 +172,21 @@ def all_jobs_have_timeouts(root):
         text = f.read_text(encoding="utf-8", errors="replace")
         if "workflow_call" in text and "uses:" in text and "runs-on" not in text:
             continue
-        runs = len(re.findall(r"^\s+runs-on:", text, re.M))
-        timeouts = len(re.findall(r"^\s+timeout-minutes:", text, re.M))
-        if timeouts < runs:
-            return False
+        lines = COMMENT.sub("", text).splitlines()
+        for i, line in enumerate(lines):
+            m = re.match(r"^(\s+)runs-on:", line)
+            if not m:
+                continue
+            indent = m.group(1)
+            # the job's own keys share runs-on's indent; a step-level timeout does not count
+            j = i - 1
+            while j >= 0 and (not lines[j].strip() or lines[j].startswith(indent)):
+                j -= 1
+            k = i + 1
+            while k < len(lines) and (not lines[k].strip() or lines[k].startswith(indent)):
+                k += 1
+            if not any(re.match(rf"^{indent}timeout-minutes:", l) for l in lines[j + 1:k]):
+                return False
     return True
 
 
@@ -331,11 +376,11 @@ CHECKS = [
     ("GOV-3", "SHOULD", ALL, {"active", "archive", "placeholder"}, ".editorconfig for consistent whitespace",
      lambda r: exists(r, ".editorconfig")),
     ("GOV-4", "MUST", ALL - {"profile", "meta"}, {"active"}, "Status is stated honestly in README (active/archive/early/etc.)",
-     lambda r: bool(re.search(r"status|状态|历史档案|archive|early|experimental|stable|beta|alpha|phase", readme(r)[:4000], re.I))),
+     lambda r: bool(re.search(r"\b(status|archive[ds]?|early|experimental|stable|beta|alpha|phase)\b|状态|历史档案", readme(r)[:4000], re.I))),
     ("GOV-5", "MUST", ALL, {"archive"}, "Archive banner at top of README",
      lambda r: bool(re.search(r"历史档案|历史快照|archive|已封存", readme(r)[:1500], re.I))),
     ("GOV-6", "SHOULD", {"app", "library", "tool", "site"}, {"active"}, "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     lambda r: exists(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
+     lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
     ("SEC-1", "MUST", ALL, {"active", "archive", "placeholder"}, "Secret scanning in CI (gitleaks or equivalent)",
      lambda r: "gitleaks" in workflows(r) or "trufflehog" in workflows(r)),
@@ -374,11 +419,11 @@ CHECKS = [
     ("DOC-1", "MUST", ALL - {"meta", "profile", "docs"}, {"active"}, "README has a quickstart",
      lambda r: has_section(readme(r), r"quick ?start", r"快速开始", r"getting started", r"30 ?秒", r"30-second")),
     ("DOC-2", "MUST", {"app", "library", "skill", "tool"}, {"active"}, "Product one-pager docs/PRODUCT.md",
-     lambda r: exists(r, "docs/PRODUCT.md")),
+     lambda r: substantive(r, "docs/PRODUCT.md")),
     ("DOC-3", "MUST", {"app", "library", "skill", "tool"}, {"active"}, "CHANGELOG.md (Keep a Changelog)",
-     lambda r: exists(r, "CHANGELOG.md")),
+     lambda r: substantive(r, "CHANGELOG.md")),
     ("DOC-4", "SHOULD", {"app", "library", "tool"}, {"active"}, "Architecture doc or diagram",
-     lambda r: exists(r, "ARCHITECTURE.md", "docs/ARCHITECTURE.md", "docs/architecture.md", "docs/assets/architecture.png")),
+     lambda r: substantive(r, "ARCHITECTURE.md", "docs/ARCHITECTURE.md", "docs/architecture.md") or exists(r, "docs/assets/architecture.png")),
     ("DOC-5", "SHOULD", {"app", "library", "skill", "tool"}, {"active"}, "Visual proof (screenshot/GIF) in README",
      lambda r: bool(re.search(r"!\[[^\]]*\]\([^)]+\.(png|gif|jpg|webp|svg)\)", readme(r)))),
     ("DOC-6", "MUST", ALL - {"profile", "meta"}, {"active"}, "README links back to vertciti.com",
@@ -421,13 +466,13 @@ CHECKS = [
      demo_link_ok),
     # ---- continuity, privacy, AI, legal ----
     ("CONT-1", "SHOULD", {"app"}, {"active"}, "Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation",
-     lambda r: exists(r, "docs/RUNBOOK.md", "RUNBOOK.md", "docs/ops/RUNBOOK.md", "deploy/RUNBOOK.md")),
+     lambda r: substantive(r, "docs/RUNBOOK.md", "RUNBOOK.md", "docs/ops/RUNBOOK.md", "deploy/RUNBOOK.md")),
     ("CONT-2", "SHOULD", {"app"}, {"active"}, "Backup and restore are written down (a restore never tested is not a backup)",
      lambda r: grep(r, r"restore|恢复演练|恢复步骤|backup|备份", ("RUNBOOK.md", "DOCKER_VERIFY.md", "DEPLOY.md", "MUSE-DEPLOY.md"))),
     ("PRIV-1", "SHOULD", {"app"}, {"active"}, "Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)",
      lambda r: exists(r, "PRIVACY.md", "docs/PRIVACY.md") or grep(r, r"retention|保留期|redact|脱敏|data handling|数据处理", ("SECURITY.md", "README.md", "PRODUCT.md"))),
     ("AI-1", "SHOULD", {"app"}, {"active"}, "LLM-using app has evals with recorded results (not claims)",
-     lambda r: (not uses_llm(r)) or any(d.is_dir() and d.name in ("evals", "benchmarks") and not any(x in SKIP_DIRS for x in d.parts) for d in r.rglob("*")) or grep(r, r"\beval(s|uation)?\b", ("CHANGELOG.md", "PRODUCT.md"))),
+     lambda r: (not uses_llm(r)) or any(d.is_dir() and d.name in ("evals", "benchmarks") and not skipped(r, d) for d in r.rglob("*")) or grep(r, r"\beval(s|uation)?\b", ("CHANGELOG.md", "PRODUCT.md"))),
     ("AI-2", "SHOULD", {"app"}, {"active"}, "LLM-using app tests prompt-injection / untrusted-content handling",
      lambda r: (not uses_llm(r)) or grep(r, r"injection|untrusted|prompt.?inject", (".py", ".ts", ".tsx"))),
     ("LEGAL-1", "MUST", ALL - {"profile", "meta"}, {"active"}, "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
