@@ -145,6 +145,39 @@ def all_jobs_have_timeouts(root):
     return True
 
 
+USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.M)
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
+def unpinned_actions(root):
+    """SEC-11 evidence: every workflow `uses:` ref that is not pinned by full SHA."""
+    d = root / ".github" / "workflows"
+    if not d.is_dir():
+        return []
+    bad = []
+    for f in sorted(d.glob("*.y*ml")):
+        for m in USES_REF.finditer(f.read_text(encoding="utf-8", errors="replace")):
+            ref = m.group(1)
+            if ref.startswith("./") or ref.startswith("docker://"):
+                continue  # local actions and docker images are not remote action refs
+            if "@" not in ref:
+                bad.append(f"{f.name}: {ref} (no ref)")
+            elif not FULL_SHA.match(ref.rsplit("@", 1)[1]):
+                bad.append(f"{f.name}: {ref}")
+    return bad
+
+
+def actions_sha_pinned(root):
+    d = root / ".github" / "workflows"
+    if not d.is_dir() or not any(d.glob("*.y*ml")):
+        return True, "no workflows"
+    bad = unpinned_actions(root)
+    if not bad:
+        return True, "all action refs pinned by full-length SHA"
+    shown = "; ".join(bad[:6]) + (f" (+{len(bad) - 6} more)" if len(bad) > 6 else "")
+    return False, "unpinned: " + shown
+
+
 def env_ok(root):
     if not grep(root, r"os\.environ|os\.getenv|process\.env|BaseSettings", (".py", ".ts", ".tsx", ".js")):
         return True
@@ -324,6 +357,8 @@ CHECKS = [
      live_headers_ok),
     ("SEC-10", "SHOULD", CODE, {"active"}, "Reproducible dependencies: lockfile or pinned requirements for every manifest",
      lambda r: lockfile_ok(r)),
+    ("SEC-11", "MUST", ALL, {"active", "archive", "placeholder"}, "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
+     actions_sha_pinned),
     # ---- quality ----
     ("QA-1", "MUST", CODE, {"active"}, "CI workflow runs tests on PRs",
      lambda r: bool(re.search(r"pytest|vitest|npm (run )?test|jest|go test|cargo test|node --test", workflows(r)))),
