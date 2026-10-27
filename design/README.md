@@ -73,3 +73,11 @@
 - 不发 npm 包：单人公司，vendor 一个文件比维护包发布链路更可靠；漂移由 CI 抓。
 - 不改历史快照仓库（`vertciti-website`）：档案原样保留是它存在的意义。
 - 不改上游 fork（`tenacity`、`pgvector-python`）：那是别人的项目。
+
+## 许可 · License
+
+除 `dist/fonts/` 外，本目录（tokens、源码、构建脚本、预览页与 `dist/` 样式表）为 vertciti 专有：保留所有权利，
+仅限 vertciti 自有仓库（github.com/HUIIIM）按本说明原样 vendor `dist/` 使用。字体 Nunito Sans 不在此列，按 SIL OFL 1.1（见 [`dist/fonts/OFL.txt`](dist/fonts/OFL.txt)）。
+全文见 [`LICENSE`](LICENSE)。
+
+Everything here except `dist/fonts/` is proprietary to vertciti (all rights reserved); vertciti-owned repositories may vendor `dist/` unmodified. The Nunito Sans fonts remain under the SIL OFL 1.1. Full text: [`LICENSE`](LICENSE).
