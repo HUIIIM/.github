@@ -13,8 +13,8 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import audit  # noqa: E402
-import bootstrap  # noqa: E402
+import audit
+import bootstrap
 
 NAME = "echowatch"  # any registered app/active repo; only its registry entry is used
 

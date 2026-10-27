@@ -76,7 +76,7 @@ def plan_dependabot(root):
             missing.append((eco, d))
     if not missing:
         return None
-    body = current if current else "version: 2\nupdates:\n"
+    body = current or "version: 2\nupdates:\n"
     if body and not body.endswith("\n"):
         body += "\n"
     body += "".join(dependabot_entry(e, d) for e, d in missing)
@@ -91,8 +91,8 @@ def harden_workflow(text):
             changed.append(f"{action}@{sha[:7]} ({ver})")
             text = new
     if "workflow_call" not in text or "runs-on" in text:
-        if not re.search(r"^permissions:", text, re.M):
-            text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.M)
+        if not re.search(r"^permissions:", text, re.MULTILINE):
+            text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.MULTILINE)
             changed.append("permissions: contents: read")
         lines, out = text.split("\n"), []
         i = 0

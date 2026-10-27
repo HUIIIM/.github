@@ -32,9 +32,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
-import os
 import re
-import socket
 import ssl
 import sys
 import time
@@ -88,7 +86,7 @@ def iter_files(root, suffixes):
 
 
 def grep(root, pattern, suffixes):
-    rx = re.compile(pattern, re.M)
+    rx = re.compile(pattern, re.MULTILINE)
     for p in iter_files(root, suffixes):
         try:
             if rx.search(p.read_text(encoding="utf-8", errors="replace")):
@@ -98,7 +96,7 @@ def grep(root, pattern, suffixes):
     return False
 
 
-COMMENT = re.compile(r"(^|\s)#.*$", re.M)
+COMMENT = re.compile(r"(^|\s)#.*$", re.MULTILINE)
 
 
 def workflows(root):
@@ -129,7 +127,7 @@ def readme(root):
 
 def has_section(text, *words):
     heads = "\n".join(l for l in text.splitlines() if l.lstrip().startswith("#") or l.startswith("**"))
-    return any(re.search(w, heads, re.I) for w in words)
+    return any(re.search(w, heads, re.IGNORECASE) for w in words)
 
 
 def meta_of(root):
@@ -163,7 +161,7 @@ def all_workflows_have_permissions(root):
         return True
     for f in d.glob("*.y*ml"):
         text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
-        if not re.search(r"^\s*permissions:", text, re.M) or re.search(r"permissions:\s*write-all", text):
+        if not re.search(r"^\s*permissions:", text, re.MULTILINE) or re.search(r"permissions:\s*write-all", text):
             return False
     return True
 
@@ -194,7 +192,7 @@ def all_jobs_have_timeouts(root):
     return True
 
 
-USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.M)
+USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.MULTILINE)
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -207,7 +205,7 @@ def unpinned_actions(root):
     for f in sorted(d.glob("*.y*ml")):
         for m in USES_REF.finditer(f.read_text(encoding="utf-8", errors="replace")):
             ref = m.group(1)
-            if ref.startswith("./") or ref.startswith("docker://"):
+            if ref.startswith(("./", "docker://")):
                 continue  # local actions and docker images are not remote action refs
             if "@" not in ref:
                 bad.append(f"{f.name}: {ref} (no ref)")
@@ -268,7 +266,8 @@ def bilingual(root):
 
 class Probe:
     """One HTTP fetch, remembered per URL so several checks share it."""
-    cache: dict[str, "Probe"] = {}
+    # Process-wide memo by design (see class docstring); shared mutable state is the point.
+    cache: dict[str, Probe] = {}  # noqa: RUF012
 
     def __init__(self, url):
         self.url, self.status, self.headers, self.ms, self.body, self.error = url, None, {}, None, b"", ""
@@ -284,7 +283,7 @@ class Probe:
             self.status = e.code
             self.headers = {k.lower(): v for k, v in e.headers.items()} if e.headers else {}
             self.error = f"HTTP {e.code}"
-        except (urllib.error.URLError, socket.timeout, ssl.SSLError, OSError) as e:
+        except (TimeoutError, urllib.error.URLError, ssl.SSLError, OSError) as e:
             self.error = str(getattr(e, "reason", e))[:120]
         self.ms = round((time.monotonic() - t0) * 1000)
 
@@ -380,9 +379,9 @@ CHECKS = [
     ("GOV-3", "SHOULD", ALL, {"active", "archive", "placeholder"}, ".editorconfig for consistent whitespace",
      lambda r: exists(r, ".editorconfig")),
     ("GOV-4", "MUST", ALL - {"profile", "meta"}, {"active"}, "Status is stated honestly in README (active/archive/early/etc.)",
-     lambda r: bool(re.search(r"\b(status|archive[ds]?|early|experimental|stable|beta|alpha|phase)\b|状态|历史档案", readme(r)[:4000], re.I))),
+     lambda r: bool(re.search(r"\b(status|archive[ds]?|early|experimental|stable|beta|alpha|phase)\b|状态|历史档案", readme(r)[:4000], re.IGNORECASE))),
     ("GOV-5", "MUST", ALL, {"archive"}, "Archive banner at top of README",
-     lambda r: bool(re.search(r"历史档案|历史快照|archive|已封存", readme(r)[:1500], re.I))),
+     lambda r: bool(re.search(r"历史档案|历史快照|archive|已封存", readme(r)[:1500], re.IGNORECASE))),
     ("GOV-6", "SHOULD", {"app", "library", "tool", "site"}, {"active"}, "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
      lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
@@ -418,7 +417,7 @@ CHECKS = [
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",
      lambda r: bool(re.search(r"mypy|pyright|tsc|typecheck|type-check", workflows(r) + read(r, "package.json", "frontend/package.json")))),
     ("QA-5", "SHOULD", {"app"}, {"active"}, "Browser-level test or contrast gate in CI (playwright / contrast)",
-     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.I))),
+     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.IGNORECASE))),
     # ---- product kit / docs ----
     ("DOC-1", "MUST", ALL - {"meta", "profile", "docs"}, {"active"}, "README has a quickstart",
      lambda r: has_section(readme(r), r"quick ?start", r"快速开始", r"getting started", r"30 ?秒", r"30-second")),
@@ -435,11 +434,11 @@ CHECKS = [
     ("DOC-7", "SHOULD", {"app", "library", "skill", "tool"}, {"active"}, "README has security + license section",
      lambda r: has_section(readme(r), r"secur", r"安全") and has_section(readme(r), r"licen", r"许可")),
     ("DOC-8", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README is left-aligned (no align=center / <center>)",
-     lambda r: not re.search(r"align=[\"']?center|<center>", readme(r), re.I)),
+     lambda r: not re.search(r"align=[\"']?center|<center>", readme(r), re.IGNORECASE)),
     ("DOC-9", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)",
-     lambda r: not re.search(r"img\.shields\.io|badge\.svg|badgen\.net", readme(r), re.I)),
+     lambda r: not re.search(r"img\.shields\.io|badge\.svg|badgen\.net", readme(r), re.IGNORECASE)),
     ("DOC-10", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README images are public https URLs (relative images break in private repos and the mobile app)",
-     lambda r: not re.search(r"!\[[^\]]*\]\((?!https://)[^)]+\)|<img[^>]+src=[\"'](?!https://)", readme(r), re.I)),
+     lambda r: not re.search(r"!\[[^\]]*\]\((?!https://)[^)]+\)|<img[^>]+src=[\"'](?!https://)", readme(r), re.IGNORECASE)),
     ("DOC-11", "SHOULD", {"app", "skill", "tool", "site"}, {"active"}, "Bilingual (zh + en) README or localised UI",
      lambda r: bilingual(r)),
     # ---- design (UI repos) ----
@@ -511,7 +510,7 @@ def audit(root, meta):
             continue
         try:
             out = fn(root)
-        except Exception as exc:  # a broken check must not hide the rest of the report
+        except Exception as exc:  # noqa: BLE001 -- a broken check must not hide the rest of the report
             out = (False, f"check error: {exc}")
         ok, ev = (out if isinstance(out, tuple) else (bool(out), ""))
         results.append({"id": cid, "level": level, "desc": desc, "ok": ok, "evidence": ev})
@@ -560,7 +559,7 @@ def missing_row(name, meta, base):
 
 def to_markdown(rows, generated):
     out = []
-    out.append(f"# Portfolio scorecard · 组合记分卡\n")
+    out.append("# Portfolio scorecard · 组合记分卡\n")
     out.append(f"Generated {generated} by `standards/audit.py` (independent assessor; live probes {'on' if LIVE['enabled'] else 'off'}). "
                f"Bar = **{BAR}** (score ≥ {BAR_MIN} and no failing MUST). Below the bar is an incident with the severity shown. "
                f"Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.\n")
