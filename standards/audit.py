@@ -357,7 +357,7 @@ CHECKS = [
      live_headers_ok),
     ("SEC-10", "SHOULD", CODE, {"active"}, "Reproducible dependencies: lockfile or pinned requirements for every manifest",
      lambda r: lockfile_ok(r)),
-    ("SEC-11", "MUST", ALL, {"active", "archive", "placeholder"}, "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
+    ("SEC-11", "SHOULD", ALL, {"active", "archive", "placeholder"}, "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
      actions_sha_pinned),
     # ---- quality ----
     ("QA-1", "MUST", CODE, {"active"}, "CI workflow runs tests on PRs",

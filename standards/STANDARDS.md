@@ -91,7 +91,8 @@ CONT-1/CONT-2 运行手册与备份恢复 · PRIV-1 数据处理声明 · AI-1/A
 - **SEC-8 MUST** 每个 job 设 `timeout-minutes`——防止失控任务跑满 6 小时。
 - **SEC-9 SHOULD**（线上实测）部署站响应头齐全：CSP、`X-Content-Type-Options: nosniff`、frame 保护、HSTS、Referrer-Policy。
 - **SEC-10 SHOULD** 依赖可复现：每个 manifest 旁有锁文件，或 requirements 全部 `==` 钉死。
-- **SEC-11 MUST** workflow 引用的每个 action 必须钉全长 commit SHA（40 位十六进制），禁止 tag／分支钉（如 `@v7`、`@main`）；本地 action（`./` 前缀）与 docker 镜像引用不在此列。
+- **SEC-11 SHOULD** workflow 引用的每个 action 钉全长 commit SHA（40 位十六进制），不用 tag／分支钉（如 `@v7`、`@main`）；本地 action（`./` 前缀）与 docker 镜像引用不在此列。
+  先按 SHOULD 计分：记分卡上可见、不单独立案；全组合经 [`bootstrap.py`](bootstrap.py) 重钉后升为 MUST，与 [`SOTA.md`](SOTA.md) SEC-A5 对齐（主人决定，2026-10-27）。
 - Actions 钉版形式统一：核心 action 亦按 SEC-11 钉全长 SHA、行尾注释标明对应版本，如 `actions/checkout@<40 位 SHA>  # v7`、`actions/setup-python@<40 位 SHA>  # v7`、`actions/setup-node@<40 位 SHA>  # v7`。
 
 ### 质量 QA
