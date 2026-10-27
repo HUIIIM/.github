@@ -22,7 +22,11 @@ failing MUST, P2 < 90. Checks that cannot run (no URL, tool missing) are
 declared in repos.json ("public": false + "public_reason"); its live checks
 are then recorded as n/a with the reason, not scored.
 
-Exit code 1 when any applicable MUST check fails (unchanged from v1).
+A registered repository that cannot be read (clone failed, not found) is not
+dropped: it gets a MISSING row (score 0, grade C, P0) on every output.
+
+Exit code 2 when any registered repository is MISSING, else 1 when any
+applicable MUST check fails, else 0.
 """
 from __future__ import annotations
 
@@ -536,6 +540,24 @@ def audit(root, meta):
     }
 
 
+def missing_row(name, meta, base):
+    """A registered repository the assessor could not read (clone failed, not found).
+
+    It is not left out of the card: an unread repository is graded MISSING --
+    score 0, grade C, severity P0 -- so the denominator stays the whole
+    registry and the gap is published, never hidden (STANDARDS.md §考核 2).
+    """
+    return {
+        "repo": name, "kind": meta["kind"], "status": meta["status"], "product": meta.get("product", ""),
+        "url": meta.get("url", ""), "score": 0.0, "grade": "C", "bar": BAR, "meets_bar": False,
+        "severity": "P0", "missing": True, "must_failing": ["MISSING"], "unprobed": [],
+        "failing": ["MISSING"], "not_applicable": [],
+        "checks": [{"id": "MISSING", "level": "MUST", "ok": False,
+                    "desc": "Registered repository could not be read by the assessor (clone failed or not found): not graded, counted as failing",
+                    "evidence": f"not found under {base}"}],
+    }
+
+
 def to_markdown(rows, generated):
     out = []
     out.append(f"# Portfolio scorecard · 组合记分卡\n")
@@ -548,8 +570,12 @@ def to_markdown(rows, generated):
         fails = ", ".join((f"**{c}**" if c in r["must_failing"] else c) for c in r["failing"]) or "—"
         out.append(f"| {r['repo']} | {r['kind']}/{r['status']} | {r['score']} | {r['grade']} | {'✓' if r['meets_bar'] else '✗'} | {r['severity'] or '—'} | {fails} |")
     below = [r for r in rows if not r["meets_bar"]]
+    missing = [r["repo"] for r in rows if r.get("missing")]
     out.append("")
     out.append(f"**{len(rows) - len(below)} of {len(rows)} at or above the bar; {len(below)} incident(s).**\n")
+    if missing:
+        out.append(f"**{len(missing)} registered repo(s) could not be read by the assessor and are graded MISSING "
+                   f"(score 0, C, P0): {', '.join(missing)}.**\n")
     if below:
         out.append("## Incidents · 事故\n")
         for r in sorted(below, key=lambda x: (x["severity"], -x["score"])):
@@ -584,7 +610,8 @@ def main():
         root = base / name
         if not root.is_dir():
             missing.append(name)
-            print(f"{name}: not found under {base}", file=sys.stderr)
+            print(f"{name}: not found under {base} -- graded MISSING (0, C, P0)", file=sys.stderr)
+            rows.append(missing_row(name, meta, base))
             continue
         rows.append(audit(root, meta))
 
@@ -610,7 +637,9 @@ def main():
                 if c["ok"] is not True and c["ok"] != "n/a":
                     state = "?" if c["ok"] is None else "✗"
                     print(f"  {state} {c['id']:7} {c['level']:6} {c['desc']}" + (f"  [{c['evidence']}]" if c["evidence"] else ""))
-    sys.exit(1 if failed_must else 0)
+    # 2 = registered repositories could not be read (the card is incomplete);
+    # 1 = at least one MUST failing; 0 = clean.
+    sys.exit(2 if missing else 1 if failed_must else 0)
 
 
 if __name__ == "__main__":
