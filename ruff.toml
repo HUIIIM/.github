@@ -1,0 +1,15 @@
+# Lint gate baseline for this repo (see .github/workflows/quality.yml).
+# The gate enforces exactly this set; it starts green because every finding
+# under it was fixed when the gate landed. Widen or narrow the set only by
+# changing this file in the same PR.
+#
+# The set is the de-facto baseline this codebase was already held to
+# (correctness + modernization + hygiene). Deliberately excluded:
+# - E501/E741 style rules: long data lines and dense comprehensions are
+#   this repo's working style; enforcing them would be pure churn.
+# - RUF001-RUF003 (ambiguous punctuation): this is a bilingual repo whose
+#   Chinese strings and comments legitimately use fullwidth punctuation.
+target-version = "py312"
+
+[lint]
+select = ["F", "EXE", "UP", "FURB", "PIE", "BLE", "RUF100", "RUF012"]
