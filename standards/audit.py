@@ -196,6 +196,20 @@ USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.MULTILINE)
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
+def uses_tool(root, *tools):
+    """True iff a real `uses:` step's action path names one of the tools.
+
+    A tool mentioned in a `run:` line, an env value or a step name is not a
+    tool that runs -- only a `uses:` ref counts. (Issue #17, PR #21 verdict:
+    substring search over workflow text passed `run: echo gitleaks`.)"""
+    text = workflows(root)
+    for m in USES_REF.finditer(text):
+        segments = m.group(1).lower().split("@", 1)[0].split("/")
+        if any(seg == t or seg.startswith(t + "-") for t in tools for seg in segments):
+            return True
+    return False
+
+
 def unpinned_actions(root):
     """SEC-11 evidence: every workflow `uses:` ref that is not pinned by full SHA."""
     d = root / ".github" / "workflows"
@@ -386,15 +400,15 @@ CHECKS = [
      lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
     ("SEC-1", "MUST", ALL, {"active", "archive", "placeholder"}, "Secret scanning in CI (gitleaks or equivalent)",
-     lambda r: "gitleaks" in workflows(r) or "trufflehog" in workflows(r)),
+     lambda r: uses_tool(r, "gitleaks", "trufflehog")),
     ("SEC-2", "MUST", ALL - {"profile"}, {"active"}, "Dependabot covers github-actions + every package ecosystem in repo",
      lambda r: dependabot_ok(r)),
     ("SEC-3", "MUST", CODE, {"active"}, "CodeQL / SAST runs on PRs",
-     lambda r: "codeql-action" in workflows(r)),
+     lambda r: uses_tool(r, "codeql-action")),
     ("SEC-4", "SHOULD", CODE, {"active"}, "Dependency review blocks vulnerable additions on PRs",
-     lambda r: "dependency-review-action" in workflows(r)),
+     lambda r: uses_tool(r, "dependency-review-action")),
     ("SEC-5", "SHOULD", ALL - {"profile"}, {"active"}, "OpenSSF Scorecard published",
-     lambda r: "scorecard-action" in workflows(r)),
+     lambda r: uses_tool(r, "scorecard-action")),
     ("SEC-6", "MUST", ALL, {"active", "archive", "placeholder"}, "Workflows declare least-privilege `permissions:`",
      lambda r: all_workflows_have_permissions(r)),
     ("SEC-7", "SHOULD", CODE, {"active"}, ".env.example documents config; .env is git-ignored",

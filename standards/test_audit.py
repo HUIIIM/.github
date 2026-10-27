@@ -66,6 +66,21 @@ class ChecksCannotBeGamed(unittest.TestCase):
         self.assertIs(result(root, "SEC-1"), True)
         self.assertIs(result(root, "QA-1"), True)
 
+    def test_tool_named_only_in_a_run_line_does_not_count(self):
+        # The PR #21 verdict's probe: mentioning a tool in a run: echo is not running it.
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n      - run: pytest\n",
+            "      - run: echo gitleaks codeql-action dependency-review-action scorecard-action\n")})
+        for cid in ("SEC-1", "SEC-3", "SEC-4", "SEC-5"):
+            self.assertIs(result(root, cid), False, cid)
+
+    def test_codeql_uses_step_counts(self):
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n",
+            "      - uses: github/codeql-action/init@v3\n")})
+        self.assertIs(result(root, "SEC-3"), True)
+        self.assertIs(result(root, "SEC-1"), False)
+
     def test_write_all_fails_least_privilege(self):
         root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace("permissions:\n  contents: read", "permissions: write-all")})
         self.assertIs(result(root, "SEC-6"), False)
