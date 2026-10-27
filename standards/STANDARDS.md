@@ -91,7 +91,9 @@ CONT-1/CONT-2 运行手册与备份恢复 · PRIV-1 数据处理声明 · AI-1/A
 - **SEC-8 MUST** 每个 job 设 `timeout-minutes`——防止失控任务跑满 6 小时。
 - **SEC-9 SHOULD**（线上实测）部署站响应头齐全：CSP、`X-Content-Type-Options: nosniff`、frame 保护、HSTS、Referrer-Policy。
 - **SEC-10 SHOULD** 依赖可复现：每个 manifest 旁有锁文件，或 requirements 全部 `==` 钉死。
-- Actions 一律按完整提交 SHA 固定，行尾注释写版本（`uses: actions/checkout@<40 位 SHA> # v7`），由 Dependabot 更新——与 [`SOTA.md`](SOTA.md) SEC-A5 一致。模板与 [`bootstrap.py`](bootstrap.py) 用同一组 SHA。
+- **SEC-11 SHOULD** workflow 引用的每个 action 钉全长 commit SHA（40 位十六进制），不用 tag／分支钉（如 `@v7`、`@main`）；本地 action（`./` 前缀）与 docker 镜像引用不在此列。
+  先按 SHOULD 计分、在记分卡上可见而不立案；全组合经 [`bootstrap.py`](bootstrap.py) 重钉后升为 MUST，与 [`SOTA.md`](SOTA.md) SEC-A5 对齐（主人决定，2026-10-27）。
+- Actions 钉版形式统一：行尾注释写版本，如 `uses: actions/checkout@<40 位 SHA> # v7`，由 Dependabot 更新。模板与 [`bootstrap.py`](bootstrap.py) 用同一组 SHA。
 
 ### 质量 QA
 - **QA-1 MUST** 代码仓 CI 在 PR 上跑测试。
