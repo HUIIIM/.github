@@ -142,5 +142,37 @@ class BootstrapDependabot(unittest.TestCase):
             self.assertIn(("pip", "/"), bootstrap.ecosystems(root))
 
 
+class LlmDetection(unittest.TestCase):
+    def test_identifier_containing_llm_is_not_an_llm_app(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"app.py": "import re\nre.fullmatch(r'x', 'x')  # no openai here\n"})
+            self.assertFalse(audit.uses_llm(root))
+
+    def test_sdk_imports_are_detected(self):
+        for rel, code in (("a.py", "from anthropic import Anthropic\n"),
+                          ("b.py", "import openai\n"),
+                          ("c.ts", 'import OpenAI from "openai";\n'),
+                          ("d.ts", "import { generateText } from 'ai';\n"),
+                          ("e.js", "const Anthropic = require('@anthropic-ai/sdk');\n")):
+            with tempfile.TemporaryDirectory() as a:
+                self.assertTrue(audit.uses_llm(make(a, {rel: code})), rel)
+
+
+class LicenseCheck(unittest.TestCase):
+    def test_license_file_passes(self):
+        with tempfile.TemporaryDirectory() as a:
+            self.assertIs(result(make(a, {"LICENSE": "MIT\n"}), "GOV-1"), True)
+
+    def test_readme_licence_section_with_status_passes(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"README.md": "# x\n\n## License\n\nProprietary. All rights reserved by the owner.\n"})
+            self.assertIs(result(root, "GOV-1"), True)
+
+    def test_status_word_outside_licence_section_fails(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"README.md": "# x\n\nOur proprietary engine.\n\n## Usage\n\nrun it\n"})
+            self.assertIs(result(root, "GOV-1"), False)
+
+
 if __name__ == "__main__":
     unittest.main()
