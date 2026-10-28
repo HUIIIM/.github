@@ -1,73 +1,46 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-10-26 09:22Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-10-27 15:16Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
-| vertciti-chat | app/active | 70.0 | B | ✗ | P1 | SEC-7, SEC-9, QA-4, **DOC-2**, **DOC-3**, DOC-4, DOC-5, DOC-11, **UI-1**, UI-2, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2, AI-1, AI-2 |
-| vertciti-dealdesk | app/active | 83.3 | B | ✗ | P1 | SEC-7, **SEC-8**, SEC-10, **DOC-2**, **UI-1**, UI-2, PRIV-1, AI-1, AI-2 |
-| phonehands | library/active | 54.7 | C | ✗ | P0 | **GOV-2**, GOV-3, GOV-6, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, **SEC-6**, SEC-7, SEC-10, **QA-2**, QA-3, **DOC-2**, DOC-5 |
-| founder-visual-director | skill/active | 98.1 | S | ✓ | — | DOC-5 |
-| think-tank | skill/active | 98.1 | S | ✓ | — | DOC-5 |
-| website-qa-gates | skill/active | 98.1 | S | ✓ | — | DOC-5 |
-| vertciti-security-watch | tool/active | 96.9 | S | ✓ | — | SEC-7, DOC-5 |
-| Miao | docs/active | 71.1 | B | ✗ | P0 | **GOV-2**, GOV-3, **SEC-1**, **SEC-2**, SEC-5 |
+| miao-ai | app/active | 100.0 | S | ✓ | — | — |
+| vertciti-translator | app/active | 88.2 | A | ✗ | P1 | **SEC-11**, DOC-11, UI-2, OPS-5, REL-2, PERF-1, CONT-1, PRIV-1, AI-1 |
+| vertciti-chat | app/active | 67.7 | C | ✗ | P0 | SEC-7, SEC-9, **SEC-11**, QA-4, **DOC-2**, **DOC-3**, DOC-4, DOC-5, DOC-11, **UI-1**, UI-2, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2, AI-1, AI-2 |
+| echowatch | app/active | 62.4 | C | ✗ | P0 | **SEC-1**, SEC-4, SEC-5, **SEC-6**, **SEC-8**, SEC-9, SEC-10, **SEC-11**, QA-3, QA-4, **DOC-2**, **UI-1**, UI-2, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2, AI-1, AI-2 |
+| vertciti-dealdesk | app/active | 80.6 | B | ✗ | P1 | SEC-7, **SEC-8**, SEC-10, **SEC-11**, **DOC-2**, **UI-1**, UI-2, PRIV-1, AI-1, AI-2 |
+| phonehands | library/active | 52.2 | C | ✗ | P0 | **GOV-2**, GOV-3, GOV-6, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, **SEC-6**, SEC-7, SEC-10, **SEC-11**, **QA-2**, QA-3, **DOC-2**, DOC-5 |
+| founder-visual-director | skill/active | 92.9 | A++ | ✗ | P1 | **SEC-11**, DOC-5 |
+| think-tank | skill/active | 98.2 | S | ✓ | — | DOC-5 |
+| website-qa-gates | skill/active | 98.2 | S | ✓ | — | DOC-5 |
+| vertciti-security-watch | tool/active | 92.6 | A++ | ✗ | P1 | SEC-7, **SEC-11**, DOC-5 |
+| vertciti-website | site/active | 71.4 | B | ✗ | P0 | **GOV-1**, **GOV-4**, GOV-6, **SEC-2**, **SEC-11**, **DOC-1** |
+| fama | app/active | 52.7 | C | ✗ | P0 | **GOV-2**, GOV-3, GOV-6, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, SEC-7, **SEC-8**, SEC-9, QA-3, QA-5, **DOC-1**, **DOC-2**, DOC-4, DOC-5, **DOC-6**, DOC-7, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2 |
+| Miao | docs/active | 97.6 | S | ✓ | — | SEC-5 |
 | HUIIIM | profile/active | 100.0 | S | ✓ | — | — |
 | .github | meta/active | 100.0 | S | ✓ | — | — |
-| vertciti-sp07-builder | tool/archive | 75.0 | B | ✗ | P1 | **GOV-2**, GOV-3, **SEC-8** |
+| vertciti-sp07-builder | tool/archive | 67.7 | C | ✗ | P0 | **GOV-2**, GOV-3, **SEC-8**, **SEC-11** |
+| vertciti-prototype | app/archive | 67.7 | C | ✗ | P0 | **GOV-2**, GOV-3, **SEC-8**, **SEC-11** |
+| vertciti-ts-spaces | docs/placeholder | 64.3 | C | ✗ | P0 | **GOV-2**, GOV-3, **SEC-8**, **SEC-11** |
 
-**6 of 11 at or above the bar; 5 incident(s).**
+**6 of 18 at or above the bar; 12 incident(s).**
 
 ## Incidents · 事故
 
-### P0 · Miao · 71.1 (B)
+### P0 · vertciti-website · 71.4 (B)
 
-- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
-- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
-- `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
-- `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
-- `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
-
-### P0 · phonehands · 54.7 (C)
-
-- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
-- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `GOV-1` MUST FAIL: LICENSE file present (or README states proprietary/pending)
+- `GOV-4` MUST FAIL: Status is stated honestly in README (active/archive/early/etc.)
 - `GOV-6` SHOULD FAIL: SECURITY.md in repo (vulnerability reporting route, not only the org default)
-- `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
 - `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
-- `SEC-3` MUST FAIL: CodeQL / SAST runs on PRs
-- `SEC-4` SHOULD FAIL: Dependency review blocks vulnerable additions on PRs
-- `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
-- `SEC-6` MUST FAIL: Workflows declare least-privilege `permissions:`
-- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
-- `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
-- `QA-2` MUST FAIL: Linter/formatter enforced in CI (ruff/eslint/biome/prettier)
-- `QA-3` SHOULD FAIL: pre-commit hooks mirror CI
-- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
-- `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: contrast.yml: actions/checkout@v7; contrast.yml: actions/setup-node@v7; gitleaks.yml: actions/checkout@v7; gitleaks.yml: gitleaks/gitleaks-action@v3; scorecard.yml: actions/checkout@v7; scorecard.yml: ossf/scorecard-action@v2.4.4 (+3 more)
+- `DOC-1` MUST FAIL: README has a quickstart
 
-### P1 · vertciti-dealdesk · 83.3 (B)
-
-- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
-- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
-- `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
-- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
-- `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
-- `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
-- `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
-- `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
-- `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
-
-### P1 · vertciti-sp07-builder · 75.0 (B)
-
-- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
-- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
-- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
-
-### P1 · vertciti-chat · 70.0 (B)
+### P0 · vertciti-chat · 67.7 (C)
 
 - `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
 - `SEC-9` SHOULD unprobed: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — no url (unprobed)
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4 (+8 more)
 - `QA-4` SHOULD FAIL: Type checking in CI (mypy/pyright/tsc)
 - `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
 - `DOC-3` MUST FAIL: CHANGELOG.md (Keep a Changelog)
@@ -83,6 +56,135 @@ Generated 2026-10-26 09:22Z by `standards/audit.py` (independent assessor; live 
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — no public url registered
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
+- `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
+- `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
+
+### P0 · vertciti-sp07-builder · 67.7 (C)
+
+- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
+- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v6; ci.yml: actions/checkout@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4 (+7 more)
+
+### P0 · vertciti-prototype · 67.7 (C)
+
+- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
+- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v6; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4; dependency-review.yml: actions/checkout@v7 (+6 more)
+
+### P0 · vertciti-ts-spaces · 64.3 (C)
+
+- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
+- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: gitleaks.yml: actions/checkout@v7; gitleaks.yml: gitleaks/gitleaks-action@v3
+
+### P0 · echowatch · 62.4 (C)
+
+- `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
+- `SEC-4` SHOULD FAIL: Dependency review blocks vulnerable additions on PRs
+- `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
+- `SEC-6` MUST FAIL: Workflows declare least-privilege `permissions:`
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — missing: content-security-policy, x-content-type-options, frame, referrer-policy
+- `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5 (+12 more)
+- `QA-3` SHOULD FAIL: pre-commit hooks mirror CI
+- `QA-4` SHOULD FAIL: Type checking in CI (mypy/pyright/tsc)
+- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
+- `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
+- `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://echowatch-demo.netlify.app/ -> 500 in 851 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://echowatch-demo.netlify.app/healthz -> 500 in 380 ms
+- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 851 ms total (budget 800 ms)
+- `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention echowatch-demo.netlify.app
+- `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
+- `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
+- `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
+- `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
+
+### P0 · fama · 52.7 (C)
+
+- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
+- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `GOV-6` SHOULD FAIL: SECURITY.md in repo (vulnerability reporting route, not only the org default)
+- `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
+- `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
+- `SEC-3` MUST FAIL: CodeQL / SAST runs on PRs
+- `SEC-4` SHOULD FAIL: Dependency review blocks vulnerable additions on PRs
+- `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
+- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-9` SHOULD unprobed: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — no url (unprobed)
+- `QA-3` SHOULD FAIL: pre-commit hooks mirror CI
+- `QA-5` SHOULD FAIL: Browser-level test or contrast gate in CI (playwright / contrast)
+- `DOC-1` MUST FAIL: README has a quickstart
+- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
+- `DOC-4` SHOULD FAIL: Architecture doc or diagram
+- `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+- `DOC-6` MUST FAIL: README links back to vertciti.com
+- `DOC-7` SHOULD FAIL: README has security + license section
+- `OPS-3` SHOULD FAIL: Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)
+- `REL-1` MUST unprobed: [live] Deployed URL answers (2xx/3xx) within 12 s — no url in repos.json (unprobed)
+- `REL-2` SHOULD unprobed: [live] Health endpoint returns 200 on the deployment — no url (unprobed)
+- `PERF-1` SHOULD unprobed: [live] Landing response within 800 ms from the assessor — no url (unprobed)
+- `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — no public url registered
+- `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
+- `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
+
+### P0 · phonehands · 52.2 (C)
+
+- `GOV-2` MUST FAIL: CODEOWNERS routes reviews
+- `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
+- `GOV-6` SHOULD FAIL: SECURITY.md in repo (vulnerability reporting route, not only the org default)
+- `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
+- `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
+- `SEC-3` MUST FAIL: CodeQL / SAST runs on PRs
+- `SEC-4` SHOULD FAIL: Dependency review blocks vulnerable additions on PRs
+- `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
+- `SEC-6` MUST FAIL: Workflows declare least-privilege `permissions:`
+- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
+- `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: android-emulator-macos-trial.yml: actions/checkout@v4; android-emulator-macos-trial.yml: actions/setup-node@v4; android-emulator-macos-trial.yml: reactivecircus/android-emulator-runner@v2; android-emulator.yml: actions/checkout@v4; android-emulator.yml: actions/setup-node@v4; android-emulator.yml: reactivecircus/android-emulator-runner@v2 (+3 more)
+- `QA-2` MUST FAIL: Linter/formatter enforced in CI (ruff/eslint/biome/prettier)
+- `QA-3` SHOULD FAIL: pre-commit hooks mirror CI
+- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
+- `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+
+### P1 · founder-visual-director · 92.9 (A++)
+
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: gitleaks.yml: actions/checkout@v7; gitleaks.yml: gitleaks/gitleaks-action@v3; scorecard.yml: actions/checkout@v7; scorecard.yml: ossf/scorecard-action@v2.4.4; scorecard.yml: github/codeql-action/upload-sarif@v4
+- `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+
+### P1 · vertciti-security-watch · 92.6 (A++)
+
+- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; codeql.yml: actions/checkout@v7 (+9 more)
+- `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+
+### P1 · vertciti-translator · 88.2 (A)
+
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7 (+10 more)
+- `DOC-11` SHOULD FAIL: Bilingual (zh + en) README or localised UI
+- `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
+- `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 404 in 727 ms
+- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 1589 ms total (budget 800 ms)
+- `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
+- `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
+- `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
+
+### P1 · vertciti-dealdesk · 80.6 (B)
+
+- `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
+- `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
+- `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
+- `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4; dependency-review.yml: actions/checkout@v7 (+14 more)
+- `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
+- `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
+- `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
+- `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
 - `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
 

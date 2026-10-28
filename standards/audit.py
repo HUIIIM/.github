@@ -32,9 +32,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
-import os
 import re
-import socket
 import ssl
 import sys
 import time
@@ -70,16 +68,25 @@ def read(root, *paths):
     return ""
 
 
+def skipped(root, p):
+    """True when p lies under a vendored/build directory *inside* the repository.
+
+    Judged on the path relative to root: the directory the portfolio is checked
+    out under (/tmp/build/..., ~/dist/...) must not change any grade.
+    """
+    return any(part in SKIP_DIRS for part in p.relative_to(root).parts)
+
+
 def iter_files(root, suffixes):
     for p in root.rglob("*"):
-        if any(part in SKIP_DIRS for part in p.parts):
+        if skipped(root, p):
             continue
         if p.is_file() and (p.name in suffixes or p.suffix in suffixes):
             yield p
 
 
 def grep(root, pattern, suffixes):
-    rx = re.compile(pattern, re.M)
+    rx = re.compile(pattern, re.MULTILINE)
     for p in iter_files(root, suffixes):
         try:
             if rx.search(p.read_text(encoding="utf-8", errors="replace")):
@@ -89,9 +96,29 @@ def grep(root, pattern, suffixes):
     return False
 
 
+COMMENT = re.compile(r"(^|\s)#.*$", re.MULTILINE)
+
+
 def workflows(root):
+    """All workflow files, YAML comments removed: a tool named in a comment is not a tool that runs."""
     d = root / ".github" / "workflows"
-    return "\n".join(f.read_text(encoding="utf-8", errors="replace") for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
+    return "\n".join(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+                     for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
+
+
+def substantive(root, *paths, min_chars=40):
+    """The file exists AND has real content: at least min_chars of text outside headings.
+
+    STANDARDS.md 诚实条款: a check that can be passed by faking (an empty CHANGELOG) counts as failed.
+    """
+    for p in paths:
+        f = root / p
+        if f.is_file():
+            body = "\n".join(l for l in f.read_text(encoding="utf-8", errors="replace").splitlines()
+                             if l.strip() and not l.lstrip().startswith("#"))
+            if len(re.sub(r"\s+", "", body)) >= min_chars:
+                return True
+    return False
 
 
 def readme(root):
@@ -100,7 +127,7 @@ def readme(root):
 
 def has_section(text, *words):
     heads = "\n".join(l for l in text.splitlines() if l.lstrip().startswith("#") or l.startswith("**"))
-    return any(re.search(w, heads, re.I) for w in words)
+    return any(re.search(w, heads, re.IGNORECASE) for w in words)
 
 
 def meta_of(root):
@@ -128,10 +155,15 @@ def dependabot_ok(root):
 
 
 def all_workflows_have_permissions(root):
+    """SEC-6: every workflow declares permissions, and none grants write-all."""
     d = root / ".github" / "workflows"
     if not d.is_dir():
         return True
-    return all(re.search(r"^\s*permissions:", f.read_text(encoding="utf-8", errors="replace"), re.M) for f in d.glob("*.y*ml"))
+    for f in d.glob("*.y*ml"):
+        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        if not re.search(r"^\s*permissions:", text, re.MULTILINE) or re.search(r"permissions:\s*write-all", text):
+            return False
+    return True
 
 
 def all_jobs_have_timeouts(root):
@@ -142,11 +174,69 @@ def all_jobs_have_timeouts(root):
         text = f.read_text(encoding="utf-8", errors="replace")
         if "workflow_call" in text and "uses:" in text and "runs-on" not in text:
             continue
-        runs = len(re.findall(r"^\s+runs-on:", text, re.M))
-        timeouts = len(re.findall(r"^\s+timeout-minutes:", text, re.M))
-        if timeouts < runs:
-            return False
+        lines = COMMENT.sub("", text).splitlines()
+        for i, line in enumerate(lines):
+            m = re.match(r"^(\s+)runs-on:", line)
+            if not m:
+                continue
+            indent = m.group(1)
+            # the job's own keys share runs-on's indent; a step-level timeout does not count
+            j = i - 1
+            while j >= 0 and (not lines[j].strip() or lines[j].startswith(indent)):
+                j -= 1
+            k = i + 1
+            while k < len(lines) and (not lines[k].strip() or lines[k].startswith(indent)):
+                k += 1
+            if not any(re.match(rf"^{indent}timeout-minutes:", l) for l in lines[j + 1:k]):
+                return False
     return True
+
+
+USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.MULTILINE)
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
+def uses_tool(root, *tools):
+    """True iff a real `uses:` step's action path names one of the tools.
+
+    A tool mentioned in a `run:` line, an env value or a step name is not a
+    tool that runs -- only a `uses:` ref counts. (Issue #17, PR #21 verdict:
+    substring search over workflow text passed `run: echo gitleaks`.)"""
+    text = workflows(root)
+    for m in USES_REF.finditer(text):
+        segments = m.group(1).lower().split("@", 1)[0].split("/")
+        if any(seg == t or seg.startswith(t + "-") for t in tools for seg in segments):
+            return True
+    return False
+
+
+def unpinned_actions(root):
+    """SEC-11 evidence: every workflow `uses:` ref that is not pinned by full SHA."""
+    d = root / ".github" / "workflows"
+    if not d.is_dir():
+        return []
+    bad = []
+    for f in sorted(d.glob("*.y*ml")):
+        for m in USES_REF.finditer(f.read_text(encoding="utf-8", errors="replace")):
+            ref = m.group(1)
+            if ref.startswith(("./", "docker://")):
+                continue  # local actions and docker images are not remote action refs
+            if "@" not in ref:
+                bad.append(f"{f.name}: {ref} (no ref)")
+            elif not FULL_SHA.match(ref.rsplit("@", 1)[1]):
+                bad.append(f"{f.name}: {ref}")
+    return bad
+
+
+def actions_sha_pinned(root):
+    d = root / ".github" / "workflows"
+    if not d.is_dir() or not any(d.glob("*.y*ml")):
+        return True, "no workflows"
+    bad = unpinned_actions(root)
+    if not bad:
+        return True, "all action refs pinned by full-length SHA"
+    shown = "; ".join(bad[:6]) + (f" (+{len(bad) - 6} more)" if len(bad) > 6 else "")
+    return False, "unpinned: " + shown
 
 
 def env_ok(root):
@@ -189,8 +279,13 @@ def bilingual(root):
 # ----------------------------------------------------------------------------- live probes
 
 class Probe:
-    """One HTTP fetch, remembered per URL so several checks share it."""
-    cache: dict[str, "Probe"] = {}
+    """One HTTP fetch, remembered per URL so several checks share it.
+
+    ms = time to first response (status line + headers received, after redirects),
+    not the time to download the body -- PERF-1 budgets the first response (首响).
+    """
+    # Process-wide memo by design (see class docstring); shared mutable state is the point.
+    cache: dict[str, Probe] = {}  # noqa: RUF012
 
     def __init__(self, url):
         self.url, self.status, self.headers, self.ms, self.body, self.error = url, None, {}, None, b"", ""
@@ -199,6 +294,7 @@ class Probe:
         t0 = time.monotonic()
         try:
             with urllib.request.urlopen(req, timeout=LIVE["timeout"], context=ctx) as r:
+                self.ms = round((time.monotonic() - t0) * 1000)
                 self.body = r.read(400_000)
                 self.status = r.status
                 self.headers = {k.lower(): v for k, v in r.headers.items()}
@@ -206,9 +302,10 @@ class Probe:
             self.status = e.code
             self.headers = {k.lower(): v for k, v in e.headers.items()} if e.headers else {}
             self.error = f"HTTP {e.code}"
-        except (urllib.error.URLError, socket.timeout, ssl.SSLError, OSError) as e:
+        except (TimeoutError, urllib.error.URLError, ssl.SSLError, OSError) as e:
             self.error = str(getattr(e, "reason", e))[:120]
-        self.ms = round((time.monotonic() - t0) * 1000)
+        if self.ms is None:  # error before or instead of a 2xx/3xx response
+            self.ms = round((time.monotonic() - t0) * 1000)
 
     @classmethod
     def get(cls, url):
@@ -269,7 +366,7 @@ def ttfb_ok(root):
     p = Probe.get(url)
     if p.status is None:
         return False, p.evidence()
-    return (p.ms <= 800), f"{p.ms} ms total (budget 800 ms)"
+    return (p.ms <= 800), f"{p.ms} ms to first response (budget 800 ms)"
 
 
 def discoverability_ok(root):
@@ -302,22 +399,22 @@ CHECKS = [
     ("GOV-3", "SHOULD", ALL, {"active", "archive", "placeholder"}, ".editorconfig for consistent whitespace",
      lambda r: exists(r, ".editorconfig")),
     ("GOV-4", "MUST", ALL - {"profile", "meta"}, {"active"}, "Status is stated honestly in README (active/archive/early/etc.)",
-     lambda r: bool(re.search(r"status|状态|历史档案|archive|early|experimental|stable|beta|alpha|phase", readme(r)[:4000], re.I))),
+     lambda r: bool(re.search(r"\b(status|archive[ds]?|early|experimental|stable|beta|alpha|phase)\b|状态|历史档案", readme(r)[:4000], re.IGNORECASE))),
     ("GOV-5", "MUST", ALL, {"archive"}, "Archive banner at top of README",
-     lambda r: bool(re.search(r"历史档案|历史快照|archive|已封存", readme(r)[:1500], re.I))),
+     lambda r: bool(re.search(r"历史档案|历史快照|archive|已封存", readme(r)[:1500], re.IGNORECASE))),
     ("GOV-6", "SHOULD", {"app", "library", "tool", "site"}, {"active"}, "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     lambda r: exists(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
+     lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
     ("SEC-1", "MUST", ALL, {"active", "archive", "placeholder"}, "Secret scanning in CI (gitleaks or equivalent)",
-     lambda r: "gitleaks" in workflows(r) or "trufflehog" in workflows(r)),
+     lambda r: uses_tool(r, "gitleaks", "trufflehog")),
     ("SEC-2", "MUST", ALL - {"profile"}, {"active"}, "Dependabot covers github-actions + every package ecosystem in repo",
      lambda r: dependabot_ok(r)),
     ("SEC-3", "MUST", CODE, {"active"}, "CodeQL / SAST runs on PRs",
-     lambda r: "codeql-action" in workflows(r)),
+     lambda r: uses_tool(r, "codeql-action")),
     ("SEC-4", "SHOULD", CODE, {"active"}, "Dependency review blocks vulnerable additions on PRs",
-     lambda r: "dependency-review-action" in workflows(r)),
+     lambda r: uses_tool(r, "dependency-review-action")),
     ("SEC-5", "SHOULD", ALL - {"profile"}, {"active"}, "OpenSSF Scorecard published",
-     lambda r: "scorecard-action" in workflows(r)),
+     lambda r: uses_tool(r, "scorecard-action")),
     ("SEC-6", "MUST", ALL, {"active", "archive", "placeholder"}, "Workflows declare least-privilege `permissions:`",
      lambda r: all_workflows_have_permissions(r)),
     ("SEC-7", "SHOULD", CODE, {"active"}, ".env.example documents config; .env is git-ignored",
@@ -328,6 +425,8 @@ CHECKS = [
      live_headers_ok),
     ("SEC-10", "SHOULD", CODE, {"active"}, "Reproducible dependencies: lockfile or pinned requirements for every manifest",
      lambda r: lockfile_ok(r)),
+    ("SEC-11", "MUST", ALL, {"active", "archive", "placeholder"}, "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
+     actions_sha_pinned),
     # ---- quality ----
     ("QA-1", "MUST", CODE, {"active"}, "CI workflow runs tests on PRs",
      lambda r: bool(re.search(r"pytest|vitest|npm (run )?test|jest|go test|cargo test|node --test", workflows(r)))),
@@ -338,16 +437,16 @@ CHECKS = [
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",
      lambda r: bool(re.search(r"mypy|pyright|tsc|typecheck|type-check", workflows(r) + read(r, "package.json", "frontend/package.json")))),
     ("QA-5", "SHOULD", {"app"}, {"active"}, "Browser-level test or contrast gate in CI (playwright / contrast)",
-     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.I))),
+     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.IGNORECASE))),
     # ---- product kit / docs ----
     ("DOC-1", "MUST", ALL - {"meta", "profile", "docs"}, {"active"}, "README has a quickstart",
      lambda r: has_section(readme(r), r"quick ?start", r"快速开始", r"getting started", r"30 ?秒", r"30-second")),
     ("DOC-2", "MUST", {"app", "library", "skill", "tool"}, {"active"}, "Product one-pager docs/PRODUCT.md",
-     lambda r: exists(r, "docs/PRODUCT.md")),
+     lambda r: substantive(r, "docs/PRODUCT.md")),
     ("DOC-3", "MUST", {"app", "library", "skill", "tool"}, {"active"}, "CHANGELOG.md (Keep a Changelog)",
-     lambda r: exists(r, "CHANGELOG.md")),
+     lambda r: substantive(r, "CHANGELOG.md")),
     ("DOC-4", "SHOULD", {"app", "library", "tool"}, {"active"}, "Architecture doc or diagram",
-     lambda r: exists(r, "ARCHITECTURE.md", "docs/ARCHITECTURE.md", "docs/architecture.md", "docs/assets/architecture.png")),
+     lambda r: substantive(r, "ARCHITECTURE.md", "docs/ARCHITECTURE.md", "docs/architecture.md") or exists(r, "docs/assets/architecture.png")),
     ("DOC-5", "SHOULD", {"app", "library", "skill", "tool"}, {"active"}, "Visual proof (screenshot/GIF) in README",
      lambda r: bool(re.search(r"!\[[^\]]*\]\([^)]+\.(png|gif|jpg|webp|svg)\)", readme(r)))),
     ("DOC-6", "MUST", ALL - {"profile", "meta"}, {"active"}, "README links back to vertciti.com",
@@ -355,11 +454,11 @@ CHECKS = [
     ("DOC-7", "SHOULD", {"app", "library", "skill", "tool"}, {"active"}, "README has security + license section",
      lambda r: has_section(readme(r), r"secur", r"安全") and has_section(readme(r), r"licen", r"许可")),
     ("DOC-8", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README is left-aligned (no align=center / <center>)",
-     lambda r: not re.search(r"align=[\"']?center|<center>", readme(r), re.I)),
+     lambda r: not re.search(r"align=[\"']?center|<center>", readme(r), re.IGNORECASE)),
     ("DOC-9", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)",
-     lambda r: not re.search(r"img\.shields\.io|badge\.svg|badgen\.net", readme(r), re.I)),
+     lambda r: not re.search(r"img\.shields\.io|badge\.svg|badgen\.net", readme(r), re.IGNORECASE)),
     ("DOC-10", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "README images are public https URLs (relative images break in private repos and the mobile app)",
-     lambda r: not re.search(r"!\[[^\]]*\]\((?!https://)[^)]+\)|<img[^>]+src=[\"'](?!https://)", readme(r), re.I)),
+     lambda r: not re.search(r"!\[[^\]]*\]\((?!https://)[^)]+\)|<img[^>]+src=[\"'](?!https://)", readme(r), re.IGNORECASE)),
     ("DOC-11", "SHOULD", {"app", "skill", "tool", "site"}, {"active"}, "Bilingual (zh + en) README or localised UI",
      lambda r: bilingual(r)),
     # ---- design (UI repos) ----
@@ -390,13 +489,13 @@ CHECKS = [
      demo_link_ok),
     # ---- continuity, privacy, AI, legal ----
     ("CONT-1", "SHOULD", {"app"}, {"active"}, "Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation",
-     lambda r: exists(r, "docs/RUNBOOK.md", "RUNBOOK.md", "docs/ops/RUNBOOK.md", "deploy/RUNBOOK.md")),
+     lambda r: substantive(r, "docs/RUNBOOK.md", "RUNBOOK.md", "docs/ops/RUNBOOK.md", "deploy/RUNBOOK.md")),
     ("CONT-2", "SHOULD", {"app"}, {"active"}, "Backup and restore are written down (a restore never tested is not a backup)",
      lambda r: grep(r, r"restore|恢复演练|恢复步骤|backup|备份", ("RUNBOOK.md", "DOCKER_VERIFY.md", "DEPLOY.md", "MUSE-DEPLOY.md"))),
     ("PRIV-1", "SHOULD", {"app"}, {"active"}, "Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)",
      lambda r: exists(r, "PRIVACY.md", "docs/PRIVACY.md") or grep(r, r"retention|保留期|redact|脱敏|data handling|数据处理", ("SECURITY.md", "README.md", "PRODUCT.md"))),
     ("AI-1", "SHOULD", {"app"}, {"active"}, "LLM-using app has evals with recorded results (not claims)",
-     lambda r: (not uses_llm(r)) or any(d.is_dir() and d.name in ("evals", "benchmarks") and not any(x in SKIP_DIRS for x in d.parts) for d in r.rglob("*")) or grep(r, r"\beval(s|uation)?\b", ("CHANGELOG.md", "PRODUCT.md"))),
+     lambda r: (not uses_llm(r)) or any(d.is_dir() and d.name in ("evals", "benchmarks") and not skipped(r, d) for d in r.rglob("*")) or grep(r, r"\beval(s|uation)?\b", ("CHANGELOG.md", "PRODUCT.md"))),
     ("AI-2", "SHOULD", {"app"}, {"active"}, "LLM-using app tests prompt-injection / untrusted-content handling",
      lambda r: (not uses_llm(r)) or grep(r, r"injection|untrusted|prompt.?inject", (".py", ".ts", ".tsx"))),
     ("LEGAL-1", "MUST", ALL - {"profile", "meta"}, {"active"}, "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
@@ -431,7 +530,7 @@ def audit(root, meta):
             continue
         try:
             out = fn(root)
-        except Exception as exc:  # a broken check must not hide the rest of the report
+        except Exception as exc:  # noqa: BLE001 -- a broken check must not hide the rest of the report
             out = (False, f"check error: {exc}")
         ok, ev = (out if isinstance(out, tuple) else (bool(out), ""))
         results.append({"id": cid, "level": level, "desc": desc, "ok": ok, "evidence": ev})
@@ -480,7 +579,7 @@ def missing_row(name, meta, base):
 
 def to_markdown(rows, generated):
     out = []
-    out.append(f"# Portfolio scorecard · 组合记分卡\n")
+    out.append("# Portfolio scorecard · 组合记分卡\n")
     out.append(f"Generated {generated} by `standards/audit.py` (independent assessor; live probes {'on' if LIVE['enabled'] else 'off'}). "
                f"Bar = **{BAR}** (score ≥ {BAR_MIN} and no failing MUST). Below the bar is an incident with the severity shown. "
                f"Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.\n")

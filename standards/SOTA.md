@@ -3,8 +3,9 @@
 "State of the art"不是形容词，是一组**可测量、有出处**的条款。本文件是 HUIIIM 全部产品判断"是否达到最高水平"的唯一依据；
 由独立评估 AI（见 [`IVV.md`](IVV.md)）按条判定，作者本人（包括写代码的 Claude 会话）不能给自己打分。
 
-- **来源**：每条都引一手资料，研究底稿见 [`research/2026-10-25-motion-interaction-nasa-dossier.md`](research/2026-10-25-motion-interaction-nasa-dossier.md)（含逐条 URL 与"未核实"标注）。
-- **修订**：每月由独立研究会话重新取证一次；来源超过 12 个月未复核的条款自动降为 SHOULD，直到复核。定义的改动走 PR，由主人合并——评估者与被评估者都不能单方面改尺子。
+- **来源**：条款尽量引一手资料，研究底稿见 [`research/2026-10-25-motion-interaction-nasa-dossier.md`](research/2026-10-25-motion-interaction-nasa-dossier.md)（含逐条 URL 与"未核实"标注）。
+  如实记：出处为「—」（VER-5、OPS-2）或「独立审查 2026-10-25」（ARCH-5、ARCH-6、ARCH-9）的条款尚无外部一手来源；MOT-6 所引 WCAG 2.2.2、OPS-1 所引 SOC 2 在底稿中标注为 **[from prior knowledge]**，未在研究时取原文。这些在下次月度复核时补证或改写。
+- **修订**：每月由独立研究会话重新取证一次；来源超过 12 个月未复核的条款降为 SHOULD，直到复核（逐条核实日期尚未记录，此规则目前由月度复核人工执行）。定义的改动走 PR，由主人合并——评估者与被评估者都不能单方面改尺子。
 - **判定**：MUST 全过 + SHOULD ≥ 80% = 达到本阶段 SOTA；任一 MUST 不过 = 未达到，按 [`STANDARDS.md`](STANDARDS.md) §考核 记事故。
 - **口径**：对外只说"按 SOTA v1.0 条款独立评估：通过 N/M"；与 NASA 相关只说"映射到 / 对齐 NPR 7150.2D（自评，Class D 画像）"，**永不**说 NASA 认证、合规、批准或"NASA 级"。
 

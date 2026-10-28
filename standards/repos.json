@@ -41,7 +41,8 @@
       "status": "active",
       "product": "DealDesk 核保台",
       "ui": "static",
-      "url": "https://vertciti-dealdesk.vercel.app/app/"
+      "url": "https://vertciti-dealdesk.vercel.app/app/",
+      "health": "https://vertciti-dealdesk.vercel.app/app/healthz"
     },
     "phonehands": {
       "kind": "library",

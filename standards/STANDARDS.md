@@ -3,7 +3,7 @@
 **一句话：每个仓库都按行业最高的公开标准衡量，由独立于仓库的脚本每天打分并公开；没到线就是事故，事故自动立案、自动派修。**
 
 本标准适用于 [@HUIIIM](https://github.com/HUIIIM) 下所有自有仓库（上游 fork 除外）。
-每一条都对应一个公开的行业框架，每一条都能被 [`audit.py`](audit.py) 自动检查。
+每一条都对应一个公开的行业框架。除「对外消息 MSG」三条（用 [`check_messaging_dns.py`](check_messaging_dns.py) 与人工核对，不计入 audit.py 分数）外，每一条都能被 [`audit.py`](audit.py) 自动检查。
 `MUST` 不达标 = 不合格；`SHOULD` 不达标 = 要有书面理由。
 
 ```bash
@@ -36,6 +36,9 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
    立案 = 在该仓库开 issue（标签 `standards-incident`、`P0/P1/P2`），正文是失败项与证据；同一事故不重复开，只更新。
 5. **自动升级。** 每个事故同时派一次自动修复：能用 [`bootstrap.py`](bootstrap.py) 补齐的（CODEOWNERS、工作流、Dependabot、超时、权限）直接出 PR；
    需要真内容的（PRODUCT.md、CHANGELOG、RUNBOOK、evals）由 Miao / Claude 会话起草 PR。**只开 PR，不合并**——合并是人的决定。
+
+   **实现状态（如实记，2026-10-27）**：第 4–5 条目前只有一部分在跑。`standards-audit` 工作流在配置了 `STANDARDS_TOKEN` 时开/更新事故 issue（仅 `active` 仓），
+   但**不会自动关闭**已达线的事故，也**不会自动调用 bootstrap 出 PR**；这两步现由人工或每日 standards 例行会话完成，直到实现为止（见独立评估 #17 P1-5）。
 6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。
 7. **对标再升级。** 每季度把每个产品与同类最强的公开产品逐项对比（功能、性能、安全、可访问性、文档），差距写进该仓库的 `docs/PRODUCT.md`「路线图」，并新增检查项把它变成可测的线。线只升不降。
 
@@ -44,7 +47,7 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
 ```
 每日 03:40 UTC   standards-audit.yml：拉取全部仓库 → audit.py --live → 提交 SCORECARD.md / scorecard.json
 同日             自动立案器：对低于线的仓库开/更新 issue；bootstrap 可补的直接开 PR；其余派会话起草 PR
-人工             合并 PR；事故 issue 由下一轮评估自动关闭（再次达线）
+人工             合并 PR；事故 issue 再次达线后关闭（自动关闭尚未实现，目前人工关闭）
 ```
 
 **v2.0 新增检查项（"没想到的"）**：GOV-6 仓内 SECURITY.md · SEC-9 线上安全响应头实测 · SEC-10 依赖锁定可复现 ·
@@ -62,7 +65,7 @@ CONT-1/CONT-2 运行手册与备份恢复 · PRIV-1 数据处理声明 · AI-1/A
 |---|---|---|
 | 供应链安全 | [OpenSSF Scorecard](https://scorecard.dev) | 每个活跃仓库发布 Scorecard；目标 ≥ 8.0 |
 | 开源成熟度 | [OpenSSF Best Practices](https://www.bestpractices.dev) | 活跃代码仓达 "passing" 级 |
-| 应用安全 | [OWASP ASVS 4.0](https://owasp.org/www-project-application-security-verification-standard/) | 对外服务按 Level 2 自查 |
+| 应用安全 | [OWASP ASVS 5.0](https://owasp.org/www-project-application-security-verification-standard/) | 对外服务按 Level 2 自查 |
 | 构建溯源 | [SLSA](https://slsa.dev) | 发布产物 Level 2（GitHub 构建 + provenance） |
 | 无障碍 | [WCAG 2.2](https://www.w3.org/TR/WCAG22/) | AA；颜色对比由 DNA `build.py` 强制 |
 | 性能 | [Core Web Vitals](https://web.dev/vitals/) | LCP < 2.5s、INP < 200ms、CLS < 0.1（p75） |
@@ -91,7 +94,8 @@ CONT-1/CONT-2 运行手册与备份恢复 · PRIV-1 数据处理声明 · AI-1/A
 - **SEC-8 MUST** 每个 job 设 `timeout-minutes`——防止失控任务跑满 6 小时。
 - **SEC-9 SHOULD**（线上实测）部署站响应头齐全：CSP、`X-Content-Type-Options: nosniff`、frame 保护、HSTS、Referrer-Policy。
 - **SEC-10 SHOULD** 依赖可复现：每个 manifest 旁有锁文件，或 requirements 全部 `==` 钉死。
-- Actions 版本统一：`actions/checkout@v7`、`actions/setup-python@v7`、`actions/setup-node@v7`。
+- **SEC-11 MUST** workflow 引用的每个 action 必须钉全长 commit SHA（40 位十六进制），禁止 tag／分支钉（如 `@v7`、`@main`）；本地 action（`./` 前缀）与 docker 镜像引用不在此列。
+- Actions 钉版形式统一：核心 action 亦按 SEC-11 钉全长 SHA、行尾注释标明对应版本，如 `actions/checkout@<40 位 SHA>  # v7`、`actions/setup-python@<40 位 SHA>  # v7`、`actions/setup-node@<40 位 SHA>  # v7`。
 
 ### 质量 QA
 - **QA-1 MUST** 代码仓 CI 在 PR 上跑测试。
