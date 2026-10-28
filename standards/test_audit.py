@@ -130,6 +130,39 @@ class CheckoutPathDoesNotChangeGrades(unittest.TestCase):
             self.assertIs(result(root, "SEC-10"), True)
 
 
+class LeastPrivilegeAndRealTools(unittest.TestCase):
+    """SEC-6 reads workflow-level permissions; QA-1/QA-2 need the tool to be the command that runs."""
+
+    JOB = "jobs:\n  a:\n    runs-on: x\n    timeout-minutes: 5\n"
+
+    def wf(self, head, steps):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {".github/workflows/ci.yml": "on: pull_request\n" + head + self.JOB + "    steps:\n" + steps})
+            return {cid: result(root, cid) for cid in ("SEC-6", "QA-1", "QA-2")}
+
+    def test_quoted_write_all_fails(self):
+        self.assertIs(self.wf('permissions: "write-all"\n', "      - run: pytest\n")["SEC-6"], False)
+
+    def test_workflow_level_write_fails_job_level_write_passes(self):
+        self.assertIs(self.wf("permissions:\n  contents: write\n", "      - run: pytest\n")["SEC-6"], False)
+        job_write = "permissions:\n  contents: read\n"
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {".github/workflows/ci.yml": "on: push\n" + job_write + self.JOB
+                            + "    permissions:\n      contents: write\n    steps:\n      - run: pytest\n"})
+            self.assertIs(result(root, "SEC-6"), True)
+
+    def test_echoing_tool_names_is_not_running_them(self):
+        got = self.wf("permissions:\n  contents: read\n", "      - run: echo gitleaks codeql-action pytest ruff\n")
+        self.assertIs(got["QA-1"], False)
+        self.assertIs(got["QA-2"], False)
+
+    def test_real_commands_count(self):
+        got = self.wf("permissions:\n  contents: read\n",
+                      "      - run: |\n          pip install ruff\n          ruff check .\n          python -m pytest -q\n")
+        self.assertIs(got["QA-1"], True)
+        self.assertIs(got["QA-2"], True)
+        self.assertIs(self.wf("permissions:\n  contents: read\n", "      - run: test -f x && echo ok\n")["QA-1"], False)
+
 class BootstrapDependabot(unittest.TestCase):
     def test_dotted_directory_keeps_its_dots(self):
         with tempfile.TemporaryDirectory() as a:
