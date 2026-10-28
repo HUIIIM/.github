@@ -50,9 +50,11 @@ class Filer:
                       f"label {name}")
 
     def open_issue(self, repo):
+        """(listed, number): listed is False when the lookup itself failed, so callers never
+        mistake "could not list" for "no open incident" and file a duplicate."""
         out = self.call(repo, ["issue", "list", "-l", LABEL, "--state", "open", "--json", "number", "-q", ".[0].number"],
                         "list incidents")
-        return out or None
+        return (out is not None), (out or None)
 
     def file(self, repo, row, generated):
         self.ensure_labels(repo, row["severity"])
@@ -62,7 +64,9 @@ class Filer:
                 + (". Unprobed: " + ", ".join(row["unprobed"]) if row["unprobed"] else "")
                 + f".\n\nFull card: {CARD_URL}\n"
                 "Closed automatically by the first assessment that finds the repo at or above the bar.")
-        existing = self.open_issue(repo)
+        listed, existing = self.open_issue(repo)
+        if not listed:
+            return "FAILED to list (not filed, to avoid a duplicate)"
         if existing:
             ok = self.call(repo, ["issue", "edit", existing, "-t", title, "-b", body,
                                   "--add-label", f"{LABEL},{row['severity']}"], f"update #{existing}")
@@ -71,7 +75,9 @@ class Filer:
         return "filed" if ok is not None else "FAILED to file"
 
     def close(self, repo, row, generated):
-        existing = self.open_issue(repo)
+        listed, existing = self.open_issue(repo)
+        if not listed:
+            return "FAILED to list"
         if not existing:
             return "clean"
         ok = self.call(repo, ["issue", "close", existing, "-r", "completed", "-c",

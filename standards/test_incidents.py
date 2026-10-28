@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import incidents  # noqa: E402
+import incidents
 
 REG = {"echowatch": {"status": "active"}, "phonehands": {"status": "active"},
        "miao-ai": {"status": "active"}, "vertciti-sp07-builder": {"status": "archive"}}
@@ -89,6 +89,21 @@ class IncidentLifecycle(unittest.TestCase):
         self.assertEqual(out["echowatch"], "FAILED to file")
         self.assertEqual(len(f.errors), 1)
         self.assertIn("create incident failed", f.errors[0])
+
+    def test_list_failure_never_files_a_duplicate(self):
+        gh = FakeGh(open_issues={"echowatch": "7"}, fail={("echowatch", "issue", "list")})
+        f = incidents.Filer(gh)
+        out = incidents.process(self.card(row("echowatch", False, "P1")), REG, f)
+        self.assertEqual(out["echowatch"], "FAILED to list (not filed, to avoid a duplicate)")
+        self.assertFalse(gh.did("echowatch", "create"))
+        self.assertEqual(len(f.errors), 1)
+
+    def test_list_failure_on_close_is_reported(self):
+        gh = FakeGh(fail={("phonehands", "issue", "list")})
+        f = incidents.Filer(gh)
+        out = incidents.process(self.card(row("phonehands", True)), REG, f)
+        self.assertEqual(out["phonehands"], "FAILED to list")
+        self.assertEqual(len(f.errors), 1)
 
 
 if __name__ == "__main__":
