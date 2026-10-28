@@ -11,7 +11,12 @@ For every active registered repository on the card:
 
 Labels are created if the repository lacks them. Every gh failure is reported as an
 error annotation and makes the script exit 1 after all repositories were processed,
-so a filing problem is never silent.
+so a filing problem is never silent. One class is not an operational failure: when
+the token itself cannot file (a fine-grained PAT without issues access answers
+"Resource not accessible by personal access token") or the repository has issues
+disabled, filing is UNAVAILABLE for that repository -- reported as a warning
+annotation plus a summary line, and the script still exits 0 (the incidents remain
+published on the scorecard). Real failures keep the error + exit 1 behavior.
 """
 from __future__ import annotations
 
@@ -32,15 +37,26 @@ def run_gh(args):
     return p.returncode, p.stdout.strip(), p.stderr.strip()
 
 
+UNAVAILABLE_MARKERS = ("Resource not accessible by personal access token", "has disabled issues")
+
+
 class Filer:
     def __init__(self, gh=run_gh, owner="HUIIIM"):
         self.gh, self.owner, self.errors = gh, owner, []
+        self.unavailable: dict[str, str] = {}
 
     def call(self, repo, args, what):
+        if repo in self.unavailable:
+            return None
         code, out, err = self.gh([*args, "-R", f"{self.owner}/{repo}"])
         if code != 0:
-            self.errors.append(f"{repo}: {what} failed: {err or out or 'exit ' + str(code)}")
-            print(f"::error::{repo}: {what} failed: {(err or out)[:200]}")
+            detail = err or out or "exit " + str(code)
+            if any(marker in detail for marker in UNAVAILABLE_MARKERS):
+                self.unavailable[repo] = detail
+                print(f"::warning::{repo}: filing unavailable ({what}): {detail[:200]}")
+                return None
+            self.errors.append(f"{repo}: {what} failed: {detail}")
+            print(f"::error::{repo}: {what} failed: {detail[:200]}")
             return None
         return out
 
@@ -57,7 +73,11 @@ class Filer:
         return (out is not None), (out or None)
 
     def file(self, repo, row, generated):
+        if repo in self.unavailable:
+            return "skipped (filing unavailable)"
         self.ensure_labels(repo, row["severity"])
+        if repo in self.unavailable:
+            return "skipped (filing unavailable)"
         title = f"[standards] {row['severity']}: score {row['score']} ({row['grade']}) below the A++ bar"
         body = (f"Independent assessment (HUIIIM/.github standards/audit.py), {generated}. Failing checks: "
                 + ", ".join(row["failing"])
@@ -75,7 +95,11 @@ class Filer:
         return "filed" if ok is not None else "FAILED to file"
 
     def close(self, repo, row, generated):
+        if repo in self.unavailable:
+            return "skipped (filing unavailable)"
         listed, existing = self.open_issue(repo)
+        if repo in self.unavailable:
+            return "skipped (filing unavailable)"
         if not listed:
             return "FAILED to list"
         if not existing:
@@ -110,6 +134,11 @@ def main():
     filer = Filer()
     for name, action in process(card, registry, filer).items():
         print(f"{name}: {action}")
+    if filer.unavailable:
+        print(f"::warning::incident filing unavailable for {len(filer.unavailable)} repo(s) "
+              "(token has no issues access, or issues are disabled there): "
+              + ", ".join(sorted(filer.unavailable))
+              + " -- those incidents are published in SCORECARD.md only.")
     if filer.errors:
         print(f"{len(filer.errors)} incident operation(s) failed:\n  " + "\n  ".join(filer.errors), file=sys.stderr)
         sys.exit(1)
