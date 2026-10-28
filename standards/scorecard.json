@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27 15:16Z",
+ "generated": "2026-10-28 02:29Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 18,
-  "at_bar": 6,
-  "incidents": 12
+  "at_bar": 7,
+  "incidents": 11
  },
  "repos": [
   {
@@ -394,7 +394,7 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 88.2,
+   "score": 89.2,
    "grade": "A",
    "bar": "A++",
    "meets_bar": false,
@@ -409,7 +409,6 @@
     "UI-2",
     "OPS-5",
     "REL-2",
-    "PERF-1",
     "CONT-1",
     "PRIV-1",
     "AI-1"
@@ -694,21 +693,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1589 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 549 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 727 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 655 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "1589 ms total (budget 800 ms)"
+     "ok": true,
+     "evidence": "549 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1296,7 +1295,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
     },
     {
      "id": "SEC-10",
@@ -1478,21 +1477,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 851 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 380 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12112 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "851 ms total (budget 800 ms)"
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
     },
     {
      "id": "PUB-2",
@@ -1855,21 +1854,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 187 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 137 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 94 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 78 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "187 ms total (budget 800 ms)"
+     "evidence": "137 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1928,35 +1927,28 @@
    "status": "active",
    "product": "PhoneHands",
    "url": "",
-   "score": 52.2,
+   "score": 67.2,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "GOV-2",
     "SEC-1",
     "SEC-2",
     "SEC-3",
-    "SEC-6",
-    "SEC-11",
     "QA-2",
     "DOC-2"
    ],
    "unprobed": [],
    "failing": [
-    "GOV-2",
     "GOV-3",
-    "GOV-6",
     "SEC-1",
     "SEC-2",
     "SEC-3",
     "SEC-4",
     "SEC-5",
-    "SEC-6",
     "SEC-7",
     "SEC-10",
-    "SEC-11",
     "QA-2",
     "QA-3",
     "DOC-2",
@@ -1975,7 +1967,7 @@
      "id": "GOV-2",
      "level": "MUST",
      "desc": "CODEOWNERS routes reviews",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1996,7 +1988,7 @@
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -2038,7 +2030,7 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -2066,8 +2058,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: android-emulator-macos-trial.yml: actions/checkout@v4; android-emulator-macos-trial.yml: actions/setup-node@v4; android-emulator-macos-trial.yml: reactivecircus/android-emulator-runner@v2; android-emulator.yml: actions/checkout@v4; android-emulator.yml: actions/setup-node@v4; android-emulator.yml: reactivecircus/android-emulator-runner@v2 (+3 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -2175,17 +2167,14 @@
    "status": "active",
    "product": "founder-visual-director",
    "url": "",
-   "score": 92.9,
-   "grade": "A++",
+   "score": 98.2,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-11"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
-    "SEC-11",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2257,8 +2246,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: gitleaks.yml: actions/checkout@v7; gitleaks.yml: gitleaks/gitleaks-action@v3; scorecard.yml: actions/checkout@v7; scorecard.yml: ossf/scorecard-action@v2.4.4; scorecard.yml: github/codeql-action/upload-sarif@v4"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "DOC-1",
@@ -2700,18 +2689,15 @@
    "status": "active",
    "product": "security-watch",
    "url": "",
-   "score": 92.6,
-   "grade": "A++",
+   "score": 97.1,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-11"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
     "SEC-7",
-    "SEC-11",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2818,8 +2804,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; codeql.yml: actions/checkout@v7 (+9 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -2934,25 +2920,20 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 71.4,
+   "score": 83.9,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
     "GOV-1",
-    "GOV-4",
     "SEC-2",
-    "SEC-11",
     "DOC-1"
    ],
    "unprobed": [],
    "failing": [
     "GOV-1",
-    "GOV-4",
-    "GOV-6",
     "SEC-2",
-    "SEC-11",
     "DOC-1"
    ],
    "not_applicable": [],
@@ -2982,14 +2963,14 @@
      "id": "GOV-4",
      "level": "MUST",
      "desc": "Status is stated honestly in README (active/archive/early/etc.)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3038,8 +3019,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: contrast.yml: actions/checkout@v7; contrast.yml: actions/setup-node@v7; gitleaks.yml: actions/checkout@v7; gitleaks.yml: gitleaks/gitleaks-action@v3; scorecard.yml: actions/checkout@v7; scorecard.yml: ossf/scorecard-action@v2.4.4 (+3 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "DOC-1",
@@ -3102,14 +3083,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 290 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 132 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "290 ms total (budget 800 ms)"
+     "evidence": "132 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3536,14 +3517,17 @@
    "status": "active",
    "product": "Miao public lab",
    "url": "",
-   "score": 97.6,
-   "grade": "S",
+   "score": 90.2,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "SEC-1"
+   ],
    "unprobed": [],
    "failing": [
+    "SEC-1",
     "SEC-5"
    ],
    "not_applicable": [],
@@ -3580,7 +3564,7 @@
      "id": "SEC-1",
      "level": "MUST",
      "desc": "Secret scanning in CI (gitleaks or equivalent)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
