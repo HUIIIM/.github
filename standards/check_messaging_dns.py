@@ -7,7 +7,9 @@
     python3 standards/check_messaging_dns.py vertciti.com
     python3 standards/check_messaging_dns.py vertciti.com --selector resend --md
 
-退出码：全部 MUST 达标且无 WARN → 0；有 WARN → 0；有 FAIL(MUST 不达标) → 1。
+退出码：全部 MUST 达标 → 0（SHOULD 的 WARN 不影响）；任一 MUST 为 FAIL 或 UNMET → 1。
+UNMET = MUST 没能证明达标（未给 --selector、DKIM 位数无法判定、DMARC 仍在 quarantine 未到 reject）：
+"没测"不是"通过"（STANDARDS.md §考核 2）。
 """
 from __future__ import annotations
 
@@ -65,6 +67,9 @@ class Report:
     def add(self, rule: str, level: str, ok: bool | None, detail: str) -> None:
         if ok is True:
             status = "PASS"
+        elif ok is None and level == "MUST":
+            status = "UNMET"  # a MUST that could not be shown to pass is not a pass
+            self.fail = True
         elif ok is None:
             status = "WARN"
         else:
@@ -179,11 +184,11 @@ def main() -> int:
         print("| 规则 | 级别 | 结果 | 详情 |")
         print("|---|---|---|---|")
         for rule, lvl, st, detail in rep.rows:
-            mark = {"PASS": "✅", "WARN": "🟡", "FAIL": "❌"}[st]
+            mark = {"PASS": "✅", "WARN": "🟡", "UNMET": "🟠", "FAIL": "❌"}[st]
             print(f"| {rule} | {lvl} | {mark} {st} | {detail} |")
     else:
         for rule, lvl, st, detail in rep.rows:
-            print(f"[{st:4}] {rule} ({lvl}) — {detail}")
+            print(f"[{st:5}] {rule} ({lvl}) — {detail}")
     return 1 if rep.fail else 0
 
 
