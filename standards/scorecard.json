@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-28 02:29Z",
+ "generated": "2026-10-28 03:16Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -394,7 +394,7 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 89.2,
+   "score": 88.2,
    "grade": "A",
    "bar": "A++",
    "meets_bar": false,
@@ -409,6 +409,7 @@
     "UI-2",
     "OPS-5",
     "REL-2",
+    "PERF-1",
     "CONT-1",
     "PRIV-1",
     "AI-1"
@@ -693,21 +694,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 549 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1435 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 655 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 494 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": true,
-     "evidence": "549 ms to first response (budget 800 ms)"
+     "ok": false,
+     "evidence": "1435 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1159,7 +1160,7 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://echowatch-demo.netlify.app/",
-   "score": 62.4,
+   "score": 63.4,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -1190,7 +1191,6 @@
     "UI-2",
     "REL-1",
     "REL-2",
-    "PERF-1",
     "PUB-2",
     "CONT-1",
     "CONT-2",
@@ -1295,7 +1295,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1477,21 +1477,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 436 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12112 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 119 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12169 ms"
+     "ok": true,
+     "evidence": "436 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1854,21 +1854,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 137 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 46 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 78 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 30 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "137 ms to first response (budget 800 ms)"
+     "evidence": "46 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3083,14 +3083,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 132 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 97 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "132 ms to first response (budget 800 ms)"
+     "evidence": "97 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
