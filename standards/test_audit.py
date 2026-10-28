@@ -10,6 +10,7 @@ directory. Old code red, new code green.
 import sys
 import tempfile
 import unittest
+from typing import ClassVar
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -140,6 +141,38 @@ class BootstrapDependabot(unittest.TestCase):
         with tempfile.TemporaryDirectory() as a:
             root = make(a, {"requirements.txt": "x==1\n"})
             self.assertIn(("pip", "/"), bootstrap.ecosystems(root))
+
+
+class BootstrapHarden(unittest.TestCase):
+    """bootstrap.harden_workflow: pins keep the named version; inserted keys keep YAML valid."""
+
+    SHAS: ClassVar[dict] = {("actions/checkout", "v4"): "a" * 40, ("github/codeql-action", "v4"): "b" * 40}
+
+    def resolve(self, repo, ref):
+        return self.SHAS.get((repo, ref))
+
+    def test_block_list_runs_on_stays_valid(self):
+        wf = "on: push\njobs:\n  build:\n    runs-on:\n      - self-hosted\n    steps:\n      - run: make\n"
+        new, _ = bootstrap.harden_workflow(wf, self.resolve)
+        self.assertIn("    timeout-minutes: 30\n    runs-on:\n      - self-hosted\n", new)
+        self.assertNotIn("runs-on:\n    timeout-minutes", new)
+
+    def test_pin_keeps_the_named_major(self):
+        new, changed = bootstrap.harden_workflow(
+            "jobs:\n  a:\n    runs-on: x\n    timeout-minutes: 5\n    steps:\n"
+            "      - uses: actions/checkout@v4\n      - uses: github/codeql-action/init@v4 # v4\n", self.resolve)
+        self.assertIn("uses: actions/checkout@" + "a" * 40 + " # v4\n", new)
+        self.assertIn("uses: github/codeql-action/init@" + "b" * 40 + " # v4\n", new)
+        self.assertNotIn("# v7", new)
+
+    def test_unresolvable_and_local_refs_are_left_and_reported(self):
+        wf = ("jobs:\n  a:\n    runs-on: x\n    timeout-minutes: 5\n    steps:\n"
+              "      - uses: ./local\n      - uses: someone/thing@v1\n      - uses: actions/checkout@" + "c" * 40 + " # v7\n")
+        new, changed = bootstrap.harden_workflow(wf, self.resolve)
+        self.assertEqual(new.count("uses: ./local\n"), 1)
+        self.assertIn("uses: someone/thing@v1\n", new)
+        self.assertIn("uses: actions/checkout@" + "c" * 40 + " # v7\n", new)
+        self.assertIn("UNPINNED (could not resolve) someone/thing@v1", changed)
 
 
 if __name__ == "__main__":
