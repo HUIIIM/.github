@@ -9,7 +9,7 @@ What it does (all idempotent, never overwrites an existing file):
   * adds the standard gitleaks / scorecard / dependency-review / CodeQL workflows the repo's kind needs
   * creates or extends .github/dependabot.yml so every detected ecosystem + github-actions is covered
   * adds `timeout-minutes` to jobs that lack one and `permissions: contents: read` to workflows that lack it
-  * normalises core action versions (checkout / setup-python / setup-node → @v7)
+  * pins core actions given by tag (checkout / setup-python / setup-node @vN) to the v7 commit SHA
 
 It does NOT write CHANGELOG.md, PRODUCT.md or a LICENSE: those need real content or a legal decision.
 """
@@ -22,13 +22,19 @@ HERE = Path(__file__).resolve().parent
 TPL = HERE / "templates"
 REGISTRY = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))["repos"]
 SKIP = {".git", "node_modules", ".venv", "venv", ".next", "dist", "build", "__pycache__", "evidence"}
-ACTION_PINS = {"actions/checkout": "v7", "actions/setup-python": "v7", "actions/setup-node": "v7"}
+# Core actions pinned to a full commit SHA (SOTA.md SEC-A5); the trailing comment names the
+# release so Dependabot can keep the pin current. Same pins as standards/templates/workflows.
+ACTION_PINS = {
+    "actions/checkout": ("3d3c42e5aac5ba805825da76410c181273ba90b1", "v7"),
+    "actions/setup-python": ("6d4fd22b20465ccc0f7354476588e8df7c9ca0e0", "v7"),
+    "actions/setup-node": ("949feb2413d6458794dcd2491c4babbbce0c15c1", "v7"),
+}
 DEFAULT_TIMEOUT = 30
 
 
 def files(root, names):
     for p in root.rglob("*"):
-        if p.is_file() and p.name in names and not any(s in p.parts for s in SKIP):
+        if p.is_file() and p.name in names and not any(s in p.relative_to(root).parts for s in SKIP):
             yield p
 
 
@@ -45,8 +51,8 @@ def ecosystems(root):
         for p in files(root, {name}):
             if str(p.relative_to(root)).startswith(vendored) if vendored else False:
                 continue
-            d = "/" + str(p.parent.relative_to(root)).replace(".", "").strip("/")
-            d = "/" if d in ("/", "") else d
+            rel = p.parent.relative_to(root).as_posix()
+            d = "/" if rel == "." else "/" + rel
             if (eco, d) not in found:
                 found.append((eco, d))
     found.append(("github-actions", "/"))
@@ -70,7 +76,7 @@ def plan_dependabot(root):
             missing.append((eco, d))
     if not missing:
         return None
-    body = current if current else "version: 2\nupdates:\n"
+    body = current or "version: 2\nupdates:\n"
     if body and not body.endswith("\n"):
         body += "\n"
     body += "".join(dependabot_entry(e, d) for e, d in missing)
@@ -79,14 +85,14 @@ def plan_dependabot(root):
 
 def harden_workflow(text):
     changed = []
-    for action, ver in ACTION_PINS.items():
-        new = re.sub(rf"({re.escape(action)})@v\d+(\.\d+)*\b", rf"\1@{ver}", text)
+    for action, (sha, ver) in ACTION_PINS.items():
+        new = re.sub(rf"({re.escape(action)})@v\d+(\.\d+)*\b([ \t]*#[^\n]*)?", rf"\1@{sha} # {ver}", text)
         if new != text:
-            changed.append(f"{action}@{ver}")
+            changed.append(f"{action}@{sha[:7]} ({ver})")
             text = new
     if "workflow_call" not in text or "runs-on" in text:
-        if not re.search(r"^permissions:", text, re.M):
-            text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.M)
+        if not re.search(r"^permissions:", text, re.MULTILINE):
+            text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.MULTILINE)
             changed.append("permissions: contents: read")
         lines, out = text.split("\n"), []
         i = 0

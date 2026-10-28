@@ -18,19 +18,64 @@ on:
     paths: ["standards/audit.py", "standards/repos.json", ".github/workflows/standards-audit.yml"]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: standards-audit
+  group: standards-audit-${{ github.event_name }}
   cancel-in-progress: false
 
 jobs:
+  # Pull requests run code the PR controls (audit.py, this file), so this job gets
+  # no secrets, a read-only token and no persisted credentials. It only proves the
+  # assessor runs and that unreadable repositories are graded MISSING, not dropped.
+  check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+      - name: Assessor runs; unreadable repositories are graded MISSING
+        run: |
+          mkdir -p /tmp/portfolio && ln -s "$GITHUB_WORKSPACE" /tmp/portfolio/.github
+          set +e
+          python3 standards/audit.py /tmp/portfolio --json /tmp/card.json --md > /tmp/card.md
+          code=$?
+          set -e
+          cat /tmp/card.md >> "$GITHUB_STEP_SUMMARY"
+          python3 - "$code" <<'PY'
+          import json, sys
+          code = int(sys.argv[1])
+          reg = json.load(open("standards/repos.json"))["repos"]
+          card = json.load(open("/tmp/card.json"))
+          want = {n for n, m in reg.items() if m["status"] != "fork"}
+          graded = {r["repo"] for r in card["repos"]}
+          missing = {r["repo"] for r in card["repos"] if r.get("missing")}
+          assert graded == want, f"card covers {sorted(graded)}, registry has {sorted(want)}"
+          assert missing == want - {".github"}, f"MISSING rows wrong: {sorted(missing)}"
+          assert all(r["score"] == 0 and r["grade"] == "C" and r["severity"] == "P0" for r in card["repos"] if r.get("missing"))
+          assert card["summary"]["repos"] == len(want), card["summary"]
+          assert "graded MISSING" in open("/tmp/card.md").read()
+          assert code == 2, f"expected exit 2 with missing repos, got {code}"
+          print(f"ok: {len(want)} registered, {len(missing)} MISSING rows, exit {code}")
+          PY
+
   assess:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
 
@@ -51,7 +96,7 @@ jobs:
             src="$name"; [ "$name" = "miao-ai" ] && src="anomalies-autogpt"
             [ "$name" = "vertciti-prototype" ] && src="vertcity-prototype"
             if ! gh repo clone "HUIIIM/$src" "/tmp/portfolio/$name" -- --depth 1 -q 2>/tmp/err; then
-              echo "::warning::$name: clone failed ($(tail -1 /tmp/err)) — graded as missing"
+              echo "::error::$name: clone failed ($(tail -1 /tmp/err)) — graded MISSING (0, C, P0)"
             fi
           done < /tmp/repos.txt
           ls /tmp/portfolio
@@ -60,40 +105,77 @@ jobs:
         run: |
           set +e
           python3 standards/audit.py /tmp/portfolio --live --json standards/scorecard.json --md > standards/SCORECARD.md
-          echo "audit exit code: $? (1 = at least one MUST failing; the scorecard is still published)"
+          echo "audit exit code: $? (2 = repos MISSING, 1 = at least one MUST failing; the scorecard is still published)"
           python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Publish scorecard
-        if: github.event_name != 'pull_request'
+      # This repo's main is PR-gated (fleet standard, P2-8), so the card reaches
+      # it through a standing pull request, never a direct push. One branch,
+      # force-updated daily; the PR is merged through the normal review flow.
+      - name: Propose scorecard to this repo (standing PR)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: standards/daily-card
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add standards/SCORECARD.md standards/scorecard.json
-          git diff --cached --quiet && echo "no change" || \
-            (git commit -m "standards: daily scorecard $(date -u +%F) [skip ci]" && git push)
+          if git diff --cached --quiet; then
+            echo "scorecard unchanged"
+            exit 0
+          fi
+          git switch -q -c "$BRANCH"
+          git commit -q -m "standards: daily scorecard $(date -u +%F)" \
+            -m "Machine-generated by the standards-audit assess job (single source of the card)."
+          git push -q --force origin "$BRANCH"
+          open=$(gh pr list --head "$BRANCH" --state open --json number -q '.[0].number')
+          if [ -n "$open" ]; then
+            echo "updated standing PR #$open"
+          else
+            gh pr create --base main --head "$BRANCH" \
+              --title "standards: daily scorecard" \
+              --body "Daily scorecard from the standards-audit assess job (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}). This branch is force-updated every day; merge to publish the latest card to main."
+          fi
 
-      - name: Sync scorecard to website repo (needs SCORECARD_SYNC_TOKEN)
-        if: github.event_name != 'pull_request'
+      # The website deploys production from its main branch, so the card reaches it
+      # through a pull request there (that repo's checks + its merge), never a direct
+      # push, and under the bot's own identity. One branch, one open PR, updated daily.
+      - name: Propose scorecard to website repo (needs SCORECARD_SYNC_TOKEN)
         env:
           SYNC_TOKEN: ${{ secrets.SCORECARD_SYNC_TOKEN }}
+          BRANCH: standards/daily-scorecard
         run: |
           if [ -z "$SYNC_TOKEN" ]; then
-            echo "SCORECARD_SYNC_TOKEN not set: website scorecard sync skipped."
+            echo "::warning::SCORECARD_SYNC_TOKEN not set: website scorecard not proposed."
             exit 0
           fi
           rm -rf /tmp/website-sync
           git clone -q --depth 1 "https://x-access-token:${SYNC_TOKEN}@github.com/HUIIIM/vertciti-website.git" /tmp/website-sync
           cp standards/scorecard.json /tmp/website-sync/standards/scorecard.json
           cd /tmp/website-sync
-          git config user.name "Claude"
-          git config user.email "noreply@anthropic.com"
+          base=$(git rev-parse --abbrev-ref HEAD)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add standards/scorecard.json
-          git diff --cached --quiet && echo "website scorecard already current" || \
-            (git commit -m "standards: daily scorecard sync $(date -u +%F)" -m "Machine-generated data sync from HUIIIM/.github standards-audit (single source). Authored under the fleet Claude identity so the Vercel author gate passes on the website production deploy." && git push)
+          if git diff --cached --quiet; then
+            echo "website scorecard already current on $base"
+            exit 0
+          fi
+          git switch -q -c "$BRANCH"
+          git commit -q -m "standards: daily scorecard $(date -u +%F)" \
+            -m "Machine-generated from HUIIIM/.github standards-audit (single source of the card)."
+          git push -q --force origin "$BRANCH"
+          export GH_TOKEN="$SYNC_TOKEN"
+          open=$(gh pr list -R HUIIIM/vertciti-website --head "$BRANCH" --state open --json number -q '.[0].number')
+          if [ -n "$open" ]; then
+            echo "updated website PR #$open"
+          else
+            gh pr create -R HUIIIM/vertciti-website --base "$base" --head "$BRANCH" \
+              --title "standards: daily scorecard" \
+              --body "Daily scorecard from HUIIIM/.github standards-audit (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}). This branch is force-updated every day; merge whenever the site should show the latest card."
+          fi
 
       - name: Sync grading line to profile repo (needs SCORECARD_SYNC_TOKEN)
-        if: github.event_name != 'pull_request'
         env:
           SYNC_TOKEN: ${{ secrets.SCORECARD_SYNC_TOKEN }}
         run: |
@@ -122,14 +204,13 @@ jobs:
               print('grading line unchanged')
           PYEOF
           cd /tmp/profile-sync
-          git config user.name "Claude"
-          git config user.email "noreply@anthropic.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
           git diff --cached --quiet && echo "profile grading line already current" || \
             (git commit -m "chore: daily grading line sync" && git push)
 
       - name: File or update incidents (needs STANDARDS_TOKEN)
-        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.STANDARDS_TOKEN }}
         run: |
@@ -158,4 +239,18 @@ jobs:
               else:
                   subprocess.run(["gh", "issue", "create", "-R", f"HUIIIM/{repo}", "-t", title, "-b", body,
                                   "-l", f"standards-incident,{inc['severity']}"], check=False)
+          PY
+
+      # Last, after the honest card is published everywhere: an incomplete card
+      # must not pass silently. Any MISSING repository fails the run.
+      - name: Fail when registered repositories could not be read
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          missing = json.load(open("standards/scorecard.json"))["missing_repos"]
+          if missing:
+              print(f"::error::{len(missing)} registered repo(s) graded MISSING (clone failed): {', '.join(missing)}. "
+                    "Set STANDARDS_TOKEN (fine-grained, contents:read on the registry repos).")
+              sys.exit(1)
+          print("all registered repositories were read")
           PY
