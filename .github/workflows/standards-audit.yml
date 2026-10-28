@@ -112,6 +112,35 @@ jobs:
           python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
+      # MSG-1 (STANDARDS.md): the company sending domain passes the AUTH checks of
+      # MESSAGING.md. Not a per-repo score (it is a domain, not a repository), so it is
+      # published as its own section of the card. A failing or unevaluated MUST is shown
+      # as such; it does not fail this run (the card must still be published).
+      - name: Messaging domain check (MSG-1, published on the card)
+        env:
+          MSG_DOMAIN: vertciti.com
+          MSG_SELECTOR: resend
+        run: |
+          set +e
+          python3 standards/check_messaging_dns.py "$MSG_DOMAIN" --selector "$MSG_SELECTOR" --md > /tmp/msg.md 2>/tmp/msg.err
+          code=$?
+          set -e
+          {
+            echo ""
+            echo "## MSG-1 · 发信域 \`$MSG_DOMAIN\` (selector \`$MSG_SELECTOR\`)"
+            echo ""
+            case $code in
+              0) echo "**MSG-1 MUST: PASS** — every AUTH MUST shown to pass." ;;
+              1) echo "**MSG-1 MUST: FAIL** — at least one AUTH MUST failed or could not be shown to pass (UNMET)." ;;
+              *) echo "**MSG-1 MUST: unprobed** — the checker could not run (exit $code): $(tail -1 /tmp/msg.err)"
+                 echo "Unprobed is not passed (STANDARDS.md §考核 2)." ;;
+            esac
+            echo ""
+            sed '1,2d' /tmp/msg.md
+          } >> standards/SCORECARD.md
+          [ "$code" = 0 ] || echo "::warning::MSG-1 for $MSG_DOMAIN is not passing (checker exit $code); see SCORECARD.md"
+          tail -n +1 /tmp/msg.md >> "$GITHUB_STEP_SUMMARY"
+
       # This repo's main is PR-gated (fleet standard, P2-8), so the card reaches
       # it through a standing pull request, never a direct push. One branch,
       # force-updated daily; the PR is merged through the normal review flow.
