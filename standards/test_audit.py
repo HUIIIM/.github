@@ -114,34 +114,6 @@ class ChecksCannotBeGamed(unittest.TestCase):
         self.assertIs(result(root2, "GOV-4"), True)
 
 
-class CheckoutPathDoesNotChangeGrades(unittest.TestCase):
-    def test_build_in_parent_path_is_not_skipped(self):
-        files = {"web/package.json": '{"dependencies": {"x": "*"}}\n'}
-        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
-            plain = make(a, files)
-            under_build = make(Path(b) / "build", files)
-            for cid in ("SEC-2", "SEC-10"):
-                self.assertEqual(result(plain, cid), result(under_build, cid), cid)
-            self.assertIs(result(under_build, "SEC-10"), False)  # unlocked package.json is seen
-
-    def test_build_inside_repo_is_still_skipped(self):
-        with tempfile.TemporaryDirectory() as a:
-            root = make(a, {"build/package.json": '{"dependencies": {"x": "*"}}\n'})
-            self.assertIs(result(root, "SEC-10"), True)
-
-
-class BootstrapDependabot(unittest.TestCase):
-    def test_dotted_directory_keeps_its_dots(self):
-        with tempfile.TemporaryDirectory() as a:
-            root = make(a, {"apps/web.v2/package-lock.json": "{}\n"})
-            self.assertIn(("npm", "/apps/web.v2"), bootstrap.ecosystems(root))
-
-    def test_root_manifest_is_slash(self):
-        with tempfile.TemporaryDirectory() as a:
-            root = make(a, {"requirements.txt": "x==1\n"})
-            self.assertIn(("pip", "/"), bootstrap.ecosystems(root))
-
-
 class LlmDetection(unittest.TestCase):
     def test_identifier_containing_llm_is_not_an_llm_app(self):
         with tempfile.TemporaryDirectory() as a:
@@ -172,6 +144,34 @@ class LicenseCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as a:
             root = make(a, {"README.md": "# x\n\nOur proprietary engine.\n\n## Usage\n\nrun it\n"})
             self.assertIs(result(root, "GOV-1"), False)
+
+
+class CheckoutPathDoesNotChangeGrades(unittest.TestCase):
+    def test_build_in_parent_path_is_not_skipped(self):
+        files = {"web/package.json": '{"dependencies": {"x": "*"}}\n'}
+        with tempfile.TemporaryDirectory() as a, tempfile.TemporaryDirectory() as b:
+            plain = make(a, files)
+            under_build = make(Path(b) / "build", files)
+            for cid in ("SEC-2", "SEC-10"):
+                self.assertEqual(result(plain, cid), result(under_build, cid), cid)
+            self.assertIs(result(under_build, "SEC-10"), False)  # unlocked package.json is seen
+
+    def test_build_inside_repo_is_still_skipped(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"build/package.json": '{"dependencies": {"x": "*"}}\n'})
+            self.assertIs(result(root, "SEC-10"), True)
+
+
+class BootstrapDependabot(unittest.TestCase):
+    def test_dotted_directory_keeps_its_dots(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"apps/web.v2/package-lock.json": "{}\n"})
+            self.assertIn(("npm", "/apps/web.v2"), bootstrap.ecosystems(root))
+
+    def test_root_manifest_is_slash(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {"requirements.txt": "x==1\n"})
+            self.assertIn(("pip", "/"), bootstrap.ecosystems(root))
 
 
 if __name__ == "__main__":
