@@ -76,8 +76,8 @@
 
 ## 许可 · License
 
-除 `dist/fonts/` 外，本目录（tokens、源码、构建脚本、预览页与 `dist/` 样式表）为 vertciti 专有：保留所有权利，
-仅限 vertciti 自有仓库（github.com/HUIIIM）按本说明原样 vendor `dist/` 使用。字体 Nunito Sans 不在此列，按 SIL OFL 1.1（见 [`dist/fonts/OFL.txt`](dist/fonts/OFL.txt)）。
+除 `dist/fonts/` 外，本目录（tokens、源码、构建脚本、预览页与 `dist/` 样式表）为 VERTCITY LLC 专有：保留所有权利，
+仅限 VERTCITY LLC 自有仓库（github.com/HUIIIM）按本说明原样 vendor `dist/` 使用。字体 Nunito Sans 不在此列，按 SIL OFL 1.1（见 [`dist/fonts/OFL.txt`](dist/fonts/OFL.txt)）。
 全文见 [`LICENSE`](LICENSE)。
 
-Everything here except `dist/fonts/` is proprietary to vertciti (all rights reserved); vertciti-owned repositories may vendor `dist/` unmodified. The Nunito Sans fonts remain under the SIL OFL 1.1. Full text: [`LICENSE`](LICENSE).
+Everything here except `dist/fonts/` is proprietary to VERTCITY LLC (all rights reserved); VERTCITY LLC-owned repositories may vendor `dist/` unmodified. The Nunito Sans fonts remain under the SIL OFL 1.1. Full text: [`LICENSE`](LICENSE).

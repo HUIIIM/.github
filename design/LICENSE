@@ -1,11 +1,11 @@
 vertciti DNA design system (everything under design/ except design/dist/fonts/)
 
-Copyright (c) 2026 vertciti. All rights reserved.
+Copyright (c) 2026 VERTCITY LLC. All rights reserved.
 
 This is proprietary material: tokens.json, src/, build.py, preview/,
 dist/dna.css, dist/dna-tailwind.css and the documents in this directory.
 No licence is granted to copy, modify, distribute or use it outside
-repositories owned by vertciti (github.com/HUIIIM). Those repositories may
+repositories owned by VERTCITY LLC (github.com/HUIIIM). Those repositories may
 vendor the files under dist/ unmodified, as described in README.md.
 
 The fonts in design/dist/fonts/ are NOT covered by this notice. They are
