@@ -1,6 +1,6 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-10-28 10:01Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-10-29 10:25Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
@@ -104,7 +104,7 @@ Generated 2026-10-28 10:01Z by `standards/audit.py` (independent assessor; live 
 - `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
 - `SEC-6` MUST FAIL: Workflows declare least-privilege `permissions:`
 - `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
-- `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12630 ms
+- `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms
 - `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
 - `SEC-11` MUST FAIL: Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins) — unpinned: ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5 (+12 more)
 - `QA-3` SHOULD FAIL: pre-commit hooks mirror CI
@@ -112,9 +112,9 @@ Generated 2026-10-28 10:01Z by `standards/audit.py` (independent assessor; live 
 - `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
 - `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12630 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12138 ms
-- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12630 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12157 ms
+- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention echowatch-demo.netlify.app
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
@@ -156,8 +156,8 @@ Generated 2026-10-28 10:01Z by `standards/audit.py` (independent assessor; live 
 - `DOC-11` SHOULD FAIL: Bilingual (zh + en) README or localised UI
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 404 in 719 ms
-- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 1643 ms to first response (budget 800 ms)
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 404 in 541 ms
+- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 1811 ms to first response (budget 800 ms)
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
