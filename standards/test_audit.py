@@ -125,7 +125,10 @@ class LlmDetection(unittest.TestCase):
                           ("b.py", "import openai\n"),
                           ("c.ts", 'import OpenAI from "openai";\n'),
                           ("d.ts", "import { generateText } from 'ai';\n"),
-                          ("e.js", "const Anthropic = require('@anthropic-ai/sdk');\n")):
+                          ("e.js", "const Anthropic = require('@anthropic-ai/sdk');\n"),
+                          ("f.ts", "await fetch('https://api.anthropic.com/v1/messages', init);\n"),
+                          ("g.py", "httpx.post('https://api.openai.com/v1/chat/completions', json=body)\n"),
+                          ("h.py", "from google import genai\n")):
             with tempfile.TemporaryDirectory() as a:
                 self.assertTrue(audit.uses_llm(make(a, {rel: code})), rel)
 
@@ -139,6 +142,12 @@ class LicenseCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as a:
             root = make(a, {"README.md": "# x\n\n## License\n\nProprietary. All rights reserved by the owner.\n"})
             self.assertIs(result(root, "GOV-1"), True)
+
+    def test_negated_status_does_not_pass(self):
+        for text in ("This project is not proprietary.", "No rights reserved.", "本项目非专有。"):
+            with tempfile.TemporaryDirectory() as a:
+                root = make(a, {"README.md": "# x\n\n## License\n\n" + text + "\n"})
+                self.assertIs(result(root, "GOV-1"), False, text)
 
     def test_status_word_outside_licence_section_fails(self):
         with tempfile.TemporaryDirectory() as a:

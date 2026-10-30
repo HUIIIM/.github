@@ -146,6 +146,11 @@ LLM_SDK = (
     r"|(?:from\s+|require\(\s*|import\(\s*)['\"](?:@anthropic-ai/sdk|openai|ollama|@google/generative-ai|"
     r"@google/genai|@ai-sdk/[\w-]+|ai|@mistralai/mistralai|cohere-ai|groq-sdk|@langchain/[\w-]+|langchain)['\"/]"
     r"|\benv\.AI\.run\(|['\"]@cf/[\w-]+/"
+    r"|^\s*from\s+google\s+import\s+(?:genai|generativeai)\b"
+    # raw HTTP to an LLM API (Workers / Edge code often has no SDK import)
+    r"|\b(?:api\.anthropic\.com|api\.openai\.com|generativelanguage\.googleapis\.com|api\.mistral\.ai|"
+    r"api\.groq\.com|api\.cohere\.(?:ai|com)|openrouter\.ai/api|[\w-]+\.openai\.azure\.com|"
+    r"bedrock-runtime\.[\w-]+\.amazonaws\.com)\b"
 )
 
 
@@ -171,10 +176,12 @@ def license_ok(root):
             continue
         if inside:
             out.append(line)
-    section = "\n".join(out)
-    m = LICENSE_STATUS.search(section)
-    if m:
-        return True, f"no LICENSE file; README licence section states: {m.group(0)!r}"
+    for line in out:
+        for m in LICENSE_STATUS.finditer(line):
+            before = line[max(0, m.start() - 30):m.start()]
+            if re.search(r"\b(?:not|no|never|non)\b|n't\b|不|非|无|未", before, re.IGNORECASE):
+                continue  # "not proprietary", "非专有": a negation is not a licence status
+            return True, f"no LICENSE file; README licence section states: {m.group(0)!r}"
     return False, ("no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating "
                    "the status (proprietary / all rights reserved / pending)")
 
