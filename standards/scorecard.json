@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-30 10:28Z",
+ "generated": "2026-10-30 20:04Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -694,21 +694,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1760 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1453 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 531 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 658 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "1760 ms to first response (budget 800 ms)"
+     "evidence": "1453 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1477,21 +1477,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 563 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 681 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 172 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 137 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "563 ms to first response (budget 800 ms)"
+     "evidence": "681 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1550,7 +1550,7 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 80.6,
+   "score": 81.7,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
@@ -1571,8 +1571,7 @@
     "UI-1",
     "UI-2",
     "PRIV-1",
-    "AI-1",
-    "AI-2"
+    "AI-1"
    ],
    "not_applicable": [],
    "checks": [
@@ -1854,21 +1853,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 177 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 147 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 90 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 89 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "177 ms to first response (budget 800 ms)"
+     "evidence": "147 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1909,7 +1908,7 @@
      "id": "AI-2",
      "level": "SHOULD",
      "desc": "LLM-using app tests prompt-injection / untrusted-content handling",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3083,14 +3082,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 120 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 119 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "120 ms to first response (budget 800 ms)"
+     "evidence": "119 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3114,7 +3113,7 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 52.7,
+   "score": 55.9,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -3122,7 +3121,6 @@
    "must_failing": [
     "GOV-2",
     "SEC-1",
-    "SEC-2",
     "SEC-3",
     "SEC-8",
     "DOC-1",
@@ -3141,7 +3139,6 @@
     "GOV-3",
     "GOV-6",
     "SEC-1",
-    "SEC-2",
     "SEC-3",
     "SEC-4",
     "SEC-5",
@@ -3212,7 +3209,7 @@
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {

@@ -1,6 +1,6 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-10-30 10:28Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-10-30 20:04Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
@@ -8,14 +8,14 @@ Generated 2026-10-30 10:28Z by `standards/audit.py` (independent assessor; live 
 | vertciti-translator | app/active | 88.2 | A | ✗ | P1 | **SEC-11**, DOC-11, UI-2, OPS-5, REL-2, PERF-1, CONT-1, PRIV-1, AI-1 |
 | vertciti-chat | app/active | 67.7 | C | ✗ | P0 | SEC-7, SEC-9, **SEC-11**, QA-4, **DOC-2**, **DOC-3**, DOC-4, DOC-5, DOC-11, **UI-1**, UI-2, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2, AI-1, AI-2 |
 | echowatch | app/active | 63.4 | C | ✗ | P0 | **SEC-1**, SEC-4, SEC-5, **SEC-6**, **SEC-8**, SEC-9, SEC-10, **SEC-11**, QA-3, QA-4, **DOC-2**, **UI-1**, UI-2, **REL-1**, REL-2, PUB-2, CONT-1, CONT-2, AI-1, AI-2 |
-| vertciti-dealdesk | app/active | 80.6 | B | ✗ | P1 | SEC-7, **SEC-8**, SEC-10, **SEC-11**, **DOC-2**, **UI-1**, UI-2, PRIV-1, AI-1, AI-2 |
+| vertciti-dealdesk | app/active | 81.7 | B | ✗ | P1 | SEC-7, **SEC-8**, SEC-10, **SEC-11**, **DOC-2**, **UI-1**, UI-2, PRIV-1, AI-1 |
 | phonehands | library/active | 67.2 | C | ✗ | P0 | GOV-3, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, SEC-7, SEC-10, **QA-2**, QA-3, **DOC-2**, DOC-5 |
 | founder-visual-director | skill/active | 98.2 | S | ✓ | — | DOC-5 |
 | think-tank | skill/active | 98.2 | S | ✓ | — | DOC-5 |
 | website-qa-gates | skill/active | 98.2 | S | ✓ | — | DOC-5 |
 | vertciti-security-watch | tool/active | 97.1 | S | ✓ | — | SEC-7, DOC-5 |
 | vertciti-website | site/active | 83.9 | B | ✗ | P0 | **GOV-1**, **SEC-2**, **DOC-1** |
-| fama | app/active | 52.7 | C | ✗ | P0 | **GOV-2**, GOV-3, GOV-6, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, SEC-7, **SEC-8**, SEC-9, QA-3, QA-5, **DOC-1**, **DOC-2**, DOC-4, DOC-5, **DOC-6**, DOC-7, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2 |
+| fama | app/active | 55.9 | C | ✗ | P0 | **GOV-2**, GOV-3, GOV-6, **SEC-1**, **SEC-3**, SEC-4, SEC-5, SEC-7, **SEC-8**, SEC-9, QA-3, QA-5, **DOC-1**, **DOC-2**, DOC-4, DOC-5, **DOC-6**, DOC-7, OPS-3, **REL-1**, REL-2, PERF-1, PUB-2, CONT-1, CONT-2 |
 | Miao | docs/active | 90.2 | A++ | ✗ | P0 | **SEC-1**, SEC-5 |
 | HUIIIM | profile/active | 100.0 | S | ✓ | — | — |
 | .github | meta/active | 100.0 | S | ✓ | — | — |
@@ -112,21 +112,20 @@ Generated 2026-10-30 10:28Z by `standards/audit.py` (independent assessor; live 
 - `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
 - `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://echowatch-demo.netlify.app/ -> 500 in 563 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://echowatch-demo.netlify.app/healthz -> 500 in 172 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://echowatch-demo.netlify.app/ -> 500 in 681 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://echowatch-demo.netlify.app/healthz -> 500 in 137 ms
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention echowatch-demo.netlify.app
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
 - `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
 
-### P0 · fama · 52.7 (C)
+### P0 · fama · 55.9 (C)
 
 - `GOV-2` MUST FAIL: CODEOWNERS routes reviews
 - `GOV-3` SHOULD FAIL: .editorconfig for consistent whitespace
 - `GOV-6` SHOULD FAIL: SECURITY.md in repo (vulnerability reporting route, not only the org default)
 - `SEC-1` MUST FAIL: Secret scanning in CI (gitleaks or equivalent)
-- `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
 - `SEC-3` MUST FAIL: CodeQL / SAST runs on PRs
 - `SEC-4` SHOULD FAIL: Dependency review blocks vulnerable additions on PRs
 - `SEC-5` SHOULD FAIL: OpenSSF Scorecard published
@@ -155,13 +154,13 @@ Generated 2026-10-30 10:28Z by `standards/audit.py` (independent assessor; live 
 - `DOC-11` SHOULD FAIL: Bilingual (zh + en) README or localised UI
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 404 in 531 ms
-- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 1760 ms to first response (budget 800 ms)
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 404 in 658 ms
+- `PERF-1` SHOULD FAIL: [live] Landing response within 800 ms from the assessor — 1453 ms to first response (budget 800 ms)
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
 
-### P1 · vertciti-dealdesk · 80.6 (B)
+### P1 · vertciti-dealdesk · 81.7 (B)
 
 - `SEC-7` SHOULD FAIL: .env.example documents config; .env is git-ignored
 - `SEC-8` MUST FAIL: Workflows set timeout-minutes (no 6h runaway jobs)
@@ -172,5 +171,4 @@ Generated 2026-10-30 10:28Z by `standards/audit.py` (independent assessor; live 
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
 - `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
-- `AI-2` SHOULD FAIL: LLM-using app tests prompt-injection / untrusted-content handling
 
