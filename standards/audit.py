@@ -169,11 +169,30 @@ def top_level_permissions(text):
     return None
 
 
-def all_workflows_have_permissions(root):
-    """SEC-6: every workflow declares workflow-level permissions that grant no write.
+def job_blocks(text):
+    """{job id: its lines} for the jobs under the top-level `jobs:` key (2-space job keys)."""
+    jobs, current, inside = {}, None, False
+    for line in text.splitlines():
+        if re.match(r"^jobs:\s*$", line):
+            inside = True
+            continue
+        if inside and line.strip() and not line[0].isspace():
+            break  # next top-level key
+        m = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line) if inside else None
+        if m:
+            current = m.group(1)
+            jobs[current] = []
+        elif current:
+            jobs[current].append(line)
+    return jobs
 
-    write-all (quoted or not) fails anywhere; `<scope>: write` fails at workflow level, where it
-    reaches every job. Write scopes belong on the job that needs them.
+
+def all_workflows_have_permissions(root):
+    """SEC-6: every workflow declares least-privilege permissions.
+
+    Either workflow-level permissions that grant no write, or -- when there is no
+    workflow-level key -- a `permissions:` on every job. write-all (quoted or not) fails
+    anywhere; `<scope>: write` fails at workflow level, where it reaches every job.
     """
     d = root / ".github" / "workflows"
     if not d.is_dir():
@@ -184,36 +203,55 @@ def all_workflows_have_permissions(root):
             return False, f"{f.name}: write-all"
         top = top_level_permissions(text)
         if top is None:
-            return False, f"{f.name}: no workflow-level permissions"
+            jobs = job_blocks(text)
+            bare = [j for j, lines in jobs.items() if not any(re.match(r"^    permissions:", ln) for ln in lines)]
+            if not jobs or bare:
+                return False, f"{f.name}: no workflow-level permissions" + (f" and job(s) {', '.join(bare)} declare none" if bare else "")
+            continue  # every job declares its own permissions: least privilege at job level
         inline, block = top
         if inline and inline not in ("read-all", "{}"):
             return False, f"{f.name}: workflow-level permissions: {inline}"
         writes = [b.strip() for b in block if re.search(r":\s*['\"]?write\b", b)]
         if writes:
             return False, f"{f.name}: workflow-level {', '.join(writes)} (move write scopes to the job)"
-    return True, "every workflow declares workflow-level read-only permissions"
+    return True, "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
 
 
 RUN_PREFIX = re.compile(r"^(?:\w+=\S*\s+)*(?:(?:uv|poetry|pipenv|hatch)\s+run\s+|python3?\s+-m\s+|npx\s+|bunx\s+|"
                         r"pnpm\s+(?:exec|dlx)\s+|yarn\s+dlx\s+|sudo\s+)*")
 
 
-def run_commands(root):
-    """Every command a workflow `run:` step executes (split on && || ; | and newlines), prefixes removed."""
+PR_TRIGGER = re.compile(r"^on:.*\bpull_request\b|^\s+pull_request(?:_target)?:|^\s*-\s*pull_request\b", re.MULTILINE)
+SWALLOWED = re.compile(r"\|\|\s*(?:true|:|exit\s+0)\b")
+
+
+def run_commands(root, pr_only=False):
+    """Every command a workflow `run:` STEP executes (split on && || ; | and newlines), prefixes removed.
+
+    Only real step-level `run:` keys count (not a `with:` input that happens to be called run),
+    a command chain that cannot fail (`pytest || true`) does not count, and with pr_only only
+    workflows triggered by pull_request are read.
+    """
     d = root / ".github" / "workflows"
     cmds = []
     if not d.is_dir():
         return cmds
     for f in sorted(d.glob("*.y*ml")):
-        lines = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace")).splitlines()
-        i = 0
+        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        if pr_only and not PR_TRIGGER.search(text):
+            continue
+        lines = text.splitlines()
+        i, step_keys = 0, None  # indent of the current step's own keys
         while i < len(lines):
-            m = re.match(r"^(\s*)(?:-\s+)?run:\s*(.*)$", lines[i])
-            if not m:
+            dash = re.match(r"^(\s*)-\s+", lines[i])
+            if dash:
+                step_keys = len(dash.group(1)) + 2
+            m = re.match(r"^(\s*)(-\s+)?run:\s*(.*)$", lines[i])
+            if not m or (not m.group(2) and len(m.group(1)) != step_keys):
                 i += 1
                 continue
-            body, indent = [m.group(2)], len(m.group(1))
-            if m.group(2).strip() in ("|", ">", "|-", ">-", "|+", ">+"):
+            body, indent = [m.group(3)], len(m.group(1))
+            if m.group(3).strip() in ("|", ">", "|-", ">-", "|+", ">+"):
                 body = []
                 i += 1
                 while i < len(lines) and (not lines[i].strip() or len(lines[i]) - len(lines[i].lstrip()) > indent):
@@ -221,17 +259,20 @@ def run_commands(root):
                     i += 1
             else:
                 i += 1
-            for part in re.split(r"&&|\|\||;|\||\n", "\n".join(body)):
-                c = RUN_PREFIX.sub("", part.strip().strip("'\""))
-                if c:
-                    cmds.append(c)
+            for chain in re.split(r";|\n", "\n".join(body)):
+                if SWALLOWED.search(chain):
+                    continue  # `pytest || true` can never fail the job
+                for part in re.split(r"&&|\|\||\|", chain):
+                    c = RUN_PREFIX.sub("", part.strip().strip("'\""))
+                    if c:
+                        cmds.append(c)
     return cmds
 
 
 def runs_tool(root, pattern):
     """A workflow `run:` command starts with one of these tools (not `echo pytest`)."""
     rx = re.compile(rf"^(?:{pattern})(?:\s|$)")
-    return any(rx.match(c) for c in run_commands(root))
+    return any(rx.match(c) for c in run_commands(root, pr_only=True))
 
 
 def all_jobs_have_timeouts(root):

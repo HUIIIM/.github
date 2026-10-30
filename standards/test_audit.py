@@ -163,6 +163,28 @@ class LeastPrivilegeAndRealTools(unittest.TestCase):
         self.assertIs(got["QA-2"], True)
         self.assertIs(self.wf("permissions:\n  contents: read\n", "      - run: test -f x && echo ok\n")["QA-1"], False)
 
+    def test_swallowed_failure_and_with_inputs_do_not_count(self):
+        ro = "permissions:\n  contents: read\n"
+        self.assertIs(self.wf(ro, "      - run: pytest || true\n")["QA-1"], False)
+        self.assertIs(self.wf(ro, "      - uses: some/action@" + "0" * 40 + "\n        with:\n          run: pytest\n")["QA-1"], False)
+        self.assertIs(self.wf(ro, "      - name: t\n        run: pytest\n")["QA-1"], True)
+
+    def test_tests_must_run_on_pull_requests(self):
+        with tempfile.TemporaryDirectory() as a:
+            root = make(a, {".github/workflows/ci.yml": "on: push\npermissions:\n  contents: read\n" + self.JOB
+                            + "    steps:\n      - run: pytest\n"})
+            self.assertIs(result(root, "QA-1"), False)
+
+    def test_job_level_permissions_on_every_job_pass(self):
+        job = "  {n}:\n    runs-on: x\n    timeout-minutes: 5\n{perm}    steps:\n      - run: pytest\n"
+        both = "on: pull_request\njobs:\n" + job.format(n="a", perm="    permissions:\n      contents: read\n") \
+            + job.format(n="b", perm="    permissions:\n      contents: write\n")
+        one = "on: pull_request\njobs:\n" + job.format(n="a", perm="    permissions:\n      contents: read\n") \
+            + job.format(n="b", perm="")
+        for wf, want in ((both, True), (one, False)):
+            with tempfile.TemporaryDirectory() as a:
+                self.assertIs(result(make(a, {".github/workflows/ci.yml": wf}), "SEC-6"), want)
+
 class BootstrapDependabot(unittest.TestCase):
     def test_dotted_directory_keeps_its_dots(self):
         with tempfile.TemporaryDirectory() as a:
