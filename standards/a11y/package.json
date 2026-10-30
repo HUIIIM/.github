@@ -1,0 +1,9 @@
+{
+  "name": "vertciti-a11y-gate",
+  "private": true,
+  "description": "Pinned dependencies for standards/a11y/contrast_audit.js (design.yml contrast gate). Install with npm ci.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}

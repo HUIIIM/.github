@@ -34,13 +34,14 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: "22"
-      - name: Install Playwright + Chromium
+      - name: Install Playwright (locked, hash-checked) + Chromium
+        working-directory: standards/a11y
         run: |
-          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm i playwright@1.56.1 >/dev/null
+          npm ci --ignore-scripts --no-audit --no-fund
           npx playwright install --with-deps chromium
       - name: Contrast gate (light/dark x 390/1280)
         env:
-          NODE_PATH: /tmp/pw/node_modules
+          NODE_PATH: ${{ github.workspace }}/standards/a11y/node_modules
         run: |
           for scheme in light dark; do for width in 390 1280; do
             node standards/a11y/contrast_audit.js "file://$GITHUB_WORKSPACE/design/preview/components.html" --scheme $scheme --width $width

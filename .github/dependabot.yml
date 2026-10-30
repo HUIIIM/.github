@@ -6,3 +6,9 @@ updates:
       interval: "weekly"
     labels: ["dependencies"]
     open-pull-requests-limit: 5
+  - package-ecosystem: "npm"
+    directory: "/standards/a11y"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies"]
+    open-pull-requests-limit: 5
