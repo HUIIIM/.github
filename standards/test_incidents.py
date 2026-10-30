@@ -106,5 +106,41 @@ class IncidentLifecycle(unittest.TestCase):
         self.assertEqual(len(f.errors), 1)
 
 
+class UnavailableGh:
+    """Every call fails the way a fine-grained read-only PAT (or a repo with
+    issues disabled) does: an authorization/config fact, not an operational error."""
+
+    def __init__(self, message):
+        self.message, self.calls = message, []
+
+    def __call__(self, args):
+        repo = args[args.index("-R") + 1].split("/", 1)[1]
+        self.calls.append((repo, args[:2]))
+        return 1, "", self.message
+
+
+class FilingUnavailable(unittest.TestCase):
+    def card(self, *rows):
+        return {"generated": "2026-10-27 03:40Z", "repos": list(rows)}
+
+    def test_readonly_pat_marks_repo_unavailable_not_failed(self):
+        gh = UnavailableGh("HTTP 403: Resource not accessible by personal access token "
+                           "(https://api.github.com/repos/HUIIIM/echowatch/labels)")
+        f = incidents.Filer(gh)
+        out = incidents.process(self.card(row("echowatch", False, "P1")), REG, f)
+        self.assertEqual(out["echowatch"], "skipped (filing unavailable)")
+        self.assertEqual(f.errors, [])
+        self.assertIn("echowatch", f.unavailable)
+        self.assertEqual(len(gh.calls), 1)  # short-circuits after the first denial
+
+    def test_issues_disabled_repo_is_unavailable_on_close_path(self):
+        gh = UnavailableGh("the 'HUIIIM/phonehands' repository has disabled issues")
+        f = incidents.Filer(gh)
+        out = incidents.process(self.card(row("phonehands", True)), REG, f)
+        self.assertEqual(out["phonehands"], "skipped (filing unavailable)")
+        self.assertEqual(f.errors, [])
+        self.assertIn("phonehands", f.unavailable)
+
+
 if __name__ == "__main__":
     unittest.main()
