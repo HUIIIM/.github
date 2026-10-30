@@ -26,15 +26,20 @@ REGISTRY = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))["repos"
 SKIP = {".git", "node_modules", ".venv", "venv", ".next", "dist", "build", "__pycache__", "evidence"}
 DEFAULT_TIMEOUT = 30
 # `uses: owner/repo[/path]@ref` where ref is not already a full commit SHA (SEC-11 / SOTA SEC-A5).
-USES_REF = re.compile(r"^(\s*-?\s*uses:\s*)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@([^\s#'\"]+)([ \t]*#[^\n]*)?$", re.MULTILINE)
+# quoted or not: `uses: a/b@v1`, `uses: 'a/b@v1'`, `uses: "a/b@v1"`
+USES_REF = re.compile(r"^(\s*-?\s*uses:\s*)(['\"]?)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@([^\s#'\"]+)\2([ \t]*#[^\n]*)?$",
+                      re.MULTILINE)
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 _RESOLVED: dict = {}
+_BRANCH_ONLY: set = set()  # (repo, ref) that exist only as a branch: a moving target, never pinned
 
 
 def resolve_ref(repo, ref):
-    """Commit SHA that `ref` (a tag, else a branch) of github.com/<repo> points at, or None.
+    """Commit SHA of the release tag `ref` of github.com/<repo>, or None.
 
     Annotated tags are peeled to their commit. Same tag -> same code: nothing is upgraded.
+    A ref that exists only as a branch (`@main`) is NOT pinned: its head moves and
+    Dependabot cannot keep a branch pin current. It is recorded and reported instead.
     """
     key = (repo, ref)
     if key not in _RESOLVED:
@@ -44,7 +49,9 @@ def resolve_ref(repo, ref):
                                   f"refs/tags/{ref}", f"refs/tags/{ref}^{{}}", f"refs/heads/{ref}"],
                                  capture_output=True, text=True, timeout=30).stdout
             refs = dict(reversed(line.split("\t")) for line in out.splitlines() if "\t" in line)
-            sha = refs.get(f"refs/tags/{ref}^{{}}") or refs.get(f"refs/tags/{ref}") or refs.get(f"refs/heads/{ref}")
+            sha = refs.get(f"refs/tags/{ref}^{{}}") or refs.get(f"refs/tags/{ref}")
+            if not sha and refs.get(f"refs/heads/{ref}"):
+                _BRANCH_ONLY.add(key)
         except (OSError, subprocess.SubprocessError):
             sha = None
         _RESOLVED[key] = sha
@@ -56,13 +63,14 @@ def pin_actions(text, resolve=resolve_ref):
     pinned, unresolved = [], []
 
     def sub(m):
-        lead, action, ref, _comment = m.groups()
+        lead, _quote, action, ref, _comment = m.groups()
         if FULL_SHA.match(ref):
             return m.group(0)
         repo = "/".join(action.split("/")[:2])
         sha = resolve(repo, ref)
         if not sha:
-            unresolved.append(f"{action}@{ref}")
+            why = "branch ref, pin a release tag by hand" if (repo, ref) in _BRANCH_ONLY else "could not resolve"
+            unresolved.append(f"({why}) {action}@{ref}")
             return m.group(0)
         pinned.append(f"{action}@{sha[:7]} ({ref})")
         return f"{lead}{action}@{sha} # {ref}"
@@ -125,7 +133,7 @@ def harden_workflow(text, resolve=resolve_ref):
     changed = []
     text, pinned, unresolved = pin_actions(text, resolve)
     changed += [f"pin {p}" for p in pinned]
-    changed += [f"UNPINNED (could not resolve) {u}" for u in unresolved]
+    changed += [f"UNPINNED {u}" for u in unresolved]
     if "workflow_call" not in text or "runs-on" in text:
         if not re.search(r"^permissions:", text, re.MULTILINE):
             text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.MULTILINE)

@@ -174,6 +174,23 @@ class BootstrapHarden(unittest.TestCase):
         self.assertIn("uses: actions/checkout@" + "c" * 40 + " # v7\n", new)
         self.assertIn("UNPINNED (could not resolve) someone/thing@v1", changed)
 
+    def test_quoted_refs_are_pinned_too(self):
+        wf = ("jobs:\n  a:\n    runs-on: x\n    timeout-minutes: 5\n    steps:\n"
+              "      - uses: 'actions/checkout@v4'\n      - uses: \"github/codeql-action/init@v4\"\n")
+        new, _ = bootstrap.harden_workflow(wf, self.resolve)
+        self.assertIn("uses: actions/checkout@" + "a" * 40 + " # v4\n", new)
+        self.assertIn("uses: github/codeql-action/init@" + "b" * 40 + " # v4\n", new)
+
+    def test_branch_refs_are_reported_not_pinned(self):
+        bootstrap._BRANCH_ONLY.add(("someone/action", "main"))
+        try:
+            wf = "jobs:\n  a:\n    runs-on: x\n    timeout-minutes: 5\n    steps:\n      - uses: someone/action@main\n"
+            new, changed = bootstrap.harden_workflow(wf, lambda repo, ref: None)
+            self.assertIn("uses: someone/action@main\n", new)
+            self.assertIn("UNPINNED (branch ref, pin a release tag by hand) someone/action@main", changed)
+        finally:
+            bootstrap._BRANCH_ONLY.discard(("someone/action", "main"))
+
 
 if __name__ == "__main__":
     unittest.main()
