@@ -198,16 +198,125 @@ def dependabot_ok(root):
     return all(n in cfg for n in need)
 
 
+def top_level_permissions(text):
+    """(inline value, block lines) of the workflow-level `permissions:` key, or None if absent."""
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        m = re.match(r"^permissions:\s*(.*)$", line)
+        if m:
+            block = []
+            for nxt in lines[i + 1:]:
+                if nxt.strip() and not nxt[0].isspace():
+                    break
+                block.append(nxt)
+            return m.group(1).strip().strip("'\""), block
+    return None
+
+
+def job_blocks(text):
+    """{job id: its lines} for the jobs under the top-level `jobs:` key (2-space job keys)."""
+    jobs, current, inside = {}, None, False
+    for line in text.splitlines():
+        if re.match(r"^jobs:\s*$", line):
+            inside = True
+            continue
+        if inside and line.strip() and not line[0].isspace():
+            break  # next top-level key
+        m = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line) if inside else None
+        if m:
+            current = m.group(1)
+            jobs[current] = []
+        elif current:
+            jobs[current].append(line)
+    return jobs
+
+
 def all_workflows_have_permissions(root):
-    """SEC-6: every workflow declares permissions, and none grants write-all."""
+    """SEC-6: every workflow declares least-privilege permissions.
+
+    Either workflow-level permissions that grant no write, or -- when there is no
+    workflow-level key -- a `permissions:` on every job. write-all (quoted or not) fails
+    anywhere; `<scope>: write` fails at workflow level, where it reaches every job.
+    """
     d = root / ".github" / "workflows"
     if not d.is_dir():
-        return True
-    for f in d.glob("*.y*ml"):
+        return True, "no workflows"
+    for f in sorted(d.glob("*.y*ml")):
         text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
-        if not re.search(r"^\s*permissions:", text, re.MULTILINE) or re.search(r"permissions:\s*write-all", text):
-            return False
-    return True
+        if re.search(r"permissions:\s*['\"]?write-all\b", text):
+            return False, f"{f.name}: write-all"
+        top = top_level_permissions(text)
+        if top is None:
+            jobs = job_blocks(text)
+            bare = [j for j, lines in jobs.items() if not any(re.match(r"^    permissions:", ln) for ln in lines)]
+            if not jobs or bare:
+                return False, f"{f.name}: no workflow-level permissions" + (f" and job(s) {', '.join(bare)} declare none" if bare else "")
+            continue  # every job declares its own permissions: least privilege at job level
+        inline, block = top
+        if inline and inline not in ("read-all", "{}"):
+            return False, f"{f.name}: workflow-level permissions: {inline}"
+        writes = [b.strip() for b in block if re.search(r":\s*['\"]?write\b", b)]
+        if writes:
+            return False, f"{f.name}: workflow-level {', '.join(writes)} (move write scopes to the job)"
+    return True, "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
+
+
+RUN_PREFIX = re.compile(r"^(?:\w+=\S*\s+)*(?:(?:uv|poetry|pipenv|hatch)\s+run\s+|python3?\s+-m\s+|npx\s+|bunx\s+|"
+                        r"pnpm\s+(?:exec|dlx)\s+|yarn\s+dlx\s+|sudo\s+)*")
+
+
+PR_TRIGGER = re.compile(r"^on:.*\bpull_request\b|^\s+pull_request(?:_target)?:|^\s*-\s*pull_request\b", re.MULTILINE)
+SWALLOWED = re.compile(r"\|\|\s*(?:true|:|exit\s+0)\b")
+
+
+def run_commands(root, pr_only=False):
+    """Every command a workflow `run:` STEP executes (split on && || ; | and newlines), prefixes removed.
+
+    Only real step-level `run:` keys count (not a `with:` input that happens to be called run),
+    a command chain that cannot fail (`pytest || true`) does not count, and with pr_only only
+    workflows triggered by pull_request are read.
+    """
+    d = root / ".github" / "workflows"
+    cmds = []
+    if not d.is_dir():
+        return cmds
+    for f in sorted(d.glob("*.y*ml")):
+        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        if pr_only and not PR_TRIGGER.search(text):
+            continue
+        lines = text.splitlines()
+        i, step_keys = 0, None  # indent of the current step's own keys
+        while i < len(lines):
+            dash = re.match(r"^(\s*)-\s+", lines[i])
+            if dash:
+                step_keys = len(dash.group(1)) + 2
+            m = re.match(r"^(\s*)(-\s+)?run:\s*(.*)$", lines[i])
+            if not m or (not m.group(2) and len(m.group(1)) != step_keys):
+                i += 1
+                continue
+            body, indent = [m.group(3)], len(m.group(1))
+            if m.group(3).strip() in ("|", ">", "|-", ">-", "|+", ">+"):
+                body = []
+                i += 1
+                while i < len(lines) and (not lines[i].strip() or len(lines[i]) - len(lines[i].lstrip()) > indent):
+                    body.append(lines[i])
+                    i += 1
+            else:
+                i += 1
+            for chain in re.split(r";|\n", "\n".join(body)):
+                if SWALLOWED.search(chain):
+                    continue  # `pytest || true` can never fail the job
+                for part in re.split(r"&&|\|\||\|", chain):
+                    c = RUN_PREFIX.sub("", part.strip().strip("'\""))
+                    if c:
+                        cmds.append(c)
+    return cmds
+
+
+def runs_tool(root, pattern):
+    """A workflow `run:` command starts with one of these tools (not `echo pytest`)."""
+    rx = re.compile(rf"^(?:{pattern})(?:\s|$)")
+    return any(rx.match(c) for c in run_commands(root, pr_only=True))
 
 
 def all_jobs_have_timeouts(root):
@@ -473,9 +582,10 @@ CHECKS = [
      actions_sha_pinned),
     # ---- quality ----
     ("QA-1", "MUST", CODE, {"active"}, "CI workflow runs tests on PRs",
-     lambda r: bool(re.search(r"pytest|vitest|npm (run )?test|jest|go test|cargo test|node --test", workflows(r)))),
+     lambda r: runs_tool(r, r"pytest|vitest|jest|(?:npm|pnpm|yarn|bun) (?:run )?test|go test|cargo test|node --test|unittest|tox|nox|make test")),
     ("QA-2", "MUST", CODE, {"active"}, "Linter/formatter enforced in CI (ruff/eslint/biome/prettier)",
-     lambda r: bool(re.search(r"ruff|eslint|biome|prettier|flake8|black|npm run lint", workflows(r)))),
+     lambda r: runs_tool(r, r"ruff|eslint|biome|prettier|flake8|black|(?:npm|pnpm|yarn|bun) (?:run )?lint|next lint")
+     or bool(re.search(r"^\s*-?\s*uses:\s*['\"]?(?:astral-sh/ruff-action|biomejs/setup-biome|super-linter/)", workflows(r), re.MULTILINE))),
     ("QA-3", "SHOULD", CODE, {"active"}, "pre-commit hooks mirror CI",
      lambda r: exists(r, ".pre-commit-config.yaml")),
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",
