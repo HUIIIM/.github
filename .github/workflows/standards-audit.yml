@@ -112,6 +112,50 @@ jobs:
           python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
+      # MSG-1 (STANDARDS.md): the company sending domain passes the AUTH checks of
+      # MESSAGING.md, for EVERY DKIM selector it signs with. A domain, not a repository:
+      # it gets its own section on the card and a `messaging` entry in scorecard.json
+      # (which the website and profile read), not a per-repo score or incident. A failing
+      # or unevaluated MUST is shown as such; it does not fail this run.
+      - name: Messaging domain check (MSG-1, published on the card and in scorecard.json)
+        env:
+          MSG_DOMAIN: vertciti.com
+          MSG_SELECTORS: resend zmail
+        run: |
+          {
+            echo ""
+            echo "## MSG-1 · 发信域 \`$MSG_DOMAIN\`"
+          } >> standards/SCORECARD.md
+          worst=0
+          results=""
+          for sel in $MSG_SELECTORS; do
+            set +e
+            python3 standards/check_messaging_dns.py "$MSG_DOMAIN" --selector "$sel" --md > "/tmp/msg-$sel.md" 2>"/tmp/msg-$sel.err"
+            code=$?
+            set -e
+            case $code in
+              0) line="**selector \`$sel\`: PASS** — every AUTH MUST shown to pass." ;;
+              1) line="**selector \`$sel\`: FAIL** — at least one AUTH MUST failed or could not be shown to pass (UNMET)." ;;
+              *) line="**selector \`$sel\`: unprobed** — the checker could not run (exit $code): $(tail -1 "/tmp/msg-$sel.err"). Unprobed is not passed (STANDARDS.md §考核 2)." ;;
+            esac
+            { echo ""; echo "$line"; echo ""; sed '1,2d' "/tmp/msg-$sel.md"; } >> standards/SCORECARD.md
+            cat "/tmp/msg-$sel.md" >> "$GITHUB_STEP_SUMMARY"
+            [ "$code" -gt "$worst" ] && worst=$code
+            results="$results $sel=$code"
+          done
+          python3 - "$MSG_DOMAIN" "$worst" $results <<'PY'
+          import json, sys
+          domain, worst, pairs = sys.argv[1], int(sys.argv[2]), sys.argv[3:]
+          status = {0: "pass", 1: "fail"}.get(worst, "unprobed")
+          card = json.load(open("standards/scorecard.json"))
+          card["messaging"] = {"check": "MSG-1", "level": "MUST", "domain": domain, "status": status,
+                               "selectors": {p.split("=")[0]: {0: "pass", 1: "fail"}.get(int(p.split("=")[1]), "unprobed")
+                                             for p in pairs}}
+          open("standards/scorecard.json", "w", encoding="utf-8").write(json.dumps(card, ensure_ascii=False, indent=1) + "\n")
+          print(f"MSG-1 {domain}: {status} {card['messaging']['selectors']}")
+          PY
+          [ "$worst" = 0 ] || echo "::warning::MSG-1 for $MSG_DOMAIN is not passing; see SCORECARD.md / scorecard.json messaging"
+
       # This repo's main is PR-gated (fleet standard, P2-8), so the card reaches
       # it through a standing pull request, never a direct push. One branch,
       # force-updated daily; the PR is merged through the normal review flow.
