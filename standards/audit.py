@@ -138,8 +138,52 @@ def ui_repo(root):
     return "ui" in meta_of(root)
 
 
+# An app "uses an LLM" when its code imports an LLM SDK -- not when an identifier merely contains
+# the letters "llm" (re.fullmatch) or "openai" appears in a comment.
+LLM_SDK = (
+    r"^\s*(?:from|import)\s+(?:anthropic|openai|ollama|litellm|langchain\w*|llama_index|"
+    r"google\.generativeai|google\.genai|vertexai|mistralai|cohere|groq)\b"
+    r"|(?:from\s+|require\(\s*|import\(\s*)['\"](?:@anthropic-ai/sdk|openai|ollama|@google/generative-ai|"
+    r"@google/genai|@ai-sdk/[\w-]+|ai|@mistralai/mistralai|cohere-ai|groq-sdk|@langchain/[\w-]+|langchain)['\"/]"
+    r"|\benv\.AI\.run\(|['\"]@cf/[\w-]+/"
+    r"|^\s*from\s+google\s+import\s+(?:genai|generativeai)\b"
+    # raw HTTP to an LLM API (Workers / Edge code often has no SDK import)
+    r"|\b(?:api\.anthropic\.com|api\.openai\.com|generativelanguage\.googleapis\.com|api\.mistral\.ai|"
+    r"api\.groq\.com|api\.cohere\.(?:ai|com)|openrouter\.ai/api|[\w-]+\.openai\.azure\.com|"
+    r"bedrock-runtime\.[\w-]+\.amazonaws\.com)\b"
+)
+
+
 def uses_llm(root):
-    return grep(root, r"anthropic|openai|gemini|ollama|cloudflare.*ai|llm", (".py", ".ts", ".tsx")) if meta_of(root).get("kind") == "app" else False
+    return grep(root, LLM_SDK, (".py", ".ts", ".tsx", ".js", ".mjs")) if meta_of(root).get("kind") == "app" else False
+
+
+# GOV-1: a licence that is not decided yet may be stated in a README licence section
+# (STANDARDS.md GOV-1: "未定稿的…在 README 写明状态"). Only that section counts.
+LICENSE_STATUS = re.compile(
+    r"all rights reserved|proprietary|licen[cs]e\b[^\n]{0,60}\b(?:pending|tbd|undecided|not (?:yet )?decided)"
+    r"|保留所有权利|专有|(?:许可|授权)[^\n]{0,20}(?:待定|未定|待法务)", re.IGNORECASE)
+
+
+def license_ok(root):
+    files = [f for f in ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING") if (root / f).is_file()]
+    if files:
+        return True, f"{files[0]} present"
+    lines, out, inside = readme(root).splitlines(), [], False
+    for line in lines:
+        if re.match(r"\s*#{1,6}\s", line):
+            inside = bool(re.search(r"licen[cs]e|许可|授权", line, re.IGNORECASE))
+            continue
+        if inside:
+            out.append(line)
+    for line in out:
+        for m in LICENSE_STATUS.finditer(line):
+            before = line[max(0, m.start() - 30):m.start()]
+            if re.search(r"\b(?:not|no|never|non)\b|n't\b|不|非|无|未", before, re.IGNORECASE):
+                continue  # "not proprietary", "非专有": a negation is not a licence status
+            return True, f"no LICENSE file; README licence section states: {m.group(0)!r}"
+    return False, ("no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating "
+                   "the status (proprietary / all rights reserved / pending)")
 
 
 def dependabot_ok(root):
@@ -393,7 +437,7 @@ def demo_link_ok(root):
 CHECKS = [
     # ---- governance (every repo) ----
     ("GOV-1", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "LICENSE file present (or README states proprietary/pending)",
-     lambda r: exists(r, "LICENSE", "LICENSE.md", "LICENSE.txt")),
+     license_ok),
     ("GOV-2", "MUST", ALL, {"active", "archive", "placeholder"}, "CODEOWNERS routes reviews",
      lambda r: exists(r, "CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS")),
     ("GOV-3", "SHOULD", ALL, {"active", "archive", "placeholder"}, ".editorconfig for consistent whitespace",
