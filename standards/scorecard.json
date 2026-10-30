@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-29 10:25Z",
+ "generated": "2026-10-30 10:28Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -694,21 +694,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1811 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1760 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 541 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 531 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "1811 ms to first response (budget 800 ms)"
+     "evidence": "1760 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1160,7 +1160,7 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://echowatch-demo.netlify.app/",
-   "score": 62.4,
+   "score": 63.4,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -1191,7 +1191,6 @@
     "UI-2",
     "REL-1",
     "REL-2",
-    "PERF-1",
     "PUB-2",
     "CONT-1",
     "CONT-2",
@@ -1296,7 +1295,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms"
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1478,21 +1477,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 563 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12157 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 172 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12588 ms"
+     "ok": true,
+     "evidence": "563 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1855,21 +1854,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 31 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 177 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 22 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 90 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "31 ms to first response (budget 800 ms)"
+     "evidence": "177 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3084,14 +3083,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 133 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 120 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "133 ms to first response (budget 800 ms)"
+     "evidence": "120 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
