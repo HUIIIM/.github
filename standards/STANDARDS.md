@@ -3,7 +3,7 @@
 **一句话：每个仓库都按行业最高的公开标准衡量，由独立于仓库的脚本每天打分并公开；没到线就是事故，事故自动立案、自动派修。**
 
 本标准适用于 [@HUIIIM](https://github.com/HUIIIM) 下所有自有仓库（上游 fork 除外）。
-每一条都对应一个公开的行业框架。除「对外消息 MSG」三条（不计入 audit.py 分数：MSG-1 由 [`check_messaging_dns.py`](check_messaging_dns.py) 每日检查公司发信域并单列在记分卡上，MSG-2/3 人工核对）外，每一条都能被 [`audit.py`](audit.py) 自动检查。
+每一条都对应一个公开的行业框架。除「对外消息 MSG」三条（不计入 audit.py 分数：MSG-1 由 [`check_messaging_dns.py`](check_messaging_dns.py) 每日按发信域的每个 DKIM selector 检查，结果单列在记分卡与 `scorecard.json` 的 `messaging` 项；它属于域而非仓库，因此不按仓库计分、不按仓库立案。MSG-2/3 人工核对）外，每一条都能被 [`audit.py`](audit.py) 自动检查。
 `MUST` 不达标 = 不合格；`SHOULD` 不达标 = 要有书面理由。
 
 ```bash
