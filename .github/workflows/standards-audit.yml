@@ -4,10 +4,11 @@
 # live probes, and commits the result as standards/SCORECARD.md +
 # standards/scorecard.json. Red grades are published too.
 #
-# Cross-repository incident filing (issues in the graded repos) needs a token
-# with issues:write on those repos: secret STANDARDS_TOKEN. Without it this job
-# still publishes the scorecard and prints the incident list; filing and the
-# auto-upgrade PRs are then done by the daily Miao/Claude "standards" routine.
+# Secret STANDARDS_TOKEN (fine-grained, the registry repos only) needs
+# contents:read to clone them and issues:write so standards/incidents.py can
+# file, update and close incidents (labels are created when missing). Without
+# it the card is still published, every unreadable repo is graded MISSING and
+# the run fails. Auto-upgrade PRs via bootstrap.py are not automated yet.
 name: standards-audit
 
 on:
@@ -41,6 +42,8 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
+      - name: Incident filer unit tests (fake gh, no network)
+        run: python3 -m unittest -v standards/test_incidents.py
       - name: Assessor runs; unreadable repositories are graded MISSING
         run: |
           mkdir -p /tmp/portfolio && ln -s "$GITHUB_WORKSPACE" /tmp/portfolio/.github
@@ -210,36 +213,16 @@ jobs:
           git diff --cached --quiet && echo "profile grading line already current" || \
             (git commit -m "chore: daily grading line sync" && git push)
 
-      - name: File or update incidents (needs STANDARDS_TOKEN)
+      - name: File, update or close incidents (needs STANDARDS_TOKEN)
         env:
           GH_TOKEN: ${{ secrets.STANDARDS_TOKEN }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
-            echo "STANDARDS_TOKEN not set: incidents are published in SCORECARD.md only; the daily standards routine files them."
+            echo "::warning::STANDARDS_TOKEN not set: no incident was filed, updated or closed (they are published in SCORECARD.md only)."
             cat /tmp/incidents.json
             exit 0
           fi
-          python3 - <<'PY'
-          import json, subprocess, os
-          reg = json.load(open("standards/repos.json"))["repos"]
-          alias = {"miao-ai": "anomalies-autogpt", "vertciti-prototype": "vertcity-prototype"}
-          for inc in json.load(open("/tmp/incidents.json")):
-              repo = alias.get(inc["repo"], inc["repo"])
-              if reg.get(inc["repo"], {}).get("status") != "active":
-                  continue
-              title = f"[standards] {inc['severity']}: score {inc['score']} ({inc['grade']}) below the A++ bar"
-              body = ("Independent assessment (HUIIIM/.github standards/audit.py). Failing checks: "
-                      + ", ".join(inc["failing"]) + (". Unprobed: " + ", ".join(inc["unprobed"]) if inc["unprobed"] else "")
-                      + ".\n\nFull card: https://github.com/HUIIIM/.github/blob/main/standards/SCORECARD.md\n"
-                      "Closes automatically when the next assessment finds the repo at or above the bar.")
-              existing = subprocess.run(["gh", "issue", "list", "-R", f"HUIIIM/{repo}", "-l", "standards-incident", "--state", "open",
-                                         "--json", "number", "-q", ".[0].number"], capture_output=True, text=True).stdout.strip()
-              if existing:
-                  subprocess.run(["gh", "issue", "edit", "-R", f"HUIIIM/{repo}", existing, "-t", title, "-b", body], check=False)
-              else:
-                  subprocess.run(["gh", "issue", "create", "-R", f"HUIIIM/{repo}", "-t", title, "-b", body,
-                                  "-l", f"standards-incident,{inc['severity']}"], check=False)
-          PY
+          python3 standards/incidents.py standards/scorecard.json
 
       # Last, after the honest card is published everywhere: an incomplete card
       # must not pass silently. Any MISSING repository fails the run.
