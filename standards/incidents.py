@@ -11,12 +11,13 @@ For every active registered repository on the card:
 
 Labels are created if the repository lacks them. Every gh failure is reported as an
 error annotation and makes the script exit 1 after all repositories were processed,
-so a filing problem is never silent. One class is not an operational failure: when
-the token itself cannot file (a fine-grained PAT without issues access answers
+so a filing problem is never silent. Filing UNAVAILABLE counts as a failure too:
+when the token itself cannot file (a fine-grained PAT without issues access answers
 "Resource not accessible by personal access token") or the repository has issues
-disabled, filing is UNAVAILABLE for that repository -- reported as a warning
-annotation plus a summary line, and the script still exits 0 (the incidents remain
-published on the scorecard). Real failures keep the error + exit 1 behavior.
+disabled, the per-repository calls short-circuit after the first denial, the repo is
+reported with an error annotation plus a summary line, and the script exits 1 -- a
+daily run that files nothing must never report success (issue #17 round-4 P1-1;
+this reverses the warn-and-exit-0 behavior of 2026-10-28).
 """
 from __future__ import annotations
 
@@ -53,7 +54,7 @@ class Filer:
             detail = err or out or "exit " + str(code)
             if any(marker in detail for marker in UNAVAILABLE_MARKERS):
                 self.unavailable[repo] = detail
-                print(f"::warning::{repo}: filing unavailable ({what}): {detail[:200]}")
+                print(f"::error::{repo}: filing unavailable ({what}): {detail[:200]}")
                 return None
             self.errors.append(f"{repo}: {what} failed: {detail}")
             print(f"::error::{repo}: {what} failed: {detail[:200]}")
@@ -126,6 +127,12 @@ def process(card, registry, filer):
     return actions
 
 
+def run_failed(filer):
+    """The run fails when any incident operation failed OR filing was unavailable
+    for any repository: a control that silently did not run is the failure."""
+    return bool(filer.errors or filer.unavailable)
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -135,12 +142,13 @@ def main():
     for name, action in process(card, registry, filer).items():
         print(f"{name}: {action}")
     if filer.unavailable:
-        print(f"::warning::incident filing unavailable for {len(filer.unavailable)} repo(s) "
+        print(f"::error::incident filing unavailable for {len(filer.unavailable)} repo(s) "
               "(token has no issues access, or issues are disabled there): "
               + ", ".join(sorted(filer.unavailable))
-              + " -- those incidents are published in SCORECARD.md only.")
+              + " -- the filing control did not run for those repos, so this run fails.")
     if filer.errors:
         print(f"{len(filer.errors)} incident operation(s) failed:\n  " + "\n  ".join(filer.errors), file=sys.stderr)
+    if run_failed(filer):
         sys.exit(1)
 
 

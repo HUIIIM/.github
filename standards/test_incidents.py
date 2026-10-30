@@ -107,8 +107,9 @@ class IncidentLifecycle(unittest.TestCase):
 
 
 class UnavailableGh:
-    """Every call fails the way a fine-grained read-only PAT (or a repo with
-    issues disabled) does: an authorization/config fact, not an operational error."""
+    """Every call fails the way a fine-grained PAT without issues access (or a
+    repo with issues disabled) does: filing is unavailable for that repo, which
+    fails the run (issue #17 round-4 P1-1)."""
 
     def __init__(self, message):
         self.message, self.calls = message, []
@@ -123,7 +124,7 @@ class FilingUnavailable(unittest.TestCase):
     def card(self, *rows):
         return {"generated": "2026-10-27 03:40Z", "repos": list(rows)}
 
-    def test_readonly_pat_marks_repo_unavailable_not_failed(self):
+    def test_readonly_pat_marks_repo_unavailable_and_run_fails(self):
         gh = UnavailableGh("HTTP 403: Resource not accessible by personal access token "
                            "(https://api.github.com/repos/HUIIIM/echowatch/labels)")
         f = incidents.Filer(gh)
@@ -132,6 +133,7 @@ class FilingUnavailable(unittest.TestCase):
         self.assertEqual(f.errors, [])
         self.assertIn("echowatch", f.unavailable)
         self.assertEqual(len(gh.calls), 1)  # short-circuits after the first denial
+        self.assertTrue(incidents.run_failed(f))
 
     def test_issues_disabled_repo_is_unavailable_on_close_path(self):
         gh = UnavailableGh("the 'HUIIIM/phonehands' repository has disabled issues")
@@ -140,6 +142,13 @@ class FilingUnavailable(unittest.TestCase):
         self.assertEqual(out["phonehands"], "skipped (filing unavailable)")
         self.assertEqual(f.errors, [])
         self.assertIn("phonehands", f.unavailable)
+        self.assertTrue(incidents.run_failed(f))
+
+    def test_clean_run_does_not_fail(self):
+        gh = FakeGh()
+        f = incidents.Filer(gh)
+        incidents.process(self.card(row("phonehands", True)), REG, f)
+        self.assertFalse(incidents.run_failed(f))
 
 
 if __name__ == "__main__":
