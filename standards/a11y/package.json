@@ -4,6 +4,6 @@
   "description": "Pinned dependencies for standards/a11y/contrast_audit.js (design.yml contrast gate). Install with npm ci.",
   "license": "UNLICENSED",
   "dependencies": {
-    "playwright": "1.56.1"
+    "playwright": "1.64.1"
   }
 }
