@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-30 20:04Z",
+ "generated": "2026-10-30 23:34Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 18,
-  "at_bar": 7,
-  "incidents": 11
+  "at_bar": 5,
+  "incidents": 13
  },
  "repos": [
   {
@@ -27,14 +27,18 @@
    "status": "active",
    "product": "Miao engine",
    "url": "",
-   "score": 100.0,
+   "score": 96.5,
    "grade": "S",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "SEC-6"
+   ],
    "unprobed": [],
-   "failing": [],
+   "failing": [
+    "SEC-6"
+   ],
    "not_applicable": [
     "SEC-9",
     "REL-1",
@@ -48,7 +52,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -117,8 +121,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": ""
+     "ok": false,
+     "evidence": "anchor-deadman.yml: workflow-level issues: write (move write scopes to the job)"
     },
     {
      "id": "SEC-7",
@@ -421,7 +425,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -491,7 +495,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
@@ -694,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1453 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1413 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 658 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 716 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "1453 ms to first response (budget 800 ms)"
+     "evidence": "1413 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -767,7 +771,7 @@
    "status": "active",
    "product": "vertciti Assistant",
    "url": "",
-   "score": 67.7,
+   "score": 69.9,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -803,9 +807,7 @@
     "PERF-1",
     "PUB-2",
     "CONT-1",
-    "CONT-2",
-    "AI-1",
-    "AI-2"
+    "CONT-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -814,7 +816,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -884,7 +886,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
@@ -1135,14 +1137,14 @@
      "id": "AI-1",
      "level": "SHOULD",
      "desc": "LLM-using app has evals with recorded results (not claims)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "AI-2",
      "level": "SHOULD",
      "desc": "LLM-using app tests prompt-injection / untrusted-content handling",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1204,7 +1206,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -1274,7 +1276,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": false,
-     "evidence": ""
+     "evidence": "codeql.yml: workflow-level security-events: write (move write scopes to the job)"
     },
     {
      "id": "SEC-7",
@@ -1477,21 +1479,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 681 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 702 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 137 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 294 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "681 ms to first response (budget 800 ms)"
+     "evidence": "702 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1550,12 +1552,13 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 81.7,
+   "score": 79.6,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P1",
+   "severity": "P0",
    "must_failing": [
+    "SEC-6",
     "SEC-8",
     "SEC-11",
     "DOC-2",
@@ -1563,6 +1566,7 @@
    ],
    "unprobed": [],
    "failing": [
+    "SEC-6",
     "SEC-7",
     "SEC-8",
     "SEC-10",
@@ -1570,8 +1574,7 @@
     "DOC-2",
     "UI-1",
     "UI-2",
-    "PRIV-1",
-    "AI-1"
+    "PRIV-1"
    ],
    "not_applicable": [],
    "checks": [
@@ -1580,7 +1583,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -1649,8 +1652,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": ""
+     "ok": false,
+     "evidence": "quality.yml: workflow-level permissions: { contents: read }"
     },
     {
      "id": "SEC-7",
@@ -1853,21 +1856,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 147 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 242 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 89 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 169 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "147 ms to first response (budget 800 ms)"
+     "evidence": "242 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1901,7 +1904,7 @@
      "id": "AI-1",
      "level": "SHOULD",
      "desc": "LLM-using app has evals with recorded results (not claims)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1960,7 +1963,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -2030,7 +2033,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
@@ -2166,14 +2169,17 @@
    "status": "active",
    "product": "founder-visual-director",
    "url": "",
-   "score": 98.2,
-   "grade": "S",
+   "score": 92.9,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "SEC-6"
+   ],
    "unprobed": [],
    "failing": [
+    "SEC-6",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2183,7 +2189,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -2231,8 +2237,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": ""
+     "ok": false,
+     "evidence": "dependency-review.yml: workflow-level pull-requests: write (move write scopes to the job)"
     },
     {
      "id": "SEC-8",
@@ -2357,7 +2363,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -2406,7 +2412,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -2531,7 +2537,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -2580,7 +2586,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -2706,7 +2712,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -2776,7 +2782,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
@@ -2919,7 +2925,7 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 83.9,
+   "score": 78.6,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
@@ -2927,12 +2933,14 @@
    "must_failing": [
     "GOV-1",
     "SEC-2",
+    "SEC-6",
     "DOC-1"
    ],
    "unprobed": [],
    "failing": [
     "GOV-1",
     "SEC-2",
+    "SEC-6",
     "DOC-1"
    ],
    "not_applicable": [],
@@ -2942,7 +2950,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": false,
-     "evidence": ""
+     "evidence": "no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating the status (proprietary / all rights reserved / pending)"
     },
     {
      "id": "GOV-2",
@@ -2997,8 +3005,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": ""
+     "ok": false,
+     "evidence": "anchor.yml: workflow-level contents: write (move write scopes to the job)"
     },
     {
      "id": "SEC-8",
@@ -3082,14 +3090,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 119 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 190 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "119 ms to first response (budget 800 ms)"
+     "evidence": "190 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3113,7 +3121,7 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 55.9,
+   "score": 52.7,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -3122,6 +3130,7 @@
     "GOV-2",
     "SEC-1",
     "SEC-3",
+    "SEC-6",
     "SEC-8",
     "DOC-1",
     "DOC-2",
@@ -3142,6 +3151,7 @@
     "SEC-3",
     "SEC-4",
     "SEC-5",
+    "SEC-6",
     "SEC-7",
     "SEC-8",
     "SEC-9",
@@ -3168,7 +3178,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -3237,8 +3247,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": ""
+     "ok": false,
+     "evidence": "image.yml: workflow-level packages: write (move write scopes to the job)"
     },
     {
      "id": "SEC-7",
@@ -3534,7 +3544,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -3583,7 +3593,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3678,7 +3688,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3752,7 +3762,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3800,7 +3810,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -3835,7 +3845,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3904,7 +3914,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -3939,7 +3949,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -4008,7 +4018,7 @@
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
      "ok": true,
-     "evidence": ""
+     "evidence": "LICENSE present"
     },
     {
      "id": "GOV-2",
@@ -4036,7 +4046,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
-     "evidence": ""
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -4075,5 +4085,15 @@
     }
    ]
   }
- ]
+ ],
+ "messaging": {
+  "check": "MSG-1",
+  "level": "MUST",
+  "domain": "vertciti.com",
+  "status": "fail",
+  "selectors": {
+   "resend": "fail",
+   "zmail": "fail"
+  }
+ }
 }
