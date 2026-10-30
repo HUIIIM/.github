@@ -8,15 +8,17 @@ For every active registered repository on the card:
   * at the bar     -> close any open `standards-incident` issue, with a comment saying why
   * MISSING        -> skipped here (the assessor could not read it, so it cannot file there
                       either); the audit run already fails on MISSING repos
+  * "issues": false in repos.json -> skipped, with the declared reason (a repository
+                      whose issues are off by design, e.g. the profile README repo)
 
-Labels are created if the repository lacks them. Every gh failure is reported as an
-error annotation and makes the script exit 1 after all repositories were processed,
-so a filing problem is never silent. One class is not an operational failure: when
-the token itself cannot file (a fine-grained PAT without issues access answers
-"Resource not accessible by personal access token") or the repository has issues
-disabled, filing is UNAVAILABLE for that repository -- reported as a warning
-annotation plus a summary line, and the script still exits 0 (the incidents remain
-published on the scorecard). Real failures keep the error + exit 1 behavior.
+Labels are created if the repository lacks them; an updated incident carries only its
+current severity label. Every gh failure is reported as an error annotation and makes
+the script exit 1 after all repositories were processed, so a filing problem is never
+silent. That includes filing being UNAVAILABLE (the token cannot write issues there:
+"Resource not accessible by personal access token", or issues are disabled without a
+repos.json declaration): the repository is skipped after the first denial, named in
+the summary, and the run fails -- an incident that cannot be filed is not "handled"
+(STANDARDS.md §考核 2: unverified is never passed).
 """
 from __future__ import annotations
 
@@ -28,6 +30,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 LABEL = "standards-incident"
 LABEL_COLORS = {LABEL: "B60205", "P0": "B60205", "P1": "D93F0B", "P2": "FBCA04"}
+SEVERITIES = ("P0", "P1", "P2")
 ALIAS = {"miao-ai": "anomalies-autogpt", "vertciti-prototype": "vertcity-prototype"}
 CARD_URL = "https://github.com/HUIIIM/.github/blob/main/standards/SCORECARD.md"
 
@@ -53,7 +56,7 @@ class Filer:
             detail = err or out or "exit " + str(code)
             if any(marker in detail for marker in UNAVAILABLE_MARKERS):
                 self.unavailable[repo] = detail
-                print(f"::warning::{repo}: filing unavailable ({what}): {detail[:200]}")
+                print(f"::error::{repo}: filing unavailable ({what}): {detail[:200]}")
                 return None
             self.errors.append(f"{repo}: {what} failed: {detail}")
             print(f"::error::{repo}: {what} failed: {detail[:200]}")
@@ -88,8 +91,13 @@ class Filer:
         if not listed:
             return "FAILED to list (not filed, to avoid a duplicate)"
         if existing:
-            ok = self.call(repo, ["issue", "edit", existing, "-t", title, "-b", body,
-                                  "--add-label", f"{LABEL},{row['severity']}"], f"update #{existing}")
+            current = self.call(repo, ["issue", "view", existing, "--json", "labels", "-q", ".labels[].name"],
+                                f"read labels of #{existing}") or ""
+            stale = [sev for sev in SEVERITIES if sev != row["severity"] and sev in current.split()]
+            args = ["issue", "edit", existing, "-t", title, "-b", body, "--add-label", f"{LABEL},{row['severity']}"]
+            if stale:
+                args += ["--remove-label", ",".join(stale)]
+            ok = self.call(repo, args, f"update #{existing}")
             return f"updated #{existing}" if ok is not None else "FAILED to update"
         ok = self.call(repo, ["issue", "create", "-t", title, "-b", body, "-l", f"{LABEL},{row['severity']}"], "create incident")
         return "filed" if ok is not None else "FAILED to file"
@@ -119,6 +127,8 @@ def process(card, registry, filer):
         repo = ALIAS.get(name, name)
         if row.get("missing"):
             actions[name] = "skipped (MISSING)"
+        elif registry[name].get("issues") is False:
+            actions[name] = f"skipped (issues off by design: {registry[name].get('issues_reason', 'declared in repos.json')})"
         elif row["meets_bar"]:
             actions[name] = filer.close(repo, row, card["generated"])
         else:
@@ -131,16 +141,17 @@ def main():
         sys.exit(__doc__)
     card = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     registry = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))["repos"]
-    filer = Filer()
+    filer = Filer(run_gh)
     for name, action in process(card, registry, filer).items():
         print(f"{name}: {action}")
     if filer.unavailable:
-        print(f"::warning::incident filing unavailable for {len(filer.unavailable)} repo(s) "
-              "(token has no issues access, or issues are disabled there): "
+        print(f"::error::incident filing unavailable for {len(filer.unavailable)} repo(s): "
               + ", ".join(sorted(filer.unavailable))
-              + " -- those incidents are published in SCORECARD.md only.")
+              + " -- give STANDARDS_TOKEN issues:write there, or declare \"issues\": false (with issues_reason) "
+              "in repos.json for a repository whose issues are off by design.", file=sys.stderr)
     if filer.errors:
         print(f"{len(filer.errors)} incident operation(s) failed:\n  " + "\n  ".join(filer.errors), file=sys.stderr)
+    if filer.errors or filer.unavailable:
         sys.exit(1)
 
 

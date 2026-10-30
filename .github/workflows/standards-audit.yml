@@ -227,6 +227,7 @@ jobs:
       # Last, after the honest card is published everywhere: an incomplete card
       # must not pass silently. Any MISSING repository fails the run.
       - name: Fail when registered repositories could not be read
+        if: ${{ !cancelled() }}  # still runs when incident filing failed above
         run: |
           python3 - <<'PY'
           import json, sys
