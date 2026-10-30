@@ -9,12 +9,14 @@ What it does (all idempotent, never overwrites an existing file):
   * adds the standard gitleaks / scorecard / dependency-review / CodeQL workflows the repo's kind needs
   * creates or extends .github/dependabot.yml so every detected ecosystem + github-actions is covered
   * adds `timeout-minutes` to jobs that lack one and `permissions: contents: read` to workflows that lack it
-  * pins core actions given by tag (checkout / setup-python / setup-node @vN) to the v7 commit SHA
+  * pins every action given by tag or branch to the commit SHA of that same ref (git ls-remote),
+    keeping the version it names (no silent major upgrades); refs it cannot resolve are reported
 
 It does NOT write CHANGELOG.md, PRODUCT.md or a LICENSE: those need real content or a legal decision.
 """
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,14 +24,58 @@ HERE = Path(__file__).resolve().parent
 TPL = HERE / "templates"
 REGISTRY = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))["repos"]
 SKIP = {".git", "node_modules", ".venv", "venv", ".next", "dist", "build", "__pycache__", "evidence"}
-# Core actions pinned to a full commit SHA (SOTA.md SEC-A5); the trailing comment names the
-# release so Dependabot can keep the pin current. Same pins as standards/templates/workflows.
-ACTION_PINS = {
-    "actions/checkout": ("3d3c42e5aac5ba805825da76410c181273ba90b1", "v7"),
-    "actions/setup-python": ("6d4fd22b20465ccc0f7354476588e8df7c9ca0e0", "v7"),
-    "actions/setup-node": ("949feb2413d6458794dcd2491c4babbbce0c15c1", "v7"),
-}
 DEFAULT_TIMEOUT = 30
+# `uses: owner/repo[/path]@ref` where ref is not already a full commit SHA (SEC-11 / SOTA SEC-A5).
+# quoted or not: `uses: a/b@v1`, `uses: 'a/b@v1'`, `uses: "a/b@v1"`
+USES_REF = re.compile(r"^(\s*-?\s*uses:\s*)(['\"]?)([A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+)@([^\s#'\"]+)\2([ \t]*#[^\n]*)?$",
+                      re.MULTILINE)
+FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+_RESOLVED: dict = {}
+_BRANCH_ONLY: set = set()  # (repo, ref) that exist only as a branch: a moving target, never pinned
+
+
+def resolve_ref(repo, ref):
+    """Commit SHA of the release tag `ref` of github.com/<repo>, or None.
+
+    Annotated tags are peeled to their commit. Same tag -> same code: nothing is upgraded.
+    A ref that exists only as a branch (`@main`) is NOT pinned: its head moves and
+    Dependabot cannot keep a branch pin current. It is recorded and reported instead.
+    """
+    key = (repo, ref)
+    if key not in _RESOLVED:
+        sha = None
+        try:
+            out = subprocess.run(["git", "ls-remote", f"https://github.com/{repo}",
+                                  f"refs/tags/{ref}", f"refs/tags/{ref}^{{}}", f"refs/heads/{ref}"],
+                                 capture_output=True, text=True, timeout=30).stdout
+            refs = dict(reversed(line.split("\t")) for line in out.splitlines() if "\t" in line)
+            sha = refs.get(f"refs/tags/{ref}^{{}}") or refs.get(f"refs/tags/{ref}")
+            if not sha and refs.get(f"refs/heads/{ref}"):
+                _BRANCH_ONLY.add(key)
+        except (OSError, subprocess.SubprocessError):
+            sha = None
+        _RESOLVED[key] = sha
+    return _RESOLVED[key]
+
+
+def pin_actions(text, resolve=resolve_ref):
+    """Replace tag/branch refs with the SHA of that same ref; returns (text, pinned, unresolved)."""
+    pinned, unresolved = [], []
+
+    def sub(m):
+        lead, _quote, action, ref, _comment = m.groups()
+        if FULL_SHA.match(ref):
+            return m.group(0)
+        repo = "/".join(action.split("/")[:2])
+        sha = resolve(repo, ref)
+        if not sha:
+            why = "branch ref, pin a release tag by hand" if (repo, ref) in _BRANCH_ONLY else "could not resolve"
+            unresolved.append(f"({why}) {action}@{ref}")
+            return m.group(0)
+        pinned.append(f"{action}@{sha[:7]} ({ref})")
+        return f"{lead}{action}@{sha} # {ref}"
+
+    return USES_REF.sub(sub, text), pinned, unresolved
 
 
 def files(root, names):
@@ -83,13 +129,11 @@ def plan_dependabot(root):
     return path, body, f"dependabot: add {', '.join(f'{e}:{d}' for e, d in missing)}"
 
 
-def harden_workflow(text):
+def harden_workflow(text, resolve=resolve_ref):
     changed = []
-    for action, (sha, ver) in ACTION_PINS.items():
-        new = re.sub(rf"({re.escape(action)})@v\d+(\.\d+)*\b([ \t]*#[^\n]*)?", rf"\1@{sha} # {ver}", text)
-        if new != text:
-            changed.append(f"{action}@{sha[:7]} ({ver})")
-            text = new
+    text, pinned, unresolved = pin_actions(text, resolve)
+    changed += [f"pin {p}" for p in pinned]
+    changed += [f"UNPINNED {u}" for u in unresolved]
     if "workflow_call" not in text or "runs-on" in text:
         if not re.search(r"^permissions:", text, re.MULTILINE):
             text = re.sub(r"^jobs:", "permissions:\n  contents: read\njobs:", text, count=1, flags=re.MULTILINE)
@@ -101,6 +145,8 @@ def harden_workflow(text):
             out.append(line)
             m = re.match(r"^(\s+)runs-on:", line)
             if m:
+                # runs-on's value may be a block (list/map) on the following lines, so a new
+                # job key goes BEFORE runs-on, at the job's own indent: always valid YAML.
                 indent = m.group(1)
                 # look ahead inside this job for an existing timeout
                 j, has = i + 1, False
@@ -117,7 +163,7 @@ def harden_workflow(text):
                         has = True
                     k -= 1
                 if not has:
-                    out.append(f"{indent}timeout-minutes: {DEFAULT_TIMEOUT}")
+                    out.insert(len(out) - 1, f"{indent}timeout-minutes: {DEFAULT_TIMEOUT}")
                     changed.append("timeout-minutes")
             i += 1
         text = "\n".join(out)
@@ -172,6 +218,9 @@ def plan(root):
             new, changed = harden_workflow(text)
             if new != text:
                 actions.append((p, new, f"harden {p.name}: {', '.join(sorted(set(changed)))}"))
+            for c in changed:
+                if c.startswith("UNPINNED"):
+                    print(f"WARN  {p.relative_to(root)}: {c} -- pin it by hand (SEC-11)", file=sys.stderr)
     return actions
 
 

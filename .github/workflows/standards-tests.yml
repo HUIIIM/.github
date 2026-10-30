@@ -24,4 +24,4 @@ jobs:
         with:
           python-version: "3.12"
       - name: audit.py / bootstrap.py regression tests
-        run: python3 -m unittest -v standards/test_audit.py
+        run: python3 -m unittest -v standards/test_audit.py standards/test_messaging_dns.py

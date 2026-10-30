@@ -88,9 +88,7 @@
     },
     "HUIIIM": {
       "kind": "profile",
-      "status": "active",
-      "issues": false,
-      "issues_reason": "profile README repository; GitHub issues are disabled there by design"
+      "status": "active"
     },
     ".github": {
       "kind": "meta",

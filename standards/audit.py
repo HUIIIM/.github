@@ -138,8 +138,52 @@ def ui_repo(root):
     return "ui" in meta_of(root)
 
 
+# An app "uses an LLM" when its code imports an LLM SDK -- not when an identifier merely contains
+# the letters "llm" (re.fullmatch) or "openai" appears in a comment.
+LLM_SDK = (
+    r"^\s*(?:from|import)\s+(?:anthropic|openai|ollama|litellm|langchain\w*|llama_index|"
+    r"google\.generativeai|google\.genai|vertexai|mistralai|cohere|groq)\b"
+    r"|(?:from\s+|require\(\s*|import\(\s*)['\"](?:@anthropic-ai/sdk|openai|ollama|@google/generative-ai|"
+    r"@google/genai|@ai-sdk/[\w-]+|ai|@mistralai/mistralai|cohere-ai|groq-sdk|@langchain/[\w-]+|langchain)['\"/]"
+    r"|\benv\.AI\.run\(|['\"]@cf/[\w-]+/"
+    r"|^\s*from\s+google\s+import\s+(?:genai|generativeai)\b"
+    # raw HTTP to an LLM API (Workers / Edge code often has no SDK import)
+    r"|\b(?:api\.anthropic\.com|api\.openai\.com|generativelanguage\.googleapis\.com|api\.mistral\.ai|"
+    r"api\.groq\.com|api\.cohere\.(?:ai|com)|openrouter\.ai/api|[\w-]+\.openai\.azure\.com|"
+    r"bedrock-runtime\.[\w-]+\.amazonaws\.com)\b"
+)
+
+
 def uses_llm(root):
-    return grep(root, r"anthropic|openai|gemini|ollama|cloudflare.*ai|llm", (".py", ".ts", ".tsx")) if meta_of(root).get("kind") == "app" else False
+    return grep(root, LLM_SDK, (".py", ".ts", ".tsx", ".js", ".mjs")) if meta_of(root).get("kind") == "app" else False
+
+
+# GOV-1: a licence that is not decided yet may be stated in a README licence section
+# (STANDARDS.md GOV-1: "未定稿的…在 README 写明状态"). Only that section counts.
+LICENSE_STATUS = re.compile(
+    r"all rights reserved|proprietary|licen[cs]e\b[^\n]{0,60}\b(?:pending|tbd|undecided|not (?:yet )?decided)"
+    r"|保留所有权利|专有|(?:许可|授权)[^\n]{0,20}(?:待定|未定|待法务)", re.IGNORECASE)
+
+
+def license_ok(root):
+    files = [f for f in ("LICENSE", "LICENSE.md", "LICENSE.txt", "COPYING") if (root / f).is_file()]
+    if files:
+        return True, f"{files[0]} present"
+    lines, out, inside = readme(root).splitlines(), [], False
+    for line in lines:
+        if re.match(r"\s*#{1,6}\s", line):
+            inside = bool(re.search(r"licen[cs]e|许可|授权", line, re.IGNORECASE))
+            continue
+        if inside:
+            out.append(line)
+    for line in out:
+        for m in LICENSE_STATUS.finditer(line):
+            before = line[max(0, m.start() - 30):m.start()]
+            if re.search(r"\b(?:not|no|never|non)\b|n't\b|不|非|无|未", before, re.IGNORECASE):
+                continue  # "not proprietary", "非专有": a negation is not a licence status
+            return True, f"no LICENSE file; README licence section states: {m.group(0)!r}"
+    return False, ("no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating "
+                   "the status (proprietary / all rights reserved / pending)")
 
 
 def dependabot_ok(root):
@@ -154,16 +198,125 @@ def dependabot_ok(root):
     return all(n in cfg for n in need)
 
 
+def top_level_permissions(text):
+    """(inline value, block lines) of the workflow-level `permissions:` key, or None if absent."""
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        m = re.match(r"^permissions:\s*(.*)$", line)
+        if m:
+            block = []
+            for nxt in lines[i + 1:]:
+                if nxt.strip() and not nxt[0].isspace():
+                    break
+                block.append(nxt)
+            return m.group(1).strip().strip("'\""), block
+    return None
+
+
+def job_blocks(text):
+    """{job id: its lines} for the jobs under the top-level `jobs:` key (2-space job keys)."""
+    jobs, current, inside = {}, None, False
+    for line in text.splitlines():
+        if re.match(r"^jobs:\s*$", line):
+            inside = True
+            continue
+        if inside and line.strip() and not line[0].isspace():
+            break  # next top-level key
+        m = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line) if inside else None
+        if m:
+            current = m.group(1)
+            jobs[current] = []
+        elif current:
+            jobs[current].append(line)
+    return jobs
+
+
 def all_workflows_have_permissions(root):
-    """SEC-6: every workflow declares permissions, and none grants write-all."""
+    """SEC-6: every workflow declares least-privilege permissions.
+
+    Either workflow-level permissions that grant no write, or -- when there is no
+    workflow-level key -- a `permissions:` on every job. write-all (quoted or not) fails
+    anywhere; `<scope>: write` fails at workflow level, where it reaches every job.
+    """
     d = root / ".github" / "workflows"
     if not d.is_dir():
-        return True
-    for f in d.glob("*.y*ml"):
+        return True, "no workflows"
+    for f in sorted(d.glob("*.y*ml")):
         text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
-        if not re.search(r"^\s*permissions:", text, re.MULTILINE) or re.search(r"permissions:\s*write-all", text):
-            return False
-    return True
+        if re.search(r"permissions:\s*['\"]?write-all\b", text):
+            return False, f"{f.name}: write-all"
+        top = top_level_permissions(text)
+        if top is None:
+            jobs = job_blocks(text)
+            bare = [j for j, lines in jobs.items() if not any(re.match(r"^    permissions:", ln) for ln in lines)]
+            if not jobs or bare:
+                return False, f"{f.name}: no workflow-level permissions" + (f" and job(s) {', '.join(bare)} declare none" if bare else "")
+            continue  # every job declares its own permissions: least privilege at job level
+        inline, block = top
+        if inline and inline not in ("read-all", "{}"):
+            return False, f"{f.name}: workflow-level permissions: {inline}"
+        writes = [b.strip() for b in block if re.search(r":\s*['\"]?write\b", b)]
+        if writes:
+            return False, f"{f.name}: workflow-level {', '.join(writes)} (move write scopes to the job)"
+    return True, "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
+
+
+RUN_PREFIX = re.compile(r"^(?:\w+=\S*\s+)*(?:(?:uv|poetry|pipenv|hatch)\s+run\s+|python3?\s+-m\s+|npx\s+|bunx\s+|"
+                        r"pnpm\s+(?:exec|dlx)\s+|yarn\s+dlx\s+|sudo\s+)*")
+
+
+PR_TRIGGER = re.compile(r"^on:.*\bpull_request\b|^\s+pull_request(?:_target)?:|^\s*-\s*pull_request\b", re.MULTILINE)
+SWALLOWED = re.compile(r"\|\|\s*(?:true|:|exit\s+0)\b")
+
+
+def run_commands(root, pr_only=False):
+    """Every command a workflow `run:` STEP executes (split on && || ; | and newlines), prefixes removed.
+
+    Only real step-level `run:` keys count (not a `with:` input that happens to be called run),
+    a command chain that cannot fail (`pytest || true`) does not count, and with pr_only only
+    workflows triggered by pull_request are read.
+    """
+    d = root / ".github" / "workflows"
+    cmds = []
+    if not d.is_dir():
+        return cmds
+    for f in sorted(d.glob("*.y*ml")):
+        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        if pr_only and not PR_TRIGGER.search(text):
+            continue
+        lines = text.splitlines()
+        i, step_keys = 0, None  # indent of the current step's own keys
+        while i < len(lines):
+            dash = re.match(r"^(\s*)-\s+", lines[i])
+            if dash:
+                step_keys = len(dash.group(1)) + 2
+            m = re.match(r"^(\s*)(-\s+)?run:\s*(.*)$", lines[i])
+            if not m or (not m.group(2) and len(m.group(1)) != step_keys):
+                i += 1
+                continue
+            body, indent = [m.group(3)], len(m.group(1))
+            if m.group(3).strip() in ("|", ">", "|-", ">-", "|+", ">+"):
+                body = []
+                i += 1
+                while i < len(lines) and (not lines[i].strip() or len(lines[i]) - len(lines[i].lstrip()) > indent):
+                    body.append(lines[i])
+                    i += 1
+            else:
+                i += 1
+            for chain in re.split(r";|\n", "\n".join(body)):
+                if SWALLOWED.search(chain):
+                    continue  # `pytest || true` can never fail the job
+                for part in re.split(r"&&|\|\||\|", chain):
+                    c = RUN_PREFIX.sub("", part.strip().strip("'\""))
+                    if c:
+                        cmds.append(c)
+    return cmds
+
+
+def runs_tool(root, pattern):
+    """A workflow `run:` command starts with one of these tools (not `echo pytest`)."""
+    rx = re.compile(rf"^(?:{pattern})(?:\s|$)")
+    return any(rx.match(c) for c in run_commands(root, pr_only=True))
 
 
 def all_jobs_have_timeouts(root):
@@ -400,7 +553,7 @@ def demo_link_ok(root):
 CHECKS = [
     # ---- governance (every repo) ----
     ("GOV-1", "MUST", ALL - {"profile", "meta"}, {"active", "archive", "placeholder"}, "LICENSE file present (or README states proprietary/pending)",
-     lambda r: exists(r, "LICENSE", "LICENSE.md", "LICENSE.txt")),
+     license_ok),
     ("GOV-2", "MUST", ALL, {"active", "archive", "placeholder"}, "CODEOWNERS routes reviews",
      lambda r: exists(r, "CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS")),
     ("GOV-3", "SHOULD", ALL, {"active", "archive", "placeholder"}, ".editorconfig for consistent whitespace",
@@ -436,9 +589,10 @@ CHECKS = [
      actions_sha_pinned),
     # ---- quality ----
     ("QA-1", "MUST", CODE, {"active"}, "CI workflow runs tests on PRs",
-     lambda r: bool(re.search(r"pytest|vitest|npm (run )?test|jest|go test|cargo test|node --test", workflows(r)))),
+     lambda r: runs_tool(r, r"pytest|vitest|jest|(?:npm|pnpm|yarn|bun) (?:run )?test|go test|cargo test|node --test|unittest|tox|nox|make test")),
     ("QA-2", "MUST", CODE, {"active"}, "Linter/formatter enforced in CI (ruff/eslint/biome/prettier)",
-     lambda r: bool(re.search(r"ruff|eslint|biome|prettier|flake8|black|npm run lint", workflows(r)))),
+     lambda r: runs_tool(r, r"ruff|eslint|biome|prettier|flake8|black|(?:npm|pnpm|yarn|bun) (?:run )?lint|next lint")
+     or bool(re.search(r"^\s*-?\s*uses:\s*['\"]?(?:astral-sh/ruff-action|biomejs/setup-biome|super-linter/)", workflows(r), re.MULTILINE))),
     ("QA-3", "SHOULD", CODE, {"active"}, "pre-commit hooks mirror CI",
      lambda r: exists(r, ".pre-commit-config.yaml")),
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",

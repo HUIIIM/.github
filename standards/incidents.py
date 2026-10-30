@@ -8,17 +8,17 @@ For every active registered repository on the card:
   * at the bar     -> close any open `standards-incident` issue, with a comment saying why
   * MISSING        -> skipped here (the assessor could not read it, so it cannot file there
                       either); the audit run already fails on MISSING repos
-  * "issues": false in repos.json -> skipped, with the declared reason (a repository
-                      whose issues are off by design, e.g. the profile README repo)
 
 Labels are created if the repository lacks them; an updated incident carries only its
-current severity label. Every gh failure is reported as an error annotation and makes
-the script exit 1 after all repositories were processed, so a filing problem is never
-silent. That includes filing being UNAVAILABLE (the token cannot write issues there:
-"Resource not accessible by personal access token", or issues are disabled without a
-repos.json declaration): the repository is skipped after the first denial, named in
-the summary, and the run fails -- an incident that cannot be filed is not "handled"
-(STANDARDS.md §考核 2: unverified is never passed).
+current severity label. Every gh failure is reported as an
+error annotation and makes the script exit 1 after all repositories were processed,
+so a filing problem is never silent. Filing UNAVAILABLE counts as a failure too:
+when the token itself cannot file (a fine-grained PAT without issues access answers
+"Resource not accessible by personal access token") or the repository has issues
+disabled, the per-repository calls short-circuit after the first denial, the repo is
+reported with an error annotation plus a summary line, and the script exits 1 -- a
+daily run that files nothing must never report success (issue #17 round-4 P1-1;
+this reverses the warn-and-exit-0 behavior of 2026-10-28).
 """
 from __future__ import annotations
 
@@ -127,8 +127,6 @@ def process(card, registry, filer):
         repo = ALIAS.get(name, name)
         if row.get("missing"):
             actions[name] = "skipped (MISSING)"
-        elif registry[name].get("issues") is False:
-            actions[name] = f"skipped (issues off by design: {registry[name].get('issues_reason', 'declared in repos.json')})"
         elif row["meets_bar"]:
             actions[name] = filer.close(repo, row, card["generated"])
         else:
@@ -136,22 +134,28 @@ def process(card, registry, filer):
     return actions
 
 
+def run_failed(filer):
+    """The run fails when any incident operation failed OR filing was unavailable
+    for any repository: a control that silently did not run is the failure."""
+    return bool(filer.errors or filer.unavailable)
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
     card = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     registry = json.loads((HERE / "repos.json").read_text(encoding="utf-8"))["repos"]
-    filer = Filer(run_gh)
+    filer = Filer()
     for name, action in process(card, registry, filer).items():
         print(f"{name}: {action}")
     if filer.unavailable:
-        print(f"::error::incident filing unavailable for {len(filer.unavailable)} repo(s): "
+        print(f"::error::incident filing unavailable for {len(filer.unavailable)} repo(s) "
+              "(token has no issues access, or issues are disabled there): "
               + ", ".join(sorted(filer.unavailable))
-              + " -- give STANDARDS_TOKEN issues:write there, or declare \"issues\": false (with issues_reason) "
-              "in repos.json for a repository whose issues are off by design.", file=sys.stderr)
+              + " -- the filing control did not run for those repos, so this run fails.")
     if filer.errors:
         print(f"{len(filer.errors)} incident operation(s) failed:\n  " + "\n  ".join(filer.errors), file=sys.stderr)
-    if filer.errors or filer.unavailable:
+    if run_failed(filer):
         sys.exit(1)
 
 

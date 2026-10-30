@@ -1,0 +1,7 @@
+# Python bytecode and local tool output -- never committed
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+# npm installs (dependencies are pinned by standards/a11y/package-lock.json)
+node_modules/

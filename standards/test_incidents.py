@@ -2,21 +2,15 @@
 
     python3 -m unittest standards/test_incidents.py
 """
-import contextlib
-import io
-import json
 import sys
-import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import incidents
 
 REG = {"echowatch": {"status": "active"}, "phonehands": {"status": "active"},
-       "miao-ai": {"status": "active"}, "vertciti-sp07-builder": {"status": "archive"},
-       "HUIIIM": {"status": "active", "issues": False, "issues_reason": "profile repo"}}
+       "miao-ai": {"status": "active"}, "vertciti-sp07-builder": {"status": "archive"}}
 
 
 def row(repo, meets_bar, severity=None, missing=False):
@@ -82,14 +76,6 @@ class IncidentLifecycle(unittest.TestCase):
         incidents.process(self.card(row("echowatch", False, "P1")), REG, incidents.Filer(gh))
         self.assertNotIn("--remove-label", gh.edit_args("echowatch"))
 
-    def test_issues_off_by_design_is_skipped_without_calls(self):
-        gh = FakeGh()
-        f = incidents.Filer(gh)
-        out = incidents.process(self.card(row("HUIIIM", False, "P2")), REG, f)
-        self.assertEqual(out["HUIIIM"], "skipped (issues off by design: profile repo)")
-        self.assertEqual(gh.calls, [])
-        self.assertEqual((f.errors, f.unavailable), ([], {}))
-
     def test_at_bar_closes_open_incident(self):
         gh = FakeGh({"phonehands": "3"})
         out = incidents.process(self.card(row("phonehands", True)), REG, incidents.Filer(gh))
@@ -141,8 +127,9 @@ class IncidentLifecycle(unittest.TestCase):
 
 
 class UnavailableGh:
-    """Every call fails the way a fine-grained read-only PAT (or a repo with
-    issues disabled) does."""
+    """Every call fails the way a fine-grained PAT without issues access (or a
+    repo with issues disabled) does: filing is unavailable for that repo, which
+    fails the run (issue #17 round-4 P1-1)."""
 
     def __init__(self, message):
         self.message, self.calls = message, []
@@ -157,14 +144,16 @@ class FilingUnavailable(unittest.TestCase):
     def card(self, *rows):
         return {"generated": "2026-10-27 03:40Z", "repos": list(rows)}
 
-    def test_readonly_pat_marks_repo_unavailable(self):
+    def test_readonly_pat_marks_repo_unavailable_and_run_fails(self):
         gh = UnavailableGh("HTTP 403: Resource not accessible by personal access token "
                            "(https://api.github.com/repos/HUIIIM/echowatch/labels)")
         f = incidents.Filer(gh)
         out = incidents.process(self.card(row("echowatch", False, "P1")), REG, f)
         self.assertEqual(out["echowatch"], "skipped (filing unavailable)")
+        self.assertEqual(f.errors, [])
         self.assertIn("echowatch", f.unavailable)
         self.assertEqual(len(gh.calls), 1)  # short-circuits after the first denial
+        self.assertTrue(incidents.run_failed(f))
 
     def test_issues_disabled_repo_is_unavailable_on_close_path(self):
         gh = UnavailableGh("the 'HUIIIM/phonehands' repository has disabled issues")
@@ -173,22 +162,13 @@ class FilingUnavailable(unittest.TestCase):
         self.assertEqual(out["phonehands"], "skipped (filing unavailable)")
         self.assertEqual(f.errors, [])
         self.assertIn("phonehands", f.unavailable)
+        self.assertTrue(incidents.run_failed(f))
 
-
-    def test_unavailable_filing_fails_the_run(self):
-        # #17 round 4 P1-1: run 41040949024 skipped every below-bar repo and still exited 0.
-        # An incident that cannot be filed is not handled, so main() must exit non-zero.
-        card = self.card(row("echowatch", False, "P0"), row("phonehands", False, "P1"))
-        gh = UnavailableGh("HTTP 403: Resource not accessible by personal access token")
-        with tempfile.TemporaryDirectory() as d:
-            path = Path(d) / "card.json"
-            path.write_text(json.dumps(card), encoding="utf-8")
-            with mock.patch.object(incidents, "run_gh", gh), mock.patch.object(sys, "argv", ["incidents.py", str(path)]), \
-                    contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
-                with self.assertRaises(SystemExit) as exit_:
-                    incidents.main()
-        self.assertEqual(exit_.exception.code, 1)
-        self.assertIn("filing unavailable for 2 repo(s)", err.getvalue())
+    def test_clean_run_does_not_fail(self):
+        gh = FakeGh()
+        f = incidents.Filer(gh)
+        incidents.process(self.card(row("phonehands", True)), REG, f)
+        self.assertFalse(incidents.run_failed(f))
 
 
 if __name__ == "__main__":

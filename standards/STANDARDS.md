@@ -3,7 +3,7 @@
 **一句话：每个仓库都按行业最高的公开标准衡量，由独立于仓库的脚本每天打分并公开；没到线就是事故，事故自动立案、自动派修。**
 
 本标准适用于 [@HUIIIM](https://github.com/HUIIIM) 下所有自有仓库（上游 fork 除外）。
-每一条都对应一个公开的行业框架。除「对外消息 MSG」三条（用 [`check_messaging_dns.py`](check_messaging_dns.py) 与人工核对，不计入 audit.py 分数）外，每一条都能被 [`audit.py`](audit.py) 自动检查。
+每一条都对应一个公开的行业框架。除「对外消息 MSG」三条（不计入 audit.py 分数：MSG-1 由 [`check_messaging_dns.py`](check_messaging_dns.py) 每日按发信域的每个 DKIM selector 检查，结果单列在记分卡与 `scorecard.json` 的 `messaging` 项；它属于域而非仓库，因此不按仓库计分、不按仓库立案。MSG-2/3 人工核对）外，每一条都能被 [`audit.py`](audit.py) 自动检查。
 `MUST` 不达标 = 不合格；`SHOULD` 不达标 = 要有书面理由。
 
 ```bash
@@ -38,8 +38,7 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
    需要真内容的（PRODUCT.md、CHANGELOG、RUNBOOK、evals）由 Miao / Claude 会话起草 PR。**只开 PR，不合并**——合并是人的决定。
 
    **实现状态（如实记，2026-10-30）**：`standards-audit` 工作流用 [`incidents.py`](incidents.py) 对 `active` 仓开、更新（只保留当前严重度标签）、关闭事故 issue。
-   `repos.json` 里声明 `"issues": false`（附 `issues_reason`）的仓库不立案、只写明原因（如 profile 仓 HUIIIM 本就关闭了 issues）。
-   其余仓库**立不了案即整轮失败**：`STANDARDS_TOKEN` 没有该仓的 issues 写权限时，run 标红并列出这些仓库——立不了的事故不算"已处理"（见独立评估 #17 第 4 轮 P1-1）。
+   **立不了案即整轮失败**：`STANDARDS_TOKEN` 没有该仓的 issues 写权限时，run 标红并列出这些仓库——立不了的事故不算"已处理"（见独立评估 #17 第 4 轮 P1-1）。
    **尚未实现**：bootstrap 自动出 PR；`archive` / `placeholder` 仓低于线时不立案。
 6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。
 7. **对标再升级。** 每季度把每个产品与同类最强的公开产品逐项对比（功能、性能、安全、可访问性、文档），差距写进该仓库的 `docs/PRODUCT.md`「路线图」，并新增检查项把它变成可测的线。线只升不降。
