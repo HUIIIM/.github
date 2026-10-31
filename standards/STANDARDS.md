@@ -37,17 +37,19 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
 5. **自动升级。** 每个事故同时派一次自动修复：能用 [`bootstrap.py`](bootstrap.py) 补齐的（CODEOWNERS、工作流、Dependabot、超时、权限）直接出 PR；
    需要真内容的（PRODUCT.md、CHANGELOG、RUNBOOK、evals）由 Miao / Claude 会话起草 PR。**只开 PR，不合并**——合并是人的决定。
 
-   **实现状态（如实记，2026-10-27）**：第 4–5 条目前只有一部分在跑。`standards-audit` 工作流在配置了 `STANDARDS_TOKEN` 时开/更新事故 issue（仅 `active` 仓），
-   但**不会自动关闭**已达线的事故，也**不会自动调用 bootstrap 出 PR**；这两步现由人工或每日 standards 例行会话完成，直到实现为止（见独立评估 #17 P1-5）。
+   **实现状态（如实记，2026-10-30）**：`standards-audit` 工作流用 [`incidents.py`](incidents.py) 对 `active` 仓开、更新（只保留当前严重度标签）、关闭事故 issue。
+   **立不了案即整轮失败**：`STANDARDS_TOKEN` 没有该仓的 issues 写权限时，run 标红并列出这些仓库——立不了的事故不算"已处理"（见独立评估 #17 第 4 轮 P1-1）。
+   **尚未实现**：bootstrap 自动出 PR；`archive` / `placeholder` 仓低于线时不立案。
 6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。
 7. **对标再升级。** 每季度把每个产品与同类最强的公开产品逐项对比（功能、性能、安全、可访问性、文档），差距写进该仓库的 `docs/PRODUCT.md`「路线图」，并新增检查项把它变成可测的线。线只升不降。
 
 **流程**
 
 ```
-每日 03:40 UTC   standards-audit.yml：拉取全部仓库 → audit.py --live → 提交 SCORECARD.md / scorecard.json
-同日             自动立案器：对低于线的仓库开/更新 issue；bootstrap 可补的直接开 PR；其余派会话起草 PR
-人工             合并 PR；事故 issue 再次达线后关闭（自动关闭尚未实现，目前人工关闭）
+每日（cron 03:40 UTC，GitHub 排队常延后数小时）  standards-audit.yml：拉取全部仓库 → audit.py --live
+                 → 记分卡经常驻 PR（standards/daily-card）提交 SCORECARD.md / scorecard.json
+同一轮           incidents.py：低于线开/更新事故，达线自动关闭；立不了案则本轮失败
+人工 / 会话      合并记分卡 PR 与修复 PR；bootstrap 可补的项目前由会话出 PR（尚未自动化）
 ```
 
 **v2.0 新增检查项（"没想到的"）**：GOV-6 仓内 SECURITY.md · SEC-9 线上安全响应头实测 · SEC-10 依赖锁定可复现 ·

@@ -9,7 +9,8 @@ For every active registered repository on the card:
   * MISSING        -> skipped here (the assessor could not read it, so it cannot file there
                       either); the audit run already fails on MISSING repos
 
-Labels are created if the repository lacks them. Every gh failure is reported as an
+Labels are created if the repository lacks them; an updated incident carries only its
+current severity label. Every gh failure is reported as an
 error annotation and makes the script exit 1 after all repositories were processed,
 so a filing problem is never silent. Filing UNAVAILABLE counts as a failure too:
 when the token itself cannot file (a fine-grained PAT without issues access answers
@@ -29,6 +30,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 LABEL = "standards-incident"
 LABEL_COLORS = {LABEL: "B60205", "P0": "B60205", "P1": "D93F0B", "P2": "FBCA04"}
+SEVERITIES = ("P0", "P1", "P2")
 ALIAS = {"miao-ai": "anomalies-autogpt", "vertciti-prototype": "vertcity-prototype"}
 CARD_URL = "https://github.com/HUIIIM/.github/blob/main/standards/SCORECARD.md"
 
@@ -89,8 +91,13 @@ class Filer:
         if not listed:
             return "FAILED to list (not filed, to avoid a duplicate)"
         if existing:
-            ok = self.call(repo, ["issue", "edit", existing, "-t", title, "-b", body,
-                                  "--add-label", f"{LABEL},{row['severity']}"], f"update #{existing}")
+            current = self.call(repo, ["issue", "view", existing, "--json", "labels", "-q", ".labels[].name"],
+                                f"read labels of #{existing}") or ""
+            stale = [sev for sev in SEVERITIES if sev != row["severity"] and sev in current.split()]
+            args = ["issue", "edit", existing, "-t", title, "-b", body, "--add-label", f"{LABEL},{row['severity']}"]
+            if stale:
+                args += ["--remove-label", ",".join(stale)]
+            ok = self.call(repo, args, f"update #{existing}")
             return f"updated #{existing}" if ok is not None else "FAILED to update"
         ok = self.call(repo, ["issue", "create", "-t", title, "-b", body, "-l", f"{LABEL},{row['severity']}"], "create incident")
         return "filed" if ok is not None else "FAILED to file"
