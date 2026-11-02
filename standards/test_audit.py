@@ -82,6 +82,32 @@ class ChecksCannotBeGamed(unittest.TestCase):
         self.assertIs(result(root, "SEC-3"), True)
         self.assertIs(result(root, "SEC-1"), False)
 
+    def test_lookalike_action_is_not_the_tool(self):
+        # #17 round 4 P2-11: a path segment that merely starts with the tool's name passed SEC-1.
+        sha = "0" * 40
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "gitleaks/gitleaks-action@v3", f"attacker/gitleaks-lookalike@{sha}") + (
+            f"      - uses: evil/codeql-action/init@{sha}\n      - uses: x/scorecard-action-fake@{sha}\n")})
+        for cid in ("SEC-1", "SEC-3", "SEC-5"):
+            self.assertIs(result(root, cid), False, cid)
+
+    def test_sarif_upload_alone_is_not_codeql(self):
+        # The Scorecard template uploads its SARIF with github/codeql-action/upload-sarif;
+        # that step runs no analysis, so it must not satisfy SEC-3 (CodeQL / SAST runs).
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n",
+            f"      - uses: github/codeql-action/upload-sarif@{'0' * 40}\n")})
+        self.assertIs(result(root, "SEC-3"), False)
+
+    def test_real_actions_by_owner_repo_count(self):
+        sha = "0" * 40
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n",
+            f"      - uses: trufflesecurity/trufflehog@{sha}\n      - uses: github/codeql-action/analyze@{sha}\n"
+            f"      - uses: actions/dependency-review-action@{sha}\n      - uses: ossf/scorecard-action@{sha}\n")})
+        for cid in ("SEC-1", "SEC-3", "SEC-4", "SEC-5"):
+            self.assertIs(result(root, cid), True, cid)
+
     def test_write_all_fails_least_privilege(self):
         root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace("permissions:\n  contents: read", "permissions: write-all")})
         self.assertIs(result(root, "SEC-6"), False)
