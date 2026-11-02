@@ -31,6 +31,10 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
+    # SEC-8: bound every job. Without this a stuck run would hold a write-scoped token for
+    # GitHub's 6-hour default. 60 min is well above a normal jarvis-task run; raise it if a
+    # real run needs more, never remove it.
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write
