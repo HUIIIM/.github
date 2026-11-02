@@ -1,0 +1,40 @@
+name: jarvis-task
+description: Dispatch a task to the external Claude loop (GitHub as the shared bus).
+title: "[jarvis-task] "
+labels: ["jarvis-task", "jarvis-task:queued"]
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: 目标 (objective)
+      description: What must be delivered, stated so it can be verified.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: 约束 (constraints)
+      description: Branch, scope, files allowed to change, format requirements.
+    validations:
+      required: true
+  - type: textarea
+    id: red-lines
+    attributes:
+      label: 红线 (red-lines)
+      description: What must not be done under any circumstances.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收 (acceptance)
+      description: Concrete, checkable acceptance criteria.
+    validations:
+      required: true
+  - type: textarea
+    id: receipt-format
+    attributes:
+      label: 回执格式 (receipt-format)
+      description: What the executor must report on the issue when done.
+    validations:
+      required: true
