@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-01 10:48Z",
+ "generated": "2026-11-02 11:41Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -14,11 +14,15 @@
   "MUST": 3,
   "SHOULD": 1
  },
- "missing_repos": [],
+ "missing_repos": [
+  "vault-app",
+  "jarvis-architecture",
+  "vertciti-auto-gpt"
+ ],
  "summary": {
-  "repos": 18,
-  "at_bar": 5,
-  "incidents": 13
+  "repos": 23,
+  "at_bar": 4,
+  "incidents": 19
  },
  "repos": [
   {
@@ -398,17 +402,14 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 88.2,
-   "grade": "A",
+   "score": 91.4,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-11"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
-    "SEC-11",
     "DOC-11",
     "UI-2",
     "OPS-5",
@@ -529,8 +530,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7 (+10 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -698,21 +699,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1710 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1733 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 867 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 600 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "1710 ms to first response (budget 800 ms)"
+     "evidence": "1733 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -771,13 +772,12 @@
    "status": "active",
    "product": "vertciti Assistant",
    "url": "",
-   "score": 69.9,
-   "grade": "C",
+   "score": 73.1,
+   "grade": "B",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P0",
+   "severity": "P1",
    "must_failing": [
-    "SEC-11",
     "DOC-2",
     "DOC-3",
     "UI-1",
@@ -792,7 +792,6 @@
    "failing": [
     "SEC-7",
     "SEC-9",
-    "SEC-11",
     "QA-4",
     "DOC-2",
     "DOC-3",
@@ -920,8 +919,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; ci.yml: actions/checkout@v7; ci.yml: actions/setup-node@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4 (+8 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -1162,7 +1161,7 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://echowatch-demo.netlify.app/",
-   "score": 63.4,
+   "score": 65.6,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -1171,7 +1170,6 @@
     "SEC-1",
     "SEC-6",
     "SEC-8",
-    "SEC-11",
     "DOC-2",
     "UI-1",
     "REL-1"
@@ -1185,7 +1183,6 @@
     "SEC-8",
     "SEC-9",
     "SEC-10",
-    "SEC-11",
     "QA-3",
     "QA-4",
     "DOC-2",
@@ -1193,6 +1190,7 @@
     "UI-2",
     "REL-1",
     "REL-2",
+    "PERF-1",
     "PUB-2",
     "CONT-1",
     "CONT-2",
@@ -1297,7 +1295,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
     },
     {
      "id": "SEC-10",
@@ -1310,8 +1308,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5; ci.yml: actions/checkout@v4; ci.yml: actions/setup-python@v5 (+12 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -1479,21 +1477,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> 500 in 677 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> 500 in 342 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12224 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": true,
-     "evidence": "677 ms to first response (budget 800 ms)"
+     "ok": false,
+     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
     },
     {
      "id": "PUB-2",
@@ -1552,7 +1550,7 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 79.6,
+   "score": 82.8,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
@@ -1560,7 +1558,6 @@
    "must_failing": [
     "SEC-6",
     "SEC-8",
-    "SEC-11",
     "DOC-2",
     "UI-1"
    ],
@@ -1570,7 +1567,6 @@
     "SEC-7",
     "SEC-8",
     "SEC-10",
-    "SEC-11",
     "DOC-2",
     "UI-1",
     "UI-2",
@@ -1687,8 +1683,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4; dependency-review.yml: actions/checkout@v7 (+14 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "QA-1",
@@ -1856,21 +1852,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 110 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 124 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 92 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 99 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "110 ms to first response (budget 800 ms)"
+     "evidence": "124 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2173,13 +2169,13 @@
    "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P0",
+   "severity": "P1",
    "must_failing": [
-    "SEC-6"
+    "SEC-8"
    ],
    "unprobed": [],
    "failing": [
-    "SEC-6",
+    "SEC-8",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2237,14 +2233,14 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
-     "evidence": "dependency-review.yml: workflow-level pull-requests: write (move write scopes to the job)"
+     "ok": true,
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -3090,14 +3086,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 169 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 163 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "169 ms to first response (budget 800 ms)"
+     "evidence": "163 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3121,13 +3117,12 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 52.7,
+   "score": 58.1,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "GOV-2",
     "SEC-1",
     "SEC-3",
     "SEC-6",
@@ -3144,9 +3139,7 @@
     "PERF-1"
    ],
    "failing": [
-    "GOV-2",
     "GOV-3",
-    "GOV-6",
     "SEC-1",
     "SEC-3",
     "SEC-4",
@@ -3163,7 +3156,6 @@
     "DOC-5",
     "DOC-6",
     "DOC-7",
-    "OPS-3",
     "REL-1",
     "REL-2",
     "PERF-1",
@@ -3184,7 +3176,7 @@
      "id": "GOV-2",
      "level": "MUST",
      "desc": "CODEOWNERS routes reviews",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3205,7 +3197,7 @@
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3429,7 +3421,7 @@
      "id": "OPS-3",
      "level": "SHOULD",
      "desc": "Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3652,14 +3644,18 @@
    "status": "active",
    "product": "",
    "url": "",
-   "score": 100.0,
-   "grade": "S",
+   "score": 81.2,
+   "grade": "B",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P1",
+   "must_failing": [
+    "SEC-8"
+   ],
    "unprobed": [],
-   "failing": [],
+   "failing": [
+    "SEC-8"
+   ],
    "not_applicable": [],
    "checks": [
     {
@@ -3694,7 +3690,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -3707,19 +3703,83 @@
    ]
   },
   {
+   "repo": "vault-app",
+   "kind": "app",
+   "status": "active",
+   "product": "Vault App (N=1 personal knowledge-base sync app; working name)",
+   "url": "",
+   "score": 0.0,
+   "grade": "C",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P0",
+   "missing": true,
+   "must_failing": [
+    "MISSING"
+   ],
+   "unprobed": [],
+   "failing": [
+    "MISSING"
+   ],
+   "not_applicable": [],
+   "checks": [
+    {
+     "id": "MISSING",
+     "level": "MUST",
+     "ok": false,
+     "desc": "Registered repository could not be read by the assessor (clone failed or not found): not graded, counted as failing",
+     "evidence": "not found under /tmp/portfolio"
+    }
+   ]
+  },
+  {
+   "repo": "jarvis-architecture",
+   "kind": "library",
+   "status": "active",
+   "product": "Jarvis architecture",
+   "url": "",
+   "score": 0.0,
+   "grade": "C",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P0",
+   "missing": true,
+   "must_failing": [
+    "MISSING"
+   ],
+   "unprobed": [],
+   "failing": [
+    "MISSING"
+   ],
+   "not_applicable": [],
+   "checks": [
+    {
+     "id": "MISSING",
+     "level": "MUST",
+     "ok": false,
+     "desc": "Registered repository could not be read by the assessor (clone failed or not found): not graded, counted as failing",
+     "evidence": "not found under /tmp/portfolio"
+    }
+   ]
+  },
+  {
    "repo": ".github",
    "kind": "meta",
    "status": "active",
    "product": "",
    "url": "",
-   "score": 100.0,
-   "grade": "S",
+   "score": 85.0,
+   "grade": "A",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P1",
+   "must_failing": [
+    "SEC-8"
+   ],
    "unprobed": [],
-   "failing": [],
+   "failing": [
+    "SEC-8"
+   ],
    "not_applicable": [],
    "checks": [
     {
@@ -3768,7 +3828,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -3781,27 +3841,473 @@
    ]
   },
   {
-   "repo": "vertciti-sp07-builder",
-   "kind": "tool",
-   "status": "archive",
-   "product": "",
+   "repo": "operator-session-permissions",
+   "kind": "skill",
+   "status": "active",
+   "product": "operator-session-permissions",
    "url": "",
-   "score": 67.7,
+   "score": 53.6,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
     "GOV-2",
-    "SEC-8",
-    "SEC-11"
+    "GOV-4",
+    "SEC-1",
+    "SEC-2",
+    "DOC-1",
+    "DOC-2",
+    "DOC-6"
    ],
    "unprobed": [],
    "failing": [
     "GOV-2",
     "GOV-3",
-    "SEC-8",
-    "SEC-11"
+    "GOV-4",
+    "SEC-1",
+    "SEC-2",
+    "SEC-5",
+    "DOC-1",
+    "DOC-2",
+    "DOC-5",
+    "DOC-6",
+    "DOC-7",
+    "DOC-11"
+   ],
+   "not_applicable": [],
+   "checks": [
+    {
+     "id": "GOV-1",
+     "level": "MUST",
+     "desc": "LICENSE file present (or README states proprietary/pending)",
+     "ok": true,
+     "evidence": "LICENSE present"
+    },
+    {
+     "id": "GOV-2",
+     "level": "MUST",
+     "desc": "CODEOWNERS routes reviews",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-3",
+     "level": "SHOULD",
+     "desc": ".editorconfig for consistent whitespace",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-4",
+     "level": "MUST",
+     "desc": "Status is stated honestly in README (active/archive/early/etc.)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-1",
+     "level": "MUST",
+     "desc": "Secret scanning in CI (gitleaks or equivalent)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-2",
+     "level": "MUST",
+     "desc": "Dependabot covers github-actions + every package ecosystem in repo",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-5",
+     "level": "SHOULD",
+     "desc": "OpenSSF Scorecard published",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-6",
+     "level": "MUST",
+     "desc": "Workflows declare least-privilege `permissions:`",
+     "ok": true,
+     "evidence": "no workflows"
+    },
+    {
+     "id": "SEC-8",
+     "level": "MUST",
+     "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-11",
+     "level": "MUST",
+     "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
+     "ok": true,
+     "evidence": "no workflows"
+    },
+    {
+     "id": "DOC-1",
+     "level": "MUST",
+     "desc": "README has a quickstart",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-2",
+     "level": "MUST",
+     "desc": "Product one-pager docs/PRODUCT.md",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-3",
+     "level": "MUST",
+     "desc": "CHANGELOG.md (Keep a Changelog)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-5",
+     "level": "SHOULD",
+     "desc": "Visual proof (screenshot/GIF) in README",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-6",
+     "level": "MUST",
+     "desc": "README links back to vertciti.com",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-7",
+     "level": "SHOULD",
+     "desc": "README has security + license section",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-8",
+     "level": "MUST",
+     "desc": "README is left-aligned (no align=center / <center>)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-9",
+     "level": "MUST",
+     "desc": "README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-10",
+     "level": "MUST",
+     "desc": "README images are public https URLs (relative images break in private repos and the mobile app)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-11",
+     "level": "SHOULD",
+     "desc": "Bilingual (zh + en) README or localised UI",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "UI-1",
+     "level": "MUST",
+     "desc": "Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "LEGAL-1",
+     "level": "MUST",
+     "desc": "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
+     "ok": true,
+     "evidence": ""
+    }
+   ]
+  },
+  {
+   "repo": "agent-send-gate",
+   "kind": "library",
+   "status": "active",
+   "product": "agent-send-gate",
+   "url": "",
+   "score": 34.3,
+   "grade": "C",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "GOV-2",
+    "GOV-4",
+    "SEC-1",
+    "SEC-2",
+    "SEC-3",
+    "QA-1",
+    "QA-2",
+    "DOC-2",
+    "DOC-3",
+    "DOC-6",
+    "DOC-8",
+    "DOC-9"
+   ],
+   "unprobed": [],
+   "failing": [
+    "GOV-2",
+    "GOV-3",
+    "GOV-4",
+    "GOV-6",
+    "SEC-1",
+    "SEC-2",
+    "SEC-3",
+    "SEC-4",
+    "SEC-5",
+    "QA-1",
+    "QA-2",
+    "QA-3",
+    "DOC-2",
+    "DOC-3",
+    "DOC-4",
+    "DOC-5",
+    "DOC-6",
+    "DOC-7",
+    "DOC-8",
+    "DOC-9"
+   ],
+   "not_applicable": [],
+   "checks": [
+    {
+     "id": "GOV-1",
+     "level": "MUST",
+     "desc": "LICENSE file present (or README states proprietary/pending)",
+     "ok": true,
+     "evidence": "LICENSE present"
+    },
+    {
+     "id": "GOV-2",
+     "level": "MUST",
+     "desc": "CODEOWNERS routes reviews",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-3",
+     "level": "SHOULD",
+     "desc": ".editorconfig for consistent whitespace",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-4",
+     "level": "MUST",
+     "desc": "Status is stated honestly in README (active/archive/early/etc.)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-6",
+     "level": "SHOULD",
+     "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-1",
+     "level": "MUST",
+     "desc": "Secret scanning in CI (gitleaks or equivalent)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-2",
+     "level": "MUST",
+     "desc": "Dependabot covers github-actions + every package ecosystem in repo",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-3",
+     "level": "MUST",
+     "desc": "CodeQL / SAST runs on PRs",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-4",
+     "level": "SHOULD",
+     "desc": "Dependency review blocks vulnerable additions on PRs",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-5",
+     "level": "SHOULD",
+     "desc": "OpenSSF Scorecard published",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-6",
+     "level": "MUST",
+     "desc": "Workflows declare least-privilege `permissions:`",
+     "ok": true,
+     "evidence": "no workflows"
+    },
+    {
+     "id": "SEC-7",
+     "level": "SHOULD",
+     "desc": ".env.example documents config; .env is git-ignored",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-8",
+     "level": "MUST",
+     "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-10",
+     "level": "SHOULD",
+     "desc": "Reproducible dependencies: lockfile or pinned requirements for every manifest",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-11",
+     "level": "MUST",
+     "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
+     "ok": true,
+     "evidence": "no workflows"
+    },
+    {
+     "id": "QA-1",
+     "level": "MUST",
+     "desc": "CI workflow runs tests on PRs",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "QA-2",
+     "level": "MUST",
+     "desc": "Linter/formatter enforced in CI (ruff/eslint/biome/prettier)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "QA-3",
+     "level": "SHOULD",
+     "desc": "pre-commit hooks mirror CI",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-1",
+     "level": "MUST",
+     "desc": "README has a quickstart",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-2",
+     "level": "MUST",
+     "desc": "Product one-pager docs/PRODUCT.md",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-3",
+     "level": "MUST",
+     "desc": "CHANGELOG.md (Keep a Changelog)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-4",
+     "level": "SHOULD",
+     "desc": "Architecture doc or diagram",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-5",
+     "level": "SHOULD",
+     "desc": "Visual proof (screenshot/GIF) in README",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-6",
+     "level": "MUST",
+     "desc": "README links back to vertciti.com",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-7",
+     "level": "SHOULD",
+     "desc": "README has security + license section",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-8",
+     "level": "MUST",
+     "desc": "README is left-aligned (no align=center / <center>)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-9",
+     "level": "MUST",
+     "desc": "README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-10",
+     "level": "MUST",
+     "desc": "README images are public https URLs (relative images break in private repos and the mobile app)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "LEGAL-1",
+     "level": "MUST",
+     "desc": "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
+     "ok": true,
+     "evidence": ""
+    }
+   ]
+  },
+  {
+   "repo": "vertciti-sp07-builder",
+   "kind": "tool",
+   "status": "archive",
+   "product": "",
+   "url": "",
+   "score": 77.4,
+   "grade": "B",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P1",
+   "must_failing": [
+    "GOV-2",
+    "SEC-8"
+   ],
+   "unprobed": [],
+   "failing": [
+    "GOV-2",
+    "GOV-3",
+    "SEC-8"
    ],
    "not_applicable": [],
    "checks": [
@@ -3858,8 +4364,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v6; ci.yml: actions/checkout@v7; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4 (+7 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "DOC-8",
@@ -3890,22 +4396,20 @@
    "status": "archive",
    "product": "",
    "url": "",
-   "score": 67.7,
-   "grade": "C",
+   "score": 77.4,
+   "grade": "B",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P0",
+   "severity": "P1",
    "must_failing": [
     "GOV-2",
-    "SEC-8",
-    "SEC-11"
+    "SEC-8"
    ],
    "unprobed": [],
    "failing": [
     "GOV-2",
     "GOV-3",
-    "SEC-8",
-    "SEC-11"
+    "SEC-8"
    ],
    "not_applicable": [],
    "checks": [
@@ -3962,8 +4466,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": false,
-     "evidence": "unpinned: ci.yml: actions/checkout@v7; ci.yml: actions/setup-python@v6; codeql.yml: actions/checkout@v7; codeql.yml: github/codeql-action/init@v4; codeql.yml: github/codeql-action/analyze@v4; dependency-review.yml: actions/checkout@v7 (+6 more)"
+     "ok": true,
+     "evidence": "all action refs pinned by full-length SHA"
     },
     {
      "id": "DOC-8",
@@ -4082,6 +4586,36 @@
      "desc": "README images are public https URLs (relative images break in private repos and the mobile app)",
      "ok": true,
      "evidence": ""
+    }
+   ]
+  },
+  {
+   "repo": "vertciti-auto-gpt",
+   "kind": "app",
+   "status": "archive",
+   "product": "",
+   "url": "",
+   "score": 0.0,
+   "grade": "C",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P0",
+   "missing": true,
+   "must_failing": [
+    "MISSING"
+   ],
+   "unprobed": [],
+   "failing": [
+    "MISSING"
+   ],
+   "not_applicable": [],
+   "checks": [
+    {
+     "id": "MISSING",
+     "level": "MUST",
+     "ok": false,
+     "desc": "Registered repository could not be read by the assessor (clone failed or not found): not graded, counted as failing",
+     "evidence": "not found under /tmp/portfolio"
     }
    ]
   }
