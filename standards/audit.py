@@ -150,7 +150,10 @@ LLM_SDK = (
     # raw HTTP to an LLM API (Workers / Edge code often has no SDK import)
     r"|\b(?:api\.anthropic\.com|api\.openai\.com|generativelanguage\.googleapis\.com|api\.mistral\.ai|"
     r"api\.groq\.com|api\.cohere\.(?:ai|com)|openrouter\.ai/api|[\w-]+\.openai\.azure\.com|"
-    r"bedrock-runtime\.[\w-]+\.amazonaws\.com)\b"
+    r"bedrock-runtime\.[\w-]+\.amazonaws\.com|api\.deepseek\.com|dashscope(?:-intl)?\.aliyuncs\.com|"
+    r"api\.moonshot\.(?:cn|ai)|open\.bigmodel\.cn)\b"
+    # OpenAI-compatible endpoint behind a configured base URL: f"{base_url}/chat/completions"
+    r"|/chat/completions\b"
 )
 
 
@@ -253,7 +256,10 @@ def all_workflows_have_permissions(root):
                 return False, f"{f.name}: no workflow-level permissions" + (f" and job(s) {', '.join(bare)} declare none" if bare else "")
             continue  # every job declares its own permissions: least privilege at job level
         inline, block = top
-        if inline and inline not in ("read-all", "{}"):
+        flow = re.fullmatch(r"\{(.*)\}", inline)  # flow mapping: permissions: { contents: read }
+        if flow:
+            block = flow.group(1).split(",")
+        elif inline and inline != "read-all":
             return False, f"{f.name}: workflow-level permissions: {inline}"
         writes = [b.strip() for b in block if re.search(r":\s*['\"]?write\b", b)]
         if writes:
