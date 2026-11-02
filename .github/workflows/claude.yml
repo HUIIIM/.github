@@ -1,9 +1,10 @@
 name: Claude Code
 
-# Fallback trigger path for the Claude direct loop (installed 2026-11-01):
-# if the Claude GitHub App does not pick up a jarvis-task issue, a fresh
-# @claude comment runs this official action instead. Requires the
-# ANTHROPIC_API_KEY repository secret (API key rotation slice).
+# Trigger path for the Claude direct loop (installed 2026-11-01): the
+# repo-owned workflow for jarvis-task execution. Credential: the
+# CLAUDE_CODE_OAUTH_TOKEN repository secret (subscription OAuth route,
+# chairman order 2026-11-01). The Claude GitHub App's managed runs do not
+# consume repo secrets, so this workflow is the operative path.
 
 on:
   workflow_dispatch:
@@ -47,3 +48,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ inputs.prompt }}
+          # Tool allowlist (run 41365340458 had permission_denials_count=3 and
+          # landed no artifacts): Write/Edit = create the deliverable files,
+          # Bash(git:*) = branch/commit/push, Bash(gh:*) = open PR + comment.
+          claude_args: --allowedTools "Read,Glob,Grep,Write,Edit,Bash(git:*),Bash(gh:*)"
