@@ -137,6 +137,10 @@
     "pgvector-python": {
       "kind": "library",
       "status": "fork"
+    },
+    "vertciti-auto-gpt": {
+      "kind": "app",
+      "status": "archive"
     }
   }
 }
