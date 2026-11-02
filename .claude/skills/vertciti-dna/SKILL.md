@@ -29,7 +29,7 @@ description: >-
 2. **橙 = 指针，仅此。** `#FF4713` 只出现在：当前项下划线、链接下划线/箭头、焦点环、数据条、
    被选中项。不做橙色大色块、不做橙色正文。
 3. **黄 = 注意，仅此。** `#FFCE00` 只出现在：强调卡片、警示徽章、几何装饰、PF/角标。配黑字。
-4. **绿 = 已验证状态，仅此。** `--ok #1D8348` 只做小状态方块、"值得买/BUY"结论、k-ok 数字。
+4. **绿 = 已验证状态，仅此。** `--ok #166B3B` 只做小状态方块、"值得买/BUY"结论、k-ok 数字。
    **绝不**做按钮、链接、进度条、大色块——那是最常见的"丑"。主操作一律黑底白字。
 5. **左对齐。** 标题、导语、正文、表头全部左对齐。居中只给极少数独立 CTA / 空状态单行 / 版权行。
 6. **直角。** 圆角 = 0。结构线三档：1px 分隔 / 2px 控件边 / 4px 卡片顶线。圆点状态灯 → 方块。
@@ -47,16 +47,16 @@ description: >-
 :root{
   --bg:#FFFFFF; --fg:#000000; --fg-2:#3F3F3F; --fg-3:#6B6B6B; --soft:#F3F3F3;
   --line:#DEDEDE; --strong:#000000; --card:#FFFFFF;
-  --ok:#1D8348; --warn:#FFCE00; --on-warn:#000000; --bad:#C62828; --info:#2B7363;
+  --ok:#166B3B; --warn:#FFCE00; --on-warn:#000000; --bad:#C62828; --info:#2B7363; --pointer:#FF4713;
   --orange:#FF4713; --yellow:#FFCE00;
   --font:"Nunito Sans",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC","Noto Sans CJK SC",sans-serif;
   --mono:ui-monospace,"SFMono-Regular","Cascadia Code",Menlo,Consolas,"Liberation Mono",monospace;
-  --radius:0; --focus:3px solid #FF4713;
+  --radius:0; --focus:3px solid var(--pointer);
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#000000; --fg:#FFFFFF; --fg-2:#F5F5F5; --fg-3:#DEDEDE; --soft:#161616;
-  --line:#3A3A3A; --strong:#FFFFFF; --card:#0E0E0E;
-  --ok:#3FA86A; --bad:#E25555; --info:#5DB8A3;
+  --bg:#000000; --fg:#FFFFFF; --fg-2:#F5F5F5; --fg-3:#DEDEDE; --soft:#262626;
+  --line:#6B6B6B; --strong:#FFFFFF; --card:#161616;
+  --ok:#3FA86A; --bad:#E87272; --info:#5DB8A3;
 }}
 :root[data-theme="dark"]{ /* 同上 dark 值，让手动切换两向生效 */ }
 ```
