@@ -90,6 +90,20 @@
       "kind": "profile",
       "status": "active"
     },
+    "vault-app": {
+      "kind": "app",
+      "status": "active",
+      "product": "Vault App (N=1 personal knowledge-base sync app; working name)",
+      "public": false,
+      "public_reason": "N=1 personal product under construction; not for publication"
+    },
+    "jarvis-architecture": {
+      "kind": "library",
+      "status": "active",
+      "product": "Jarvis architecture",
+      "public": false,
+      "public_reason": "sanitized architecture source-of-truth for the review loop; private by design"
+    },
     ".github": {
       "kind": "meta",
       "status": "active"
