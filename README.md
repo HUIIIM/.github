@@ -10,6 +10,8 @@ that doesn't define its own.
 | Path | What it is |
 |---|---|
 | [`profile/README.md`](profile/README.md) | The vertciti company profile card |
+| [`design/`](design/README.md) | vertciti DNA: the design system every product vendors (tokens, CSS, contrast and layout gates) |
+| [`standards/`](standards/STANDARDS.md) | Engineering standards, the daily repository assessor and the published scorecard |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute — find a task, fork, PR, review |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant v2.1 (referenced, not copied) |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability — private, never a public issue |
