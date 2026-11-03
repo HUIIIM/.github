@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-02 11:41Z",
+ "generated": "2026-11-03 11:20Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -31,17 +31,19 @@
    "status": "active",
    "product": "Miao engine",
    "url": "",
-   "score": 96.5,
-   "grade": "S",
+   "score": 93.0,
+   "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "SEC-6"
+    "SEC-6",
+    "SEC-8"
    ],
    "unprobed": [],
    "failing": [
-    "SEC-6"
+    "SEC-6",
+    "SEC-8"
    ],
    "not_applicable": [
     "SEC-9",
@@ -139,7 +141,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -402,19 +404,22 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 91.4,
-   "grade": "A++",
+   "score": 88.2,
+   "grade": "A",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "REL-1"
+   ],
    "unprobed": [],
    "failing": [
+    "SEC-9",
     "DOC-11",
     "UI-2",
     "OPS-5",
+    "REL-1",
     "REL-2",
-    "PERF-1",
     "CONT-1",
     "PRIV-1",
     "AI-1"
@@ -516,8 +521,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": true,
-     "evidence": "all five present"
+     "ok": false,
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -698,22 +703,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1733 ms"
+     "ok": false,
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 180 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 600 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 86 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "1733 ms to first response (budget 800 ms)"
+     "ok": true,
+     "evidence": "180 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -772,7 +777,7 @@
    "status": "active",
    "product": "vertciti Assistant",
    "url": "",
-   "score": 73.1,
+   "score": 71.0,
    "grade": "B",
    "bar": "A++",
    "meets_bar": false,
@@ -806,7 +811,9 @@
     "PERF-1",
     "PUB-2",
     "CONT-1",
-    "CONT-2"
+    "CONT-2",
+    "AI-1",
+    "AI-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -1136,14 +1143,14 @@
      "id": "AI-1",
      "level": "SHOULD",
      "desc": "LLM-using app has evals with recorded results (not claims)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
      "id": "AI-2",
      "level": "SHOULD",
      "desc": "LLM-using app tests prompt-injection / untrusted-content handling",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -1161,7 +1168,7 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://echowatch-demo.netlify.app/",
-   "score": 65.6,
+   "score": 66.7,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -1190,7 +1197,6 @@
     "UI-2",
     "REL-1",
     "REL-2",
-    "PERF-1",
     "PUB-2",
     "CONT-1",
     "CONT-2",
@@ -1295,7 +1301,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1477,21 +1483,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
+     "evidence": "https://echowatch-demo.netlify.app/ -> 402 in 570 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> The read operation timed out in 12224 ms"
+     "evidence": "https://echowatch-demo.netlify.app/healthz -> 402 in 142 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> The read operation timed out in 12614 ms"
+     "ok": true,
+     "evidence": "570 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1550,27 +1556,20 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 82.8,
-   "grade": "B",
+   "score": 93.5,
+   "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "SEC-6",
-    "SEC-8",
-    "DOC-2",
-    "UI-1"
+    "REL-1"
    ],
    "unprobed": [],
    "failing": [
-    "SEC-6",
-    "SEC-7",
-    "SEC-8",
+    "SEC-9",
     "SEC-10",
-    "DOC-2",
-    "UI-1",
-    "UI-2",
-    "PRIV-1"
+    "REL-1",
+    "REL-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -1648,29 +1647,29 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
-     "evidence": "quality.yml: workflow-level permissions: { contents: read }"
+     "ok": true,
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
      "level": "SHOULD",
      "desc": ".env.example documents config; .env is git-ignored",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": true,
-     "evidence": "all five present"
+     "ok": false,
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1732,7 +1731,7 @@
      "id": "DOC-2",
      "level": "MUST",
      "desc": "Product one-pager docs/PRODUCT.md",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1802,14 +1801,14 @@
      "id": "UI-1",
      "level": "MUST",
      "desc": "Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "UI-2",
      "level": "SHOULD",
      "desc": "dna-drift check wired in CI (vendored DNA cannot silently diverge)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1851,22 +1850,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 124 ms"
+     "ok": false,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 126 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 99 ms"
+     "ok": false,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 118 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "124 ms to first response (budget 800 ms)"
+     "evidence": "126 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1893,7 +1892,7 @@
      "id": "PRIV-1",
      "level": "SHOULD",
      "desc": "Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -2165,17 +2164,14 @@
    "status": "active",
    "product": "founder-visual-director",
    "url": "",
-   "score": 92.9,
-   "grade": "A++",
+   "score": 98.2,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-8"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
-    "SEC-8",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2240,7 +2236,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -2516,14 +2512,17 @@
    "status": "active",
    "product": "website-qa-gates",
    "url": "",
-   "score": 98.2,
-   "grade": "S",
+   "score": 92.9,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P1",
+   "must_failing": [
+    "SEC-2"
+   ],
    "unprobed": [],
    "failing": [
+    "SEC-2",
     "DOC-5"
    ],
    "not_applicable": [],
@@ -2567,7 +2566,7 @@
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -2921,8 +2920,8 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 78.6,
-   "grade": "B",
+   "score": 69.6,
+   "grade": "C",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
@@ -2930,14 +2929,18 @@
     "GOV-1",
     "SEC-2",
     "SEC-6",
-    "DOC-1"
+    "DOC-1",
+    "REL-1"
    ],
    "unprobed": [],
    "failing": [
     "GOV-1",
     "SEC-2",
     "SEC-6",
-    "DOC-1"
+    "SEC-9",
+    "DOC-1",
+    "REL-1",
+    "PUB-1"
    ],
    "not_applicable": [],
    "checks": [
@@ -3015,8 +3018,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": true,
-     "evidence": "all five present"
+     "ok": false,
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-11",
@@ -3085,22 +3088,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 163 ms"
+     "ok": false,
+     "evidence": "https://vertciti.com/ -> 402 in 64 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "163 ms to first response (budget 800 ms)"
+     "evidence": "64 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
      "level": "SHOULD",
      "desc": "[live] robots.txt, sitemap.xml and llms.txt served (search + AI discoverability)",
-     "ok": true,
-     "evidence": "all served"
+     "ok": false,
+     "evidence": "missing: robots.txt, sitemap.xml, llms.txt"
     },
     {
      "id": "LEGAL-1",
@@ -3117,19 +3120,13 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 58.1,
-   "grade": "C",
+   "score": 86.0,
+   "grade": "A",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P0",
+   "severity": "P1",
    "must_failing": [
-    "SEC-1",
     "SEC-3",
-    "SEC-6",
-    "SEC-8",
-    "DOC-1",
-    "DOC-2",
-    "DOC-6",
     "REL-1"
    ],
    "unprobed": [
@@ -3139,29 +3136,15 @@
     "PERF-1"
    ],
    "failing": [
-    "GOV-3",
-    "SEC-1",
     "SEC-3",
     "SEC-4",
     "SEC-5",
-    "SEC-6",
-    "SEC-7",
-    "SEC-8",
     "SEC-9",
-    "QA-3",
-    "QA-5",
-    "DOC-1",
-    "DOC-2",
-    "DOC-4",
     "DOC-5",
-    "DOC-6",
-    "DOC-7",
     "REL-1",
     "REL-2",
     "PERF-1",
-    "PUB-2",
-    "CONT-1",
-    "CONT-2"
+    "PUB-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -3183,7 +3166,7 @@
      "id": "GOV-3",
      "level": "SHOULD",
      "desc": ".editorconfig for consistent whitespace",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3204,7 +3187,7 @@
      "id": "SEC-1",
      "level": "MUST",
      "desc": "Secret scanning in CI (gitleaks or equivalent)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3239,21 +3222,21 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
-     "evidence": "image.yml: workflow-level packages: write (move write scopes to the job)"
+     "ok": true,
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-7",
      "level": "SHOULD",
      "desc": ".env.example documents config; .env is git-ignored",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3295,7 +3278,7 @@
      "id": "QA-3",
      "level": "SHOULD",
      "desc": "pre-commit hooks mirror CI",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3309,21 +3292,21 @@
      "id": "QA-5",
      "level": "SHOULD",
      "desc": "Browser-level test or contrast gate in CI (playwright / contrast)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "DOC-1",
      "level": "MUST",
      "desc": "README has a quickstart",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "DOC-2",
      "level": "MUST",
      "desc": "Product one-pager docs/PRODUCT.md",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3337,7 +3320,7 @@
      "id": "DOC-4",
      "level": "SHOULD",
      "desc": "Architecture doc or diagram",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3351,14 +3334,14 @@
      "id": "DOC-6",
      "level": "MUST",
      "desc": "README links back to vertciti.com",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "DOC-7",
      "level": "SHOULD",
      "desc": "README has security + license section",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3470,14 +3453,14 @@
      "id": "CONT-1",
      "level": "SHOULD",
      "desc": "Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "CONT-2",
      "level": "SHOULD",
      "desc": "Backup and restore are written down (a restore never tested is not a backup)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3516,18 +3499,17 @@
    "status": "active",
    "product": "Miao public lab",
    "url": "",
-   "score": 90.2,
+   "score": 92.7,
    "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P0",
+   "severity": "P1",
    "must_failing": [
-    "SEC-1"
+    "SEC-2"
    ],
    "unprobed": [],
    "failing": [
-    "SEC-1",
-    "SEC-5"
+    "SEC-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -3563,21 +3545,21 @@
      "id": "SEC-1",
      "level": "MUST",
      "desc": "Secret scanning in CI (gitleaks or equivalent)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
      "id": "SEC-5",
      "level": "SHOULD",
      "desc": "OpenSSF Scorecard published",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3768,18 +3750,14 @@
    "status": "active",
    "product": "",
    "url": "",
-   "score": 85.0,
-   "grade": "A",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-8"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-8"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -3828,7 +3806,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
