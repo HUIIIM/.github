@@ -68,6 +68,28 @@ jobs:
           assert code == 2, f"expected exit 2 with missing repos, got {code}"
           print(f"ok: {len(want)} registered, {len(missing)} MISSING rows, exit {code}")
           PY
+      - name: A crashed audit publishes nothing (#70 replay; red on the pre-#70 Assess logic)
+        run: |
+          # Break the registry the way a bad edit would (one entry loses "kind"): audit.py crashes.
+          python3 - <<'PY'
+          import json
+          p = "standards/repos.json"
+          reg = json.load(open(p))
+          del reg["repos"][next(iter(reg["repos"]))]["kind"]
+          json.dump(reg, open(p, "w"), indent=2)
+          PY
+          set +e
+          python3 standards/publish_card.py /tmp/portfolio > /tmp/publish.out
+          code=$?
+          set -e
+          cat /tmp/publish.out
+          git checkout -- standards/repos.json
+          test "$code" -ne 0 || { echo "::error::publish_card.py published after the audit crashed"; exit 1; }
+          grep -q "previous card kept" /tmp/publish.out \
+            || { echo "::error::the run failed, but not by the crash guard (exit $code)"; exit 1; }
+          git diff --quiet -- standards/scorecard.json standards/SCORECARD.md \
+            || { echo "::error::the tracked card changed although the audit crashed"; exit 1; }
+          echo "ok: crash -> exit $code, tracked card untouched"
 
   assess:
     if: github.event_name != 'pull_request'
@@ -105,10 +127,11 @@ jobs:
           ls /tmp/portfolio
 
       - name: Assess (live probes on)
+        id: assess
         run: |
-          set +e
-          python3 standards/audit.py /tmp/portfolio --live --json standards/scorecard.json --md > standards/SCORECARD.md
-          echo "audit exit code: $? (2 = repos MISSING, 1 = at least one MUST failing; the scorecard is still published)"
+          # The card is tracked, so a crashed audit must not leave yesterday's card in place for the
+          # steps below: publish_card.py copies it into standards/ only when the run produced one.
+          python3 standards/publish_card.py /tmp/portfolio --live
           python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
@@ -271,7 +294,8 @@ jobs:
       # Last, after the honest card is published everywhere: an incomplete card
       # must not pass silently. Any MISSING repository fails the run.
       - name: Fail when registered repositories could not be read
-        if: ${{ !cancelled() }}  # still runs when incident filing failed above
+        # still runs when incident filing failed above, but not on a card Assess did not produce
+        if: ${{ !cancelled() && steps.assess.outcome == 'success' }}
         run: |
           python3 - <<'PY'
           import json, sys
