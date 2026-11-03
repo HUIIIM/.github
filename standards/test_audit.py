@@ -108,6 +108,29 @@ class ChecksCannotBeGamed(unittest.TestCase):
         for cid in ("SEC-1", "SEC-3", "SEC-4", "SEC-5"):
             self.assertIs(result(root, cid), True, cid)
 
+    VERIFIED_BIN = (
+        "      - run: |\n"
+        "          curl -sSfL -o g.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz\n"
+        f"          echo \"{'a' * 64}  g.tgz\" | sha256sum -c -\n"
+        "          tar -xzf g.tgz gitleaks\n"
+        "      - run: ./gitleaks git --redact --exit-code 1 .\n")
+
+    def test_checksum_verified_binary_counts_for_sec1(self):
+        # A pinned-sha256 binary is a stronger supply chain than an action that downloads
+        # an unverified one (SOTA SEC-A5); Miao #9 verdict.
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n", self.VERIFIED_BIN)})
+        self.assertIs(result(root, "SEC-1"), True)
+
+    def test_binary_without_checksum_or_from_elsewhere_does_not_count(self):
+        unverified = self.VERIFIED_BIN.replace("| sha256sum -c -", "")
+        elsewhere = self.VERIFIED_BIN.replace("github.com/gitleaks/gitleaks", "evil.example/gitleaks")
+        no_scan = self.VERIFIED_BIN.replace("./gitleaks git", "echo gitleaks git")
+        for name, steps in (("unverified", unverified), ("elsewhere", elsewhere), ("no_scan", no_scan)):
+            root = make(Path(self.base) / name, {".github/workflows/ci.yml": GOOD_WF.replace(
+                "      - uses: gitleaks/gitleaks-action@v3\n", steps)})
+            self.assertIs(result(root, "SEC-1"), False, name)
+
     def test_write_all_fails_least_privilege(self):
         root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace("permissions:\n  contents: read", "permissions: write-all")})
         self.assertIs(result(root, "SEC-6"), False)
