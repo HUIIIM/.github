@@ -1,6 +1,6 @@
 # Loop state — .github
 
-Updated: 2026-11-01 (loop bootstrap). Facts here are the standing state;
+Updated: 2026-11-02 (App-selection count restated, #73). Facts here are the standing state;
 when one changes, the PR that changes it updates this file.
 
 ## Direction channel
@@ -20,8 +20,10 @@ when one changes, the PR that changes it updates this file.
   from the verdict comments on each PR head. It is not yet a required check: binding it
   needs `ivv/verdict` added to `main`'s required checks (admin setting, #84).
 - The Claude GitHub App's repository selection covers every active own
-  repo (20 repositories, verified 2026-11-01); new repos are added to the
-  selection the day they are created.
+  repo; new repos are added to the selection the day they are created.
+  (The 2026-11-01 note "20 repositories" had no stated basis and is not
+  reconciled with the registry, which on 2026-11-02 lists 23 non-fork
+  repos, 19 of them active. Registry ↔ GitHub reconciliation: #75.)
 - Branch protection: PR required, zero approving reviews required,
   required checks gitleaks + lint + typecheck (strict).
 

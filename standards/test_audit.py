@@ -155,7 +155,9 @@ class LlmDetection(unittest.TestCase):
                           ("e.js", "const Anthropic = require('@anthropic-ai/sdk');\n"),
                           ("f.ts", "await fetch('https://api.anthropic.com/v1/messages', init);\n"),
                           ("g.py", "httpx.post('https://api.openai.com/v1/chat/completions', json=body)\n"),
-                          ("h.py", "from google import genai\n")):
+                          ("h.py", "from google import genai\n"),
+                          ("i.py", 'client.post(f"{settings.llm_base_url}/chat/completions", json=body)\n'),
+                          ("j.ts", "await fetch('https://api.deepseek.com/v1/chat/completions', init);\n")):
             with tempfile.TemporaryDirectory() as a:
                 self.assertTrue(audit.uses_llm(make(a, {rel: code})), rel)
 
@@ -218,6 +220,13 @@ class LeastPrivilegeAndRealTools(unittest.TestCase):
             root = make(a, {".github/workflows/ci.yml": "on: push\n" + job_write + self.JOB
                             + "    permissions:\n      contents: write\n    steps:\n      - run: pytest\n"})
             self.assertIs(result(root, "SEC-6"), True)
+
+    def test_flow_mapping_permissions(self):
+        # `permissions: { contents: read }` is read-only; a write inside the braces still fails.
+        self.assertIs(self.wf("permissions: { contents: read }\n", "      - run: pytest\n")["SEC-6"], True)
+        self.assertIs(self.wf("permissions: {contents: read, issues: write}\n", "      - run: pytest\n")["SEC-6"], False)
+        self.assertIs(self.wf("permissions: {}\n", "      - run: pytest\n")["SEC-6"], True)
+        self.assertIs(self.wf("permissions: read-all\n", "      - run: pytest\n")["SEC-6"], True)
 
     def test_echoing_tool_names_is_not_running_them(self):
         got = self.wf("permissions:\n  contents: read\n", "      - run: echo gitleaks codeql-action pytest ruff\n")

@@ -8,15 +8,18 @@
 |---|---|
 | [`tokens.json`](tokens.json) | **唯一事实源**：颜色（明/暗/品牌/色阶）、字体、版式、形状、动效、层级 |
 | [`src/base.css`](src/base.css) | 元素默认样式 + `dna-` 前缀组件（按钮/卡片/表单/徽章/提示） |
-| [`build.py`](build.py) | 生成 `dist/`；`--check` 在 CI 里校验产物未漂移 + WCAG 对比度 |
+| [`build.py`](build.py) | 生成 `dist/` 与 `preview/surfaces.html`；`--check` 在 CI 里校验产物未漂移、**每个文字 token × 每个表面**（页面/软底/卡片/墨色/强调，明暗）都过 WCAG AA、DTCG 导出合规 |
 | [`dist/dna.css`](dist/dna.css) | 纯 HTML/CSS 项目用（FastAPI 模板、静态页） |
 | [`dist/dna-tailwind.css`](dist/dna-tailwind.css) | Tailwind v4 项目用：把 Tailwind 默认色阶/圆角/字体整体映射到 DNA |
+| [`dist/tokens.dtcg.json`](dist/tokens.dtcg.json) | W3C Design Tokens（DTCG 2025.10）格式导出，供 Style Dictionary 等工具读取。流式 `clamp()` 尺寸无对应类型，放在 `$extensions` |
+| [`preview/components.html`](preview/components.html) · [`preview/surfaces.html`](preview/surfaces.html) | CI 渲染的组件全集与表面矩阵（对比度 + 版式门禁） |
+| [`CHANGELOG.md`](CHANGELOG.md) | 版本记录（SemVer）。消费方用 `dna-drift` 的 `ref` 钉版本 |
 
 ## DNA 七条
 
 1. **黑白为骨。** 正文 `#000` on `#FFF`，暗色模式整体对调。灰只用四档：
    `#3F3F3F` / `#6B6B6B` / `#DEDEDE` / `#F3F3F3`。
-2. **橙色只做"指向"。** `#FF4713` 用于焦点环、链接下划线、当前项标记——
+2. **橙色只做"指向"。** `#FF4713`（token `--pointer`）用于焦点环、链接下划线、当前项标记、阅读进度——
    **不做大面积底色，不做正文文字色**（白底对比度 3.4，只够非文字 UI）。
 3. **黄色只做"注意"。** `#FFCE00` 底 + 黑字（14:1），用于跳转链接、选中、警示徽章。
 4. **直角。** 全站 `border-radius: 0`；唯一例外是圆点/头像 (`rounded-full`)。
@@ -25,7 +28,9 @@
 6. **自托管 Nunito Sans，零外部请求。** 与官网同一字体文件（`dist/fonts/*.woff2`，SIL OFL，许可见 `dist/fonts/OFL.txt`）；
    拉丁字符走 Nunito Sans，中文回落系统栈（苹方/雅黑/Noto Sans SC）。**绝不**从 Google Fonts / CDN 加载——与官网 CSP 和隐私承诺一致。
    引入时把 `dist/fonts/` 整个目录和 `dna.css` 放在一起（`@font-face` 用相对路径）。
-7. **克制的动效。** 0.15–0.25s；尊重 `prefers-reduced-motion`；阴影只有一种（`--shadow-pop`）。
+7. **克制的动效。** IBM Carbon productive：`--motion-fast-01/02` 70/110ms、`--motion-moderate-01/02` 150/240ms、`--motion-slow-01` 400ms（上限）；
+   曲线 `--ease-standard/entrance/exit`，无回弹；退场比入场快一级；只动 `transform`/`opacity`，颜色、阴影、尺寸瞬时切换；
+   尊重 `prefers-reduced-motion`；阴影只有一种（`--shadow-pop`）。
 
 ## 状态色（应用扩展）
 
@@ -33,12 +38,16 @@
 
 | token | 明 | 暗 | 用法 |
 |---|---|---|---|
-| `--ok` | `#1D8348` | `#3FA86A` | 成功、通过、在线 |
-| `--bad` | `#C62828` | `#E25555` | 错误、失败、危险操作（**不用橙色表示错误**——橙色是品牌指向色） |
+| `--ok` | `#166B3B` | `#3FA86A` | 成功、通过、在线 |
+| `--bad` | `#C62828` | `#E87272` | 错误、失败、危险操作（**不用橙色表示错误**——橙色是品牌指向色） |
 | `--warn` / `--on-warn` | `#FFCE00` / `#000` | 同 | 警示（黄底黑字，永远不用黄字） |
 | `--info` | `#2B7363` | `#5DB8A3` | 信息、中性提示、数据链接 |
 
 色阶规则：浅色底上的文字用 **700 及以上**（品牌绿 600 在 100 底上只有 4.1:1）。
+
+**表面（v4.1）**：墨色（`.dna-card--ink` / `.dna-utility` / `.dna-code`）与强调黄（`.dna-card--accent`）各有一整套 token
+（`tokens.json` 的 `color.ink` / `color.accent`），由 `build.py` 生成作用域规则——表面里的文字、徽章、链接、焦点环自动跟随表面。
+黄底上指向色为墨黑（橙在黄上只有 2.3:1）。组件 CSS 不写任何颜色字面量。
 
 ## 接入
 
@@ -65,8 +74,11 @@
 ## 更新流程
 
 1. 改 `tokens.json`（或 `src/base.css`）→ `python3 design/build.py` → 提 PR。
-2. CI（`design.yml`）跑 `build.py --check`：产物与源一致、对比度全过。
-3. 合并后各仓库重新拷贝 `dist/` 文件；各仓库 CI 的 `dna-drift` 任务会提示版本落后。
+2. CI（`design.yml`）跑 `build.py --check`（产物一致、对比度矩阵全过、DTCG 导出合规），并在 Chromium 里对
+   `components.html` 与 `surfaces.html` 跑对比度门禁与版式门禁（`standards/a11y/layout_audit.js`：无横向溢出、
+   无"一字一行"、触控目标 ≥ 44px），浅/深 × 390/1280。
+3. 在 [`CHANGELOG.md`](CHANGELOG.md) 记一条并按 SemVer 改 `tokens.json` 的 `version`；合并后打 `dna-vX.Y.Z` 标签。
+4. 各仓库重新拷贝 `dist/` 文件；`dna-drift` 的 `ref` 钉在标签上，升级时一起改——上游合并不会让下游 CI 突然变红。
 
 ## 不做什么
 
