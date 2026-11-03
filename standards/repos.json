@@ -79,7 +79,9 @@
     "fama": {
       "kind": "app",
       "status": "active",
-      "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)"
+      "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
+      "public": false,
+      "public_reason": "GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     "Miao": {
       "kind": "docs",
