@@ -1,0 +1,49 @@
+# Tags each DNA release (issue #99). design/README.md 更新流程: a merged change that bumps
+# design/tokens.json `version` is released as tag dna-v<version>, which consumer repos pin in
+# dna-drift (`with: { ref: dna-vX.Y.Z }`). Runs on main only; idempotent (an existing tag is left
+# alone); fails if the version has no CHANGELOG entry. Tags the last commit that changed tokens.json.
+name: dna-release
+
+on:
+  push:
+    branches: [main]
+    paths: ["design/tokens.json", ".github/workflows/dna-release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dna-release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write   # push the release tag
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Tag dna-v<version> if it does not exist
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("design/tokens.json"))["version"])')
+          tag="dna-v${version}"
+          if git ls-remote --exit-code --tags origin "refs/tags/${tag}" >/dev/null; then
+            echo "${tag} already exists: nothing to do"
+            exit 0
+          fi
+          if ! grep -q "^## \[${version}\]" design/CHANGELOG.md; then
+            echo "::error::design/CHANGELOG.md has no '## [${version}]' entry; not tagging ${tag}"
+            exit 1
+          fi
+          sha=$(git log -1 --format=%H -- design/tokens.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${tag}" "${sha}" -m "vertciti DNA ${version} (design/CHANGELOG.md [${version}])"
+          git push origin "refs/tags/${tag}"
+          echo "tagged ${tag} at ${sha}" | tee -a "$GITHUB_STEP_SUMMARY"
