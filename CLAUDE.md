@@ -21,7 +21,19 @@ standards audit (`standards/audit.py`), the repository registry
 
 - `standards/` — audit engine, registry (`repos.json`), generated cards.
 - `profile/` — organization profile surfaces.
-- Workflows: gitleaks, lint, typecheck (all three are required checks).
+- Workflows (`.github/workflows/`). Required checks: **gitleaks**, **lint**,
+  **typecheck** (lint and typecheck are the two jobs of `quality.yml`).
+  | File | Name | Runs on | Role |
+  |---|---|---|---|
+  | `gitleaks.yml` | Secret scan (gitleaks) | push, PR, schedule | secret scanning (required) |
+  | `quality.yml` | Quality gate | push, PR | `lint` (ruff) + `typecheck` (mypy) (required) |
+  | `standards-tests.yml` | standards-tests | push, PR | unit tests for `standards/*.py` |
+  | `standards-audit.yml` | standards-audit | daily schedule, dispatch, PR | `assess`: grade the fleet, publish the card PR, file incidents; `check`: PR-safe dry run |
+  | `codeql.yml` | CodeQL | push, PR, schedule | SAST for this repo's Python |
+  | `scorecard.yml` | Scorecard | push, schedule, branch-protection change | OpenSSF Scorecard |
+  | `design.yml` | design | push, PR (design paths) | DNA token build check + contrast gate |
+  | `dna-drift.yml` | dna-drift | `workflow_call` | reusable: product repos check their vendored DNA |
+  | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
 
 ## Working rules
 

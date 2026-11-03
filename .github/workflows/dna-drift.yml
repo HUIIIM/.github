@@ -7,6 +7,7 @@
 #       with:
 #         vendored: frontend/src/app/dna-tailwind.css
 #         flavor: dna-tailwind.css   # or dna.css
+#         ref: dna-v4.1.0            # optional; default main. Pin to upgrade on your own schedule.
 name: dna-drift
 
 on:
@@ -20,6 +21,13 @@ on:
         description: dna.css or dna-tailwind.css
         required: true
         type: string
+      ref:
+        description: >-
+          DNA version to compare against: a release tag (e.g. dna-v4.1.0) or commit SHA. Pin it so an
+          upstream change cannot turn your CI red before you choose to upgrade; "main" tracks the latest.
+        required: false
+        type: string
+        default: main
 
 permissions:
   contents: read
@@ -33,6 +41,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: HUIIIM/.github
+          ref: ${{ inputs.ref }}
           path: .dna-upstream
       - name: Compare with upstream
         env:

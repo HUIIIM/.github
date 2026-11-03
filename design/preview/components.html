@@ -8,11 +8,13 @@
 </head>
 <body>
 <!-- Every DNA component in every state that shows text, incl. disabled / placeholder / inverse
-     surfaces. CI renders this in light + dark at 390 / 1280 and runs standards/a11y/contrast_audit.js:
-     any text below WCAG AA fails the design build. Add new components here when you add them. -->
-<header class="dna-header"><div class="dna-header__in"><a class="dna-logo" href="#"><span class="dna-logo__word">vertciti</span><span class="dna-logo__product">DNA</span></a>
+     surfaces. CI renders this in light + dark at 390 / 1280 and runs standards/a11y/contrast_audit.js
+     (any text below WCAG AA fails) and standards/a11y/layout_audit.js (overflow, collapsed text, tap
+     targets < 44px fail). preview/surfaces.html (generated) covers every token on every surface.
+     Add new components here when you add them. -->
+<div class="dna-utility"><div class="dna-utility__in dna-wrap">工具条 · 实用链接<div class="dna-utility__end"><a href="#">EN</a></div></div></div>
+<header class="dna-header"><div class="dna-header__in dna-wrap"><a class="dna-logo" href="#"><span class="dna-logo__word">vertciti</span><span class="dna-logo__product">DNA</span></a>
   <div class="dna-header__end"><a href="#">文档</a></div></div></header>
-<div class="dna-utility"><div class="dna-utility__in">工具条 · 实用链接<div class="dna-utility__end"><a href="#">EN</a></div></div></div>
 <main class="dna-wrap">
   <section class="dna-section">
     <p class="dna-eyebrow">组件全集 · COMPONENTS</p>
@@ -52,12 +54,19 @@
     <div class="dna-progress"><div class="dna-bar" style="width:60%"></div></div>
   </section>
   <section class="dna-section dna-grid">
-    <div class="dna-card"><h3 class="dna-h3">卡片</h3><p>卡片正文</p></div>
-    <div class="dna-card dna-card--accent"><h3 class="dna-h3">强调卡</h3><p>强调卡正文</p></div>
-    <div class="dna-card dna-card--flat"><h3 class="dna-h3">平卡</h3><p>平卡正文</p></div>
-    <div class="dna-card dna-card--ink"><p class="dna-eyebrow">墨色卡小标题</p><h3 class="dna-h3">墨色卡</h3><p>墨色卡正文 <a href="#">链接</a></p><button class="dna-btn dna-btn--secondary">墨色卡按钮</button></div>
-    <div class="dna-card dna-card--pop"><h3 class="dna-h3">浮层卡</h3><p>浮层卡正文</p></div>
-    <div class="dna-stat"><span class="dna-stat__label">关键数字</span><span class="dna-stat__num">42%</span><span class="dna-stat__src">来源 · 2026-10-22</span></div>
+    <div class="dna-card dna-span-4"><h3 class="dna-h3">卡片</h3><p>卡片正文 <span class="dna-badge dna-badge--ok">已验证</span> <span class="dna-badge dna-badge--bad">否决</span></p></div>
+    <div class="dna-card dna-card--accent dna-span-4"><h3 class="dna-h3">强调卡</h3><p>强调卡正文 <a href="#">链接</a> <span class="dna-badge dna-badge--bad">否决</span></p><button class="dna-btn dna-btn--secondary">强调卡按钮</button></div>
+    <div class="dna-card dna-card--flat dna-span-4"><h3 class="dna-h3">平卡</h3><p>平卡正文</p></div>
+    <div class="dna-card dna-card--ink dna-span-4"><p class="dna-eyebrow">墨色卡小标题</p><h3 class="dna-h3">墨色卡</h3><p>墨色卡正文 <a href="#">链接</a> <span class="dna-badge dna-badge--ok">已验证</span></p><button class="dna-btn dna-btn--secondary">墨色卡按钮</button></div>
+    <div class="dna-card dna-card--pop dna-span-4"><h3 class="dna-h3">浮层卡</h3><p>浮层卡正文</p></div>
+    <div class="dna-stat dna-span-4"><span class="dna-stat__label">关键数字</span><span class="dna-stat__num">42%</span><span class="dna-stat__src">来源 · 2026-10-22</span><div class="dna-bar"><span style="width:42%"></span></div></div>
+    <div class="dna-card">没有 span 的子元素：整行（v4.1 起），不再挤成 1/12 宽。</div>
+  </section>
+  <section class="dna-section">
+    <h2 class="dna-h2">三态 · 加载 / 空 / 出错</h2>
+    <div aria-busy="true"><span class="dna-sr">加载中</span><div class="dna-skeleton" style="width:60%"></div></div>
+    <div class="dna-empty"><p class="dna-eyebrow">还没有记录</p><p class="dna-empty__text">接入第一个数据源后，这里会列出它的最新结果。</p><a class="dna-btn" href="#">接入数据源</a></div>
+    <div class="dna-alert dna-alert--bad"><strong>连不上服务器。</strong>数据未更新，显示为"不可达"而不是 0。检查网络后重试。</div>
   </section>
   <section class="dna-section">
     <table><thead><tr><th>表头</th><th>数值</th></tr></thead><tbody><tr><td>行</td><td>1,234</td></tr></tbody></table>
