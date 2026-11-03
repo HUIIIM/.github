@@ -388,7 +388,7 @@ def verified_scanner_run(root):
     source = re.compile(r"https://github\.com/gitleaks/gitleaks/releases/download/")
     verify = re.compile(r"\bsha256sum\s+(?:-c|--check)\b|\bshasum\s+-a\s*256\s+(?:-c|--check)\b")
     pinned = re.compile(r"\b[0-9a-f]{64}\b")
-    scan = re.compile(r"^\s*(?:-\s*)?(?:run:\s*)?(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b", re.M)
+    scan = re.compile(r"^\s*(?:-\s*)?(?:run:\s*)?(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b", re.MULTILINE)
     for f in sorted(d.glob("*.y*ml")):
         text = f.read_text(encoding="utf-8", errors="replace")
         if all(p.search(text) for p in (source, verify, pinned, scan)):
