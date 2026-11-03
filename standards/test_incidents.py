@@ -20,17 +20,24 @@ def row(repo, meets_bar, severity=None, missing=False):
 
 
 class FakeGh:
-    def __init__(self, open_issues=None, fail=()):
+    def __init__(self, open_issues=None, fail=(), labels=None):
         self.open_issues, self.fail, self.calls = dict(open_issues or {}), set(fail), []
+        self.labels, self.argv = dict(labels or {}), []
 
     def __call__(self, args):
         repo = args[args.index("-R") + 1].split("/", 1)[1]
         self.calls.append((repo, args[:2]))
+        self.argv.append((repo, list(args)))
         if (repo, *args[:2]) in self.fail:
             return 1, "", "HTTP 403: Resource not accessible by integration"
         if args[:2] == ["issue", "list"]:
             return 0, self.open_issues.get(repo, ""), ""
+        if args[:2] == ["issue", "view"]:
+            return 0, "\n".join(self.labels.get(repo, [])), ""
         return 0, "", ""
+
+    def edit_args(self, repo):
+        return next(a for r, a in self.argv if r == repo and a[:2] == ["issue", "edit"])
 
     def did(self, repo, verb):
         return (repo, ["issue", verb]) in self.calls
@@ -55,6 +62,19 @@ class IncidentLifecycle(unittest.TestCase):
         self.assertEqual(out["echowatch"], "updated #7")
         self.assertTrue(gh.did("echowatch", "edit"))
         self.assertFalse(gh.did("echowatch", "create"))
+
+    def test_severity_change_removes_the_stale_label(self):
+        # #24 verdict / #17 P2-2: a P0 that improves to P1 must not stay labelled P0.
+        gh = FakeGh({"echowatch": "7"}, labels={"echowatch": ["standards-incident", "P0"]})
+        incidents.process(self.card(row("echowatch", False, "P1")), REG, incidents.Filer(gh))
+        args = gh.edit_args("echowatch")
+        self.assertEqual(args[args.index("--add-label") + 1], "standards-incident,P1")
+        self.assertEqual(args[args.index("--remove-label") + 1], "P0")
+
+    def test_same_severity_removes_nothing(self):
+        gh = FakeGh({"echowatch": "7"}, labels={"echowatch": ["standards-incident", "P1"]})
+        incidents.process(self.card(row("echowatch", False, "P1")), REG, incidents.Filer(gh))
+        self.assertNotIn("--remove-label", gh.edit_args("echowatch"))
 
     def test_at_bar_closes_open_incident(self):
         gh = FakeGh({"phonehands": "3"})

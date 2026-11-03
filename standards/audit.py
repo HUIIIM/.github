@@ -150,7 +150,10 @@ LLM_SDK = (
     # raw HTTP to an LLM API (Workers / Edge code often has no SDK import)
     r"|\b(?:api\.anthropic\.com|api\.openai\.com|generativelanguage\.googleapis\.com|api\.mistral\.ai|"
     r"api\.groq\.com|api\.cohere\.(?:ai|com)|openrouter\.ai/api|[\w-]+\.openai\.azure\.com|"
-    r"bedrock-runtime\.[\w-]+\.amazonaws\.com)\b"
+    r"bedrock-runtime\.[\w-]+\.amazonaws\.com|api\.deepseek\.com|dashscope(?:-intl)?\.aliyuncs\.com|"
+    r"api\.moonshot\.(?:cn|ai)|open\.bigmodel\.cn)\b"
+    # OpenAI-compatible endpoint behind a configured base URL: f"{base_url}/chat/completions"
+    r"|/chat/completions\b"
 )
 
 
@@ -253,7 +256,10 @@ def all_workflows_have_permissions(root):
                 return False, f"{f.name}: no workflow-level permissions" + (f" and job(s) {', '.join(bare)} declare none" if bare else "")
             continue  # every job declares its own permissions: least privilege at job level
         inline, block = top
-        if inline and inline not in ("read-all", "{}"):
+        flow = re.fullmatch(r"\{(.*)\}", inline)  # flow mapping: permissions: { contents: read }
+        if flow:
+            block = flow.group(1).split(",")
+        elif inline and inline != "read-all":
             return False, f"{f.name}: workflow-level permissions: {inline}"
         writes = [b.strip() for b in block if re.search(r":\s*['\"]?write\b", b)]
         if writes:
@@ -349,16 +355,43 @@ USES_REF = re.compile(r"^\s*-?\s*uses:\s*['\"]?([^\s'\"#]+)", re.MULTILINE)
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
-def uses_tool(root, *tools):
-    """True iff a real `uses:` step's action path names one of the tools.
+def uses_tool(root, *actions):
+    """True iff a real `uses:` step runs one of these actions, named by `owner/repo`.
 
     A tool mentioned in a `run:` line, an env value or a step name is not a
     tool that runs -- only a `uses:` ref counts. (Issue #17, PR #21 verdict:
-    substring search over workflow text passed `run: echo gitleaks`.)"""
-    text = workflows(root)
-    for m in USES_REF.finditer(text):
-        segments = m.group(1).lower().split("@", 1)[0].split("/")
-        if any(seg == t or seg.startswith(t + "-") for t in tools for seg in segments):
+    substring search over workflow text passed `run: echo gitleaks`.) The ref must
+    be the action's own repository (or a sub-action of it, e.g.
+    github/codeql-action/init): a look-alike such as someone/gitleaks-lookalike
+    is not the scanner (#17 round 4 P2-11)."""
+    want = tuple(a.lower() for a in actions)
+    for m in USES_REF.finditer(workflows(root)):
+        path = m.group(1).lower().split("@", 1)[0]
+        if any(path == a or path.startswith(a + "/") for a in want):
+            return True
+    return False
+
+
+# The actions each check accepts (owner/repo). zricethezav/ is gitleaks-action's former home.
+SECRET_SCANNERS = ("gitleaks/gitleaks-action", "zricethezav/gitleaks-action", "trufflesecurity/trufflehog")
+
+
+def verified_scanner_run(root):
+    """SEC-1 for a workflow that runs the gitleaks binary itself: True iff one file
+    downloads it from the official gitleaks release page, checks the archive against
+    a pinned sha256 and runs a real scan. A checksum-verified binary is stronger than
+    an action that downloads an unverified one (SOTA SEC-A5), so it counts; a bare
+    `run: echo gitleaks` or a binary from anywhere else does not."""
+    d = root / ".github" / "workflows"
+    if not d.is_dir():
+        return False
+    source = re.compile(r"https://github\.com/gitleaks/gitleaks/releases/download/")
+    verify = re.compile(r"\bsha256sum\s+(?:-c|--check)\b|\bshasum\s+-a\s*256\s+(?:-c|--check)\b")
+    pinned = re.compile(r"\b[0-9a-f]{64}\b")
+    scan = re.compile(r"^\s*(?:-\s*)?(?:run:\s*)?(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b", re.MULTILINE)
+    for f in sorted(d.glob("*.y*ml")):
+        text = f.read_text(encoding="utf-8", errors="replace")
+        if all(p.search(text) for p in (source, verify, pinned, scan)):
             return True
     return False
 
@@ -559,15 +592,15 @@ CHECKS = [
      lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
     ("SEC-1", "MUST", ALL, {"active", "archive", "placeholder"}, "Secret scanning in CI (gitleaks or equivalent)",
-     lambda r: uses_tool(r, "gitleaks", "trufflehog")),
+     lambda r: uses_tool(r, *SECRET_SCANNERS) or verified_scanner_run(r)),
     ("SEC-2", "MUST", ALL - {"profile"}, {"active"}, "Dependabot covers github-actions + every package ecosystem in repo",
      lambda r: dependabot_ok(r)),
     ("SEC-3", "MUST", CODE, {"active"}, "CodeQL / SAST runs on PRs",
-     lambda r: uses_tool(r, "codeql-action")),
+     lambda r: uses_tool(r, "github/codeql-action/init", "github/codeql-action/analyze")),
     ("SEC-4", "SHOULD", CODE, {"active"}, "Dependency review blocks vulnerable additions on PRs",
-     lambda r: uses_tool(r, "dependency-review-action")),
+     lambda r: uses_tool(r, "actions/dependency-review-action")),
     ("SEC-5", "SHOULD", ALL - {"profile"}, {"active"}, "OpenSSF Scorecard published",
-     lambda r: uses_tool(r, "scorecard-action")),
+     lambda r: uses_tool(r, "ossf/scorecard-action")),
     ("SEC-6", "MUST", ALL, {"active", "archive", "placeholder"}, "Workflows declare least-privilege `permissions:`",
      lambda r: all_workflows_have_permissions(r)),
     ("SEC-7", "SHOULD", CODE, {"active"}, ".env.example documents config; .env is git-ignored",

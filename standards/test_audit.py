@@ -82,6 +82,55 @@ class ChecksCannotBeGamed(unittest.TestCase):
         self.assertIs(result(root, "SEC-3"), True)
         self.assertIs(result(root, "SEC-1"), False)
 
+    def test_lookalike_action_is_not_the_tool(self):
+        # #17 round 4 P2-11: a path segment that merely starts with the tool's name passed SEC-1.
+        sha = "0" * 40
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "gitleaks/gitleaks-action@v3", f"attacker/gitleaks-lookalike@{sha}") + (
+            f"      - uses: evil/codeql-action/init@{sha}\n      - uses: x/scorecard-action-fake@{sha}\n")})
+        for cid in ("SEC-1", "SEC-3", "SEC-5"):
+            self.assertIs(result(root, cid), False, cid)
+
+    def test_sarif_upload_alone_is_not_codeql(self):
+        # The Scorecard template uploads its SARIF with github/codeql-action/upload-sarif;
+        # that step runs no analysis, so it must not satisfy SEC-3 (CodeQL / SAST runs).
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n",
+            f"      - uses: github/codeql-action/upload-sarif@{'0' * 40}\n")})
+        self.assertIs(result(root, "SEC-3"), False)
+
+    def test_real_actions_by_owner_repo_count(self):
+        sha = "0" * 40
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n",
+            f"      - uses: trufflesecurity/trufflehog@{sha}\n      - uses: github/codeql-action/analyze@{sha}\n"
+            f"      - uses: actions/dependency-review-action@{sha}\n      - uses: ossf/scorecard-action@{sha}\n")})
+        for cid in ("SEC-1", "SEC-3", "SEC-4", "SEC-5"):
+            self.assertIs(result(root, cid), True, cid)
+
+    VERIFIED_BIN = (
+        "      - run: |\n"
+        "          curl -sSfL -o g.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz\n"
+        f"          echo \"{'a' * 64}  g.tgz\" | sha256sum -c -\n"
+        "          tar -xzf g.tgz gitleaks\n"
+        "      - run: ./gitleaks git --redact --exit-code 1 .\n")
+
+    def test_checksum_verified_binary_counts_for_sec1(self):
+        # A pinned-sha256 binary is a stronger supply chain than an action that downloads
+        # an unverified one (SOTA SEC-A5); Miao #9 verdict.
+        root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace(
+            "      - uses: gitleaks/gitleaks-action@v3\n", self.VERIFIED_BIN)})
+        self.assertIs(result(root, "SEC-1"), True)
+
+    def test_binary_without_checksum_or_from_elsewhere_does_not_count(self):
+        unverified = self.VERIFIED_BIN.replace("| sha256sum -c -", "")
+        elsewhere = self.VERIFIED_BIN.replace("github.com/gitleaks/gitleaks", "evil.example/gitleaks")
+        no_scan = self.VERIFIED_BIN.replace("./gitleaks git", "echo gitleaks git")
+        for name, steps in (("unverified", unverified), ("elsewhere", elsewhere), ("no_scan", no_scan)):
+            root = make(Path(self.base) / name, {".github/workflows/ci.yml": GOOD_WF.replace(
+                "      - uses: gitleaks/gitleaks-action@v3\n", steps)})
+            self.assertIs(result(root, "SEC-1"), False, name)
+
     def test_write_all_fails_least_privilege(self):
         root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace("permissions:\n  contents: read", "permissions: write-all")})
         self.assertIs(result(root, "SEC-6"), False)
@@ -129,7 +178,9 @@ class LlmDetection(unittest.TestCase):
                           ("e.js", "const Anthropic = require('@anthropic-ai/sdk');\n"),
                           ("f.ts", "await fetch('https://api.anthropic.com/v1/messages', init);\n"),
                           ("g.py", "httpx.post('https://api.openai.com/v1/chat/completions', json=body)\n"),
-                          ("h.py", "from google import genai\n")):
+                          ("h.py", "from google import genai\n"),
+                          ("i.py", 'client.post(f"{settings.llm_base_url}/chat/completions", json=body)\n'),
+                          ("j.ts", "await fetch('https://api.deepseek.com/v1/chat/completions', init);\n")):
             with tempfile.TemporaryDirectory() as a:
                 self.assertTrue(audit.uses_llm(make(a, {rel: code})), rel)
 
@@ -192,6 +243,13 @@ class LeastPrivilegeAndRealTools(unittest.TestCase):
             root = make(a, {".github/workflows/ci.yml": "on: push\n" + job_write + self.JOB
                             + "    permissions:\n      contents: write\n    steps:\n      - run: pytest\n"})
             self.assertIs(result(root, "SEC-6"), True)
+
+    def test_flow_mapping_permissions(self):
+        # `permissions: { contents: read }` is read-only; a write inside the braces still fails.
+        self.assertIs(self.wf("permissions: { contents: read }\n", "      - run: pytest\n")["SEC-6"], True)
+        self.assertIs(self.wf("permissions: {contents: read, issues: write}\n", "      - run: pytest\n")["SEC-6"], False)
+        self.assertIs(self.wf("permissions: {}\n", "      - run: pytest\n")["SEC-6"], True)
+        self.assertIs(self.wf("permissions: read-all\n", "      - run: pytest\n")["SEC-6"], True)
 
     def test_echoing_tool_names_is_not_running_them(self):
         got = self.wf("permissions:\n  contents: read\n", "      - run: echo gitleaks codeql-action pytest ruff\n")

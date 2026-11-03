@@ -108,6 +108,16 @@
       "kind": "meta",
       "status": "active"
     },
+    "operator-session-permissions": {
+      "kind": "skill",
+      "status": "active",
+      "product": "operator-session-permissions"
+    },
+    "agent-send-gate": {
+      "kind": "library",
+      "status": "active",
+      "product": "agent-send-gate"
+    },
     "vertciti-sp07-builder": {
       "kind": "tool",
       "status": "archive"
@@ -127,6 +137,10 @@
     "pgvector-python": {
       "kind": "library",
       "status": "fork"
+    },
+    "vertciti-auto-gpt": {
+      "kind": "app",
+      "status": "archive"
     }
   }
 }

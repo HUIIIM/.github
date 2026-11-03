@@ -33,4 +33,15 @@ node standards/a11y/contrast_audit.js <url> [--width 390|1280] [--scheme light|d
 ## 接入
 
 - **DNA**：`.github/workflows/design.yml` 的 `contrast` 作业对 `design/preview/components.html`（全部组件 × 全部状态）跑浅/深 × 390/1280。新组件必须加进这一页。
+- **DNA 表面矩阵**：`design/preview/surfaces.html` 由 `build.py` 生成——每个文字 token、徽章、证据档、链接放在页面/软底/卡片/墨色/强调五种表面上，同样跑四组组合。v4.0 的深色卡片上状态徽章只有 2.84–4.44:1，就是因为没有这一页（#40）。
 - **产品**：在各产品 CI 里起服务后，对主要页面跑同样的四组组合（见各仓库的 `contrast` 作业）。
+
+## 版式门禁 · layout gate
+
+```bash
+node standards/a11y/layout_audit.js <url> [--width 390|1280] [--scheme light|dark] [--min 44]
+```
+
+- **溢出**：页面宽于视口（WCAG 1.4.10 重排）即失败。
+- **一字一行**：一段文字折行数 ≥ 字数的一半（例：v4.0 画廊里没有 `dna-span-*` 的卡片被挤成 1/12 宽）。
+- **触控目标**：链接、按钮、表单控件、标签页 < 44×44px 即失败；句中链接豁免（同 WCAG 2.2 SC 2.5.8）。其他刻意例外标 `data-target-exempt="理由"`，留痕可审。
