@@ -207,6 +207,67 @@ class LicenseCheck(unittest.TestCase):
             self.assertIs(result(root, "GOV-1"), False)
 
 
+class WorkflowThatRunsNothing(unittest.TestCase):
+    """#83: a workflow whose steps never run, or only echo tool names, earns no tool check."""
+
+    Z = "0" * 40
+    SHA = "3d3c42e5aac5ba805825da76410c181273ba90b1"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def wf(self, steps, head="on: pull_request\npermissions:\n  contents: read\n"):
+        return make(self.base, {".github/workflows/ci.yml": head + "jobs:\n  a:\n    runs-on: ubuntu-latest\n"
+                                "    timeout-minutes: 5\n    steps:\n" + steps})
+
+    def test_issue_83_fixture_fails_every_tool_check(self):
+        z = self.Z
+        root = self.wf(f"      - uses: gitleaks/gitleaks-action@{z}\n        if: false\n"
+                       f"      - uses: actions/dependency-review-action@{z}\n        if: false\n"
+                       f"      - uses: ossf/scorecard-action@{z}\n        if: false\n"
+                       "      - run: echo pytest ruff mypy playwright dna-drift\n")
+        for cid in ("SEC-1", "SEC-4", "SEC-5", "SEC-11", "QA-4", "QA-5", "UI-2"):
+            self.assertIs(result(root, cid), False, cid)
+
+    def test_disabled_forms_and_job_level_if(self):
+        for guard in ("if: false", "if: 'false'", "if: ${{ false }}"):
+            root = self.wf(f"      - name: scan\n        {guard}\n        uses: gitleaks/gitleaks-action@{self.SHA}\n")
+            self.assertIs(result(root, "SEC-1"), False, guard)
+            self.tmp.cleanup(); self.tmp = tempfile.TemporaryDirectory(); self.base = self.tmp.name
+        root = make(self.base, {".github/workflows/ci.yml": "on: pull_request\npermissions:\n  contents: read\njobs:\n"
+                                "  a:\n    if: false\n    runs-on: x\n    timeout-minutes: 5\n    steps:\n"
+                                f"      - uses: gitleaks/gitleaks-action@{self.SHA}\n"})
+        self.assertIs(result(root, "SEC-1"), False)
+
+    def test_a_disabled_step_does_not_hide_its_neighbours(self):
+        root = self.wf(f"      - uses: ossf/scorecard-action@{self.SHA}\n        if: false\n"
+                       f"      - uses: gitleaks/gitleaks-action@{self.SHA}\n"
+                       "      - run: npx tsc --noEmit\n"
+                       "      - if: github.event_name == 'pull_request'\n        run: npx playwright test\n")
+        self.assertIs(result(root, "SEC-1"), True)
+        self.assertIs(result(root, "SEC-5"), False)
+        self.assertIs(result(root, "QA-4"), True)
+        self.assertIs(result(root, "QA-5"), True)  # a real (non-constant) if: still runs
+
+    def test_placeholder_sha_is_not_a_pin(self):
+        for sha in (self.Z, "a" * 40, "01" * 20):
+            root = self.wf(f"      - uses: actions/checkout@{sha}\n")
+            self.assertIs(result(root, "SEC-11"), False, sha)
+            self.tmp.cleanup(); self.tmp = tempfile.TemporaryDirectory(); self.base = self.tmp.name
+        root = self.wf(f"      - uses: actions/checkout@{self.SHA}\n")
+        self.assertIs(result(root, "SEC-11"), True)
+
+    def test_dna_drift_counts_only_as_the_reusable_workflow(self):
+        root = make(self.base, {".github/workflows/ci.yml": "on: pull_request\npermissions:\n  contents: read\njobs:\n"
+                                "  dna:\n    uses: HUIIIM/.github/.github/workflows/dna-drift.yml@main\n"
+                                "    with:\n      vendored: app/dna.css\n      flavor: dna.css\n"})
+        self.assertIs(result(root, "UI-2"), True)
+
+
 class CheckoutPathDoesNotChangeGrades(unittest.TestCase):
     def test_build_in_parent_path_is_not_skipped(self):
         files = {"web/package.json": '{"dependencies": {"x": "*"}}\n'}

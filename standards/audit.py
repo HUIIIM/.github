@@ -99,11 +99,49 @@ def grep(root, pattern, suffixes):
 COMMENT = re.compile(r"(^|\s)#.*$", re.MULTILINE)
 
 
+CONST_FALSE_IF = re.compile(r"^(\s*)(-\s+)?if:\s*(?:false|'false'|\"false\"|\$\{\{\s*false\s*\}\})\s*$")
+
+
+def drop_disabled(text):
+    """Remove every step or job whose own `if:` is a constant false: it never runs (#83).
+
+    `- uses: gitleaks/...` guarded by `if: false` is not a secret scan. Works on the line
+    structure, like the rest of this module (the assessor runs without PyYAML).
+    """
+    lines = text.splitlines()
+    while True:
+        hit = next((i for i, l in enumerate(lines) if CONST_FALSE_IF.match(l)), None)
+        if hit is None:
+            return "\n".join(lines)
+        m = CONST_FALSE_IF.match(lines[hit])
+        if m.group(2):  # `- if: false` opens the step itself
+            start, owner = hit, len(m.group(1))
+        else:  # the owner is the nearest line above with a smaller indent (a `- ` step or a job key)
+            key = len(m.group(1))
+            start = hit - 1
+            while start >= 0 and (not lines[start].strip() or len(lines[start]) - len(lines[start].lstrip()) >= key):
+                start -= 1
+            if start < 0:
+                del lines[hit]  # top-level `if:` (not valid in a workflow): drop just the line
+                continue
+            dash = re.match(r"^(\s*)-\s+", lines[start])
+            owner = len(dash.group(1)) if dash else len(lines[start]) - len(lines[start].lstrip())
+        end = start + 1
+        while end < len(lines) and (not lines[end].strip() or len(lines[end]) - len(lines[end].lstrip()) > owner):
+            end += 1
+        del lines[start:end]
+
+
+def workflow_text(f):
+    """One workflow file as the checks read it: YAML comments and never-running steps/jobs removed."""
+    return drop_disabled(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace")))
+
+
 def workflows(root):
-    """All workflow files, YAML comments removed: a tool named in a comment is not a tool that runs."""
+    """All workflow files, comments and constant-false steps removed: a tool named in a comment,
+    or behind `if: false`, is not a tool that runs."""
     d = root / ".github" / "workflows"
-    return "\n".join(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
-                     for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
+    return "\n".join(workflow_text(f) for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
 
 
 def substantive(root, *paths, min_chars=40):
@@ -287,7 +325,7 @@ def run_commands(root, pr_only=False):
     if not d.is_dir():
         return cmds
     for f in sorted(d.glob("*.y*ml")):
-        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        text = workflow_text(f)
         if pr_only and not PR_TRIGGER.search(text):
             continue
         lines = text.splitlines()
@@ -411,6 +449,9 @@ def unpinned_actions(root):
                 bad.append(f"{f.name}: {ref} (no ref)")
             elif not FULL_SHA.match(ref.rsplit("@", 1)[1]):
                 bad.append(f"{f.name}: {ref}")
+            elif len(set(ref.rsplit("@", 1)[1])) < 6:
+                # 0000…, aaaa…, 0101…: 40 hex digits but no commit (a real SHA uses ~16 distinct digits)
+                bad.append(f"{f.name}: {ref} (placeholder SHA)")
     return bad
 
 
@@ -622,9 +663,10 @@ CHECKS = [
     ("QA-3", "SHOULD", CODE, {"active"}, "pre-commit hooks mirror CI",
      lambda r: exists(r, ".pre-commit-config.yaml")),
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",
-     lambda r: bool(re.search(r"mypy|pyright|tsc|typecheck|type-check", workflows(r) + read(r, "package.json", "frontend/package.json")))),
+     lambda r: runs_tool(r, r"mypy|pyright|tsc|vue-tsc|(?:npm|pnpm|yarn|bun) (?:run )?(?:typecheck|type-check|tsc)")),
     ("QA-5", "SHOULD", {"app"}, {"active"}, "Browser-level test or contrast gate in CI (playwright / contrast)",
-     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.IGNORECASE))),
+     lambda r: runs_tool(r, r"playwright|node \S*contrast\S*|(?:npm|pnpm|yarn|bun) (?:run )?(?:e2e|test:e2e|contrast)")
+     or uses_tool(r, "microsoft/playwright-github-action")),
     # ---- product kit / docs ----
     ("DOC-1", "MUST", ALL - {"meta", "profile", "docs"}, {"active"}, "README has a quickstart",
      lambda r: has_section(readme(r), r"quick ?start", r"快速开始", r"getting started", r"30 ?秒", r"30-second")),
@@ -652,7 +694,7 @@ CHECKS = [
     ("UI-1", "MUST", {"app", "skill", "site"}, {"active"}, "Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)",
      lambda r: ui_repo(r) is False or any(r.rglob("dna*.css"))),
     ("UI-2", "SHOULD", {"app", "site"}, {"active"}, "dna-drift check wired in CI (vendored DNA cannot silently diverge)",
-     lambda r: ui_repo(r) is False or "dna-drift" in workflows(r)),
+     lambda r: ui_repo(r) is False or uses_tool(r, "huiiim/.github/.github/workflows/dna-drift.yml", "./.github/workflows/dna-drift.yml")),
     # ---- ops / reliability (apps and sites) ----
     ("OPS-1", "MUST", {"app"}, {"active"}, "Health endpoint (/healthz or /health)",
      lambda r: grep(r, r"[\"'](/api)?(/v1)?/(healthz|health|livez|readyz)[\"']", (".py", ".ts", ".tsx", ".js"))),
