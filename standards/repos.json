@@ -28,6 +28,13 @@
       "product": "vertciti Assistant",
       "ui": "static"
     },
+    "vertciti-anchors": {
+      "kind": "docs",
+      "status": "active",
+      "product": "Daily audit-anchor commit chain (vertciti-chat C2 anchor); asset repo, no Claude face",
+      "public": true,
+      "public_reason": "public by design - the daily anchor chain must be externally verifiable (created 2026-11-03, GitHub team; OM-6 registration)"
+    },
     "echowatch": {
       "kind": "app",
       "status": "active",
