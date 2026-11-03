@@ -4,6 +4,22 @@ All notable changes to the DNA (`design/`) are recorded here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/) via `tokens.json` `version`.
 Releases are tagged `dna-vX.Y.Z` after merge; consumers pin that tag in `dna-drift` (`ref:`).
 
+## [4.1.1] — unreleased
+
+Puts every DNA font size and spacing value on the scales the fleet's website QA gates enforce (#101), so a
+product that vendors the DNA passes gates A1 and A2 with no local overrides. No variable or class was removed.
+
+### Changed
+- **Font sizes off the type scale** (gate A1 rejects 13/15/17/19px): hints, the utility bar, footer and
+  `.dna-stat__src` 13px → 14px; `.dna-tab` 15px → 16px; `.dna-empty__text` 17px → 18px.
+- **Spacing off the 4px scale** (gate A2 allows 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 120):
+  table cells `10px 12px` → `8px 12px`; `.dna-btn` `0 28px` → `0 24px`; `.dna-card` 28px → 24px; inputs
+  `12px 14px` → `12px 16px`; `.dna-tab` `0 14px` → `0 16px`; `.dna-badge` `2px 8px` → `4px 8px`;
+  `.dna-alert` `14px 16px` → `12px 16px`; `.dna-logo` `10px 0` → `8px 0`; `.dna-pagehead` clamp bounds
+  72/28px → 64/24px; `.dna-seg` clamp bounds 10/18px → 8/16px.
+- **`.dna-seg` joins its segments by dropping the left border** of every segment after the first, instead
+  of a `-2px` margin.
+
 ## [4.1.0] — unreleased
 
 Closes the design-system findings of the independent SOTA assessment (#40). No CSS variable or class was
