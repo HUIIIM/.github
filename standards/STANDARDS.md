@@ -41,6 +41,7 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
    **立不了案即整轮失败**：`STANDARDS_TOKEN` 没有该仓的 issues 写权限时，run 标红并列出这些仓库——立不了的事故不算"已处理"（见独立评估 #17 第 4 轮 P1-1）。
    **尚未实现**：bootstrap 自动出 PR；`archive` / `placeholder` 仓低于线时不立案。
 6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。
+   **新鲜度 SLO**：`main` 上的记分卡生成时间距今 < 36 小时，按天计 99%。[`card-freshness`](../.github/workflows/card-freshness.yml) 每日 06:17 UTC 检查（[`card_freshness.py`](card_freshness.py)），超时即失败告警——卡片经常驻 PR `standards/daily-card` 合入，PR 没人批准时卡片会悄悄过期（#85）。
 7. **对标再升级。** 每季度把每个产品与同类最强的公开产品逐项对比（功能、性能、安全、可访问性、文档），差距写进该仓库的 `docs/PRODUCT.md`「路线图」，并新增检查项把它变成可测的线。线只升不降。
 
 **流程**

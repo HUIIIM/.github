@@ -1,0 +1,29 @@
+# Freshness SLO for the published scorecard (issue #85, STANDARDS.md §考核 6).
+# The card reaches main only through the standing standards/daily-card PR; if that PR
+# is not approved and merged, the public "graded daily" card goes stale silently.
+# This job fails (GitHub notifies on failed scheduled runs) when the card on main is
+# older than 36 h. SLO: card on main < 36 h old on 99 % of days.
+name: card-freshness
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # daily, after the 03:40 assess run has had time to land
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.12"
+      - name: Card on main is younger than 36 h
+        run: python3 standards/card_freshness.py --max-age-hours 36
