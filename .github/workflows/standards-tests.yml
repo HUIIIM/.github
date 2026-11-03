@@ -1,4 +1,4 @@
-# Regression tests for the assessor (standards/audit.py, standards/bootstrap.py).
+# Regression tests for standards/ (assessor, bootstrap, incidents, messaging DNS, card freshness).
 # Runs PR code, so: read-only token, no secrets, no persisted credentials.
 name: standards-tests
 
@@ -23,5 +23,7 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: "3.12"
-      - name: audit.py / bootstrap.py regression tests
-        run: python3 -m unittest -v standards/test_audit.py standards/test_messaging_dns.py
+      # Discover every standards/test_*.py: a test file that exists but is not listed here
+      # never runs (test_incidents.py was in that state until #85).
+      - name: standards/ regression tests (every test_*.py)
+        run: python3 -m unittest discover -v -s standards -p 'test_*.py'
