@@ -385,15 +385,109 @@ def verified_scanner_run(root):
     d = root / ".github" / "workflows"
     if not d.is_dir():
         return False
-    source = re.compile(r"https://github\.com/gitleaks/gitleaks/releases/download/")
+    source = re.compile(r"^(?:curl|wget)\b.*https://github\.com/gitleaks/gitleaks/releases/download/")
     verify = re.compile(r"\bsha256sum\s+(?:-c|--check)\b|\bshasum\s+-a\s*256\s+(?:-c|--check)\b")
     pinned = re.compile(r"\b[0-9a-f]{64}\b")
-    scan = re.compile(r"^\s*(?:-\s*)?(?:run:\s*)?(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b", re.MULTILINE)
+    scan = re.compile(r"^(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b")
     for f in sorted(d.glob("*.y*ml")):
         text = f.read_text(encoding="utf-8", errors="replace")
-        if all(p.search(text) for p in (source, verify, pinned, scan)):
-            return True
+        for chains in _executed_chains_by_job(text):
+            parts = [p.strip() for c in chains for p in re.split(r"\|", c)]
+            if (any(source.match(c) for c in chains) and any(verify.search(c) for c in chains)
+                    and any(pinned.search(c) for c in chains) and any(scan.match(p) for p in parts)):
+                return True
     return False
+
+
+_FALSE_IF = re.compile(r"^(?:false|0|null|''|\"\"|!\s*true|false\s*&&.*)$", re.IGNORECASE)
+_HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][\w]*)\1")
+_PRINTERS = re.compile(r"^(?:echo|printf|print|cat|true|:)\b")
+
+
+def _if_disabled(value):
+    """True for an `if:` that can never be truthy (`false`, `${{ false }}`, `0`, `!true`, `false && x`)."""
+    v = value.strip().strip("'\"").strip()
+    m = re.fullmatch(r"\$\{\{(.*)\}\}", v, re.DOTALL)
+    v = (m.group(1) if m else v).strip().strip("'\"").strip()
+    return bool(_FALSE_IF.match(v)) or v == ""
+
+
+def _step_commands(body_lines):
+    """Commands a `run:` body would execute: heredoc bodies dropped, chains split on
+    && || ; and newlines, swallowed chains (`|| true`) and print-only chains removed."""
+    lines, tag = [], None
+    for ln in body_lines:
+        if tag:
+            if ln.strip() == tag:
+                tag = None
+            continue  # heredoc payload is data, not a command
+        lines.append(ln)
+        m = _HEREDOC.search(ln)
+        if m:
+            tag = m.group(2)
+    out = []
+    for raw in "\n".join(lines).split("\n"):
+        if SWALLOWED.search(raw):
+            continue
+        for chain in re.split(r"&&|;", re.split(r"\|\|", raw)[0]):
+            c = RUN_PREFIX.sub("", chain.strip().strip("'\""))
+            if not c or (_PRINTERS.match(c) and "|" not in c):
+                continue  # printing text is not running it
+            out.append(c)
+    return out
+
+
+def _executed_chains_by_job(text):
+    """For each job of a workflow, the commands of its steps that can actually run.
+
+    Comments are stripped; a job or step whose `if:` can never be true, or whose
+    `continue-on-error: true` lets a failing scan pass, is not executable."""
+    text = COMMENT.sub("", text)
+    result = []
+    for lines in job_blocks(text).values():
+        if any(re.match(r"^    if:\s*(.*)$", ln) and _if_disabled(re.match(r"^    if:\s*(.*)$", ln).group(1))
+               for ln in lines):
+            continue
+        cmds, in_steps = [], False
+        steps = []  # (indent of step keys, [lines], dash indent)
+        for ln in lines:
+            if re.match(r"^    steps:\s*$", ln):
+                in_steps = True
+                continue
+            if not in_steps:
+                continue
+            dash = re.match(r"^(\s*)-\s+", ln)
+            if dash and (not steps or len(dash.group(1)) <= steps[-1][2]):
+                steps.append((len(dash.group(1)) + 2, [ln], len(dash.group(1))))
+            elif steps:
+                steps[-1][1].append(ln)
+        for keys, body, _ in steps:
+            skip, run = False, None
+            n = 0
+            while n < len(body):
+                ln = body[n]
+                m = re.match(r"^(\s*)(?:-\s+)?([\w-]+):\s*(.*)$", ln)
+                if m and (len(m.group(1)) + (2 if re.match(r"^\s*-\s", ln) else 0)) == keys:
+                    k, v = m.group(2), m.group(3)
+                    if k == "if" and _if_disabled(v):
+                        skip = True
+                    elif k == "continue-on-error" and v.strip().strip("'\"").lower() == "true":
+                        skip = True
+                    elif k == "run":
+                        if v.strip() in ("|", ">", "|-", ">-", "|+", ">+"):
+                            blk = []
+                            n += 1
+                            while n < len(body) and (not body[n].strip() or len(body[n]) - len(body[n].lstrip()) >= keys + 1):
+                                blk.append(body[n])
+                                n += 1
+                            run = blk
+                            continue
+                        run = [v]
+                n += 1
+            if run is not None and not skip:
+                cmds.extend(_step_commands(run))
+        result.append(cmds)
+    return result
 
 
 def unpinned_actions(root):

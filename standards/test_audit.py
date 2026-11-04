@@ -131,6 +131,49 @@ class ChecksCannotBeGamed(unittest.TestCase):
                 "      - uses: gitleaks/gitleaks-action@v3\n", steps)})
             self.assertIs(result(root, "SEC-1"), False, name)
 
+    def _bin_wf(self, steps):
+        return GOOD_WF.replace("      - uses: gitleaks/gitleaks-action@v3\n", steps)
+
+    def test_sec1_text_bypasses_fail(self):
+        # #94 / #108 SEC-1 bypasses: text that looks like a scan but never executes.
+        v = self.VERIFIED_BIN
+        scan = "      - run: ./gitleaks git --redact --exit-code 1 .\n"
+        cases = {
+            "comment": v.replace(scan, "      # - run: ./gitleaks git --redact .\n      - run: echo hi\n"),
+            "comment_in_block": v.replace(scan, "      - run: |\n          # gitleaks git .\n          echo hi\n"),
+            "if_false": v.replace(scan, "      - if: false\n        run: ./gitleaks git .\n"),
+            "if_false_expr": v.replace(scan, "      - if: ${{ false }}\n        run: ./gitleaks git .\n"),
+            "job_if_false": v.replace("    steps:", "    steps:") and GOOD_WF.replace(
+                "    timeout-minutes: 10\n", "    timeout-minutes: 10\n    if: false\n").replace(
+                "      - uses: gitleaks/gitleaks-action@v3\n", v),
+            "heredoc_print": v.replace(scan, "      - run: |\n          cat <<EOF\n          gitleaks git .\n          EOF\n"),
+            "echo_print": v.replace(scan, "      - run: echo 'gitleaks git .'\n"),
+            "swallowed": v.replace(scan, "      - run: ./gitleaks git . || true\n"),
+            "continue_on_error": v.replace(scan, "      - run: ./gitleaks git .\n        continue-on-error: true\n"),
+            "download_only_in_echo": v.replace("          curl -sSfL -o g.tgz", "          echo curl -sSfL -o g.tgz"),
+            "verify_only_in_heredoc": v.replace(
+                f"          echo \"{'a' * 64}  g.tgz\" | sha256sum -c -\n",
+                f"          cat <<EOF\n          echo \"{'a' * 64}  g.tgz\" | sha256sum -c -\n          EOF\n"),
+        }
+        for name, steps in cases.items():
+            wf = steps if name == "job_if_false" else self._bin_wf(steps)
+            root = make(Path(self.base) / name, {".github/workflows/ci.yml": wf})
+            self.assertIs(result(root, "SEC-1"), False, name)
+
+    def test_sec1_real_executed_scan_passes(self):
+        v = self.VERIFIED_BIN
+        scan = "      - run: ./gitleaks git --redact --exit-code 1 .\n"
+        cases = {
+            "plain": v,
+            "if_true": v.replace(scan, "      - if: always()\n        run: ./gitleaks git .\n"),
+            "in_block": v.replace(scan, "      - run: |\n          echo scanning\n          ./gitleaks git --redact .\n"),
+            "chained": v.replace(scan, "      - run: cd . && ./gitleaks detect --redact\n"),
+            "after_heredoc": v.replace(scan, "      - run: |\n          cat <<EOF > note\n          x\n          EOF\n          ./gitleaks dir .\n"),
+        }
+        for name, steps in cases.items():
+            root = make(Path(self.base) / name, {".github/workflows/ci.yml": self._bin_wf(steps)})
+            self.assertIs(result(root, "SEC-1"), True, name)
+
     def test_write_all_fails_least_privilege(self):
         root = make(self.base, {".github/workflows/ci.yml": GOOD_WF.replace("permissions:\n  contents: read", "permissions: write-all")})
         self.assertIs(result(root, "SEC-6"), False)
