@@ -346,5 +346,35 @@ class BootstrapHarden(unittest.TestCase):
             bootstrap._BRANCH_ONLY.discard(("someone/action", "main"))
 
 
+class AssessorCrashExitCode(unittest.TestCase):
+    """#113: a crash exits 3, never 1 ("a MUST is failing"), so no consumer can read it as a grade."""
+
+    def run_audit(self, argv):
+        import contextlib
+        import io
+        from unittest import mock
+        err = io.StringIO()
+        with mock.patch.object(sys, "argv", ["audit.py", *argv]), contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(err), self.assertRaises(SystemExit) as exit_:
+            audit.entrypoint()
+        return exit_.exception.code, err.getvalue()
+
+    def test_crash_after_the_json_is_written_exits_3(self):
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            card = Path(d) / "card.json"
+            with mock.patch.object(audit, "to_markdown", side_effect=RuntimeError("boom")):
+                code, err = self.run_audit([d, "--json", str(card), "--md"])
+            self.assertTrue(card.exists())  # the half-written case #113 is about
+        self.assertEqual(code, audit.CRASHED)
+        self.assertEqual(code, 3)
+        self.assertIn("RuntimeError: boom", err)
+
+    def test_a_graded_run_keeps_its_grade_exit_code(self):
+        with tempfile.TemporaryDirectory() as d:  # empty portfolio: every repo MISSING
+            code, _ = self.run_audit([d])
+        self.assertEqual(code, 2)
+
+
 if __name__ == "__main__":
     unittest.main()
