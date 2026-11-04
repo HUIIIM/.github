@@ -26,7 +26,9 @@ A registered repository that cannot be read (clone failed, not found) is not
 dropped: it gets a MISSING row (score 0, grade C, P0) on every output.
 
 Exit code 2 when any registered repository is MISSING, else 1 when any
-applicable MUST check fails, else 0.
+applicable MUST check fails, else 0. Exit code 3 means the assessor itself
+crashed (an uncaught exception, traceback on stderr): no grade was produced,
+so it must never read as "a MUST is failing" (#113).
 """
 from __future__ import annotations
 
@@ -36,6 +38,7 @@ import re
 import ssl
 import sys
 import time
+import traceback
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -848,5 +851,17 @@ def main():
     sys.exit(2 if missing else 1 if failed_must else 0)
 
 
+CRASHED = 3  # exit code for an assessor crash; 0/1/2 are grades (see the module docstring)
+
+
+def entrypoint():
+    """main(), with any uncaught exception turned into exit 3 instead of Python's default 1."""
+    try:
+        main()
+    except Exception:  # noqa: BLE001 -- every crash, whatever its type, must exit CRASHED
+        traceback.print_exc()
+        sys.exit(CRASHED)
+
+
 if __name__ == "__main__":
-    main()
+    entrypoint()
