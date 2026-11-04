@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-03 12:09Z",
+ "generated": "2026-11-04 11:35Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 23,
-  "at_bar": 4,
-  "incidents": 19
+  "at_bar": 7,
+  "incidents": 16
  },
  "repos": [
   {
@@ -27,19 +27,17 @@
    "status": "active",
    "product": "Miao engine",
    "url": "",
-   "score": 93.0,
-   "grade": "A++",
+   "score": 96.5,
+   "grade": "S",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "SEC-6",
-    "SEC-8"
+    "SEC-6"
    ],
    "unprobed": [],
    "failing": [
-    "SEC-6",
-    "SEC-8"
+    "SEC-6"
    ],
    "not_applicable": [
     "SEC-9",
@@ -137,7 +135,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -400,22 +398,19 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 88.2,
-   "grade": "A",
+   "score": 91.4,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P0",
-   "must_failing": [
-    "REL-1"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
-    "SEC-9",
     "DOC-11",
     "UI-2",
     "OPS-5",
-    "REL-1",
     "REL-2",
+    "PERF-1",
     "CONT-1",
     "PRIV-1",
     "AI-1"
@@ -517,8 +512,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "ok": true,
+     "evidence": "all five present"
     },
     {
      "id": "SEC-10",
@@ -699,22 +694,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 151 ms"
+     "ok": true,
+     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1565 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 56 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 633 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": true,
-     "evidence": "151 ms to first response (budget 800 ms)"
+     "ok": false,
+     "evidence": "1565 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1163,8 +1158,8 @@
    "kind": "app",
    "status": "active",
    "product": "EchoWatch",
-   "url": "https://echowatch-demo.netlify.app/",
-   "score": 66.7,
+   "url": "https://demo.vertciti.com/",
+   "score": 67.7,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -1192,8 +1187,7 @@
     "UI-1",
     "UI-2",
     "REL-1",
-    "REL-2",
-    "PUB-2",
+    "PERF-1",
     "CONT-1",
     "CONT-2",
     "AI-1",
@@ -1297,7 +1291,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
     },
     {
      "id": "SEC-10",
@@ -1479,28 +1473,28 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/ -> 402 in 173 ms"
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": false,
-     "evidence": "https://echowatch-demo.netlify.app/healthz -> 402 in 483 ms"
+     "ok": true,
+     "evidence": "https://demo.vertciti.com/healthz -> 200 in 556 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": true,
-     "evidence": "173 ms to first response (budget 800 ms)"
+     "ok": false,
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
     },
     {
      "id": "PUB-2",
      "level": "SHOULD",
      "desc": "Public demo or product URL registered and named in README (outsiders can see it run)",
-     "ok": false,
-     "evidence": "README does not mention echowatch-demo.netlify.app"
+     "ok": true,
+     "evidence": "README mentions demo.vertciti.com"
     },
     {
      "id": "CONT-1",
@@ -1552,20 +1546,15 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 93.5,
-   "grade": "A++",
+   "score": 98.9,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P0",
-   "must_failing": [
-    "REL-1"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
    "failing": [
-    "SEC-9",
-    "SEC-10",
-    "REL-1",
-    "REL-2"
+    "SEC-10"
    ],
    "not_applicable": [],
    "checks": [
@@ -1664,8 +1653,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "ok": true,
+     "evidence": "all five present"
     },
     {
      "id": "SEC-10",
@@ -1846,22 +1835,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 20 ms"
+     "ok": true,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 137 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 22 ms"
+     "ok": true,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 37 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "20 ms to first response (budget 800 ms)"
+     "evidence": "137 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2916,27 +2905,17 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 69.6,
-   "grade": "C",
+   "score": 94.6,
+   "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "must_failing": [
-    "GOV-1",
-    "SEC-2",
-    "SEC-6",
-    "DOC-1",
-    "REL-1"
+    "SEC-6"
    ],
    "unprobed": [],
    "failing": [
-    "GOV-1",
-    "SEC-2",
-    "SEC-6",
-    "SEC-9",
-    "DOC-1",
-    "REL-1",
-    "PUB-1"
+    "SEC-6"
    ],
    "not_applicable": [],
    "checks": [
@@ -2944,8 +2923,8 @@
      "id": "GOV-1",
      "level": "MUST",
      "desc": "LICENSE file present (or README states proprietary/pending)",
-     "ok": false,
-     "evidence": "no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating the status (proprietary / all rights reserved / pending)"
+     "ok": true,
+     "evidence": "no LICENSE file; README licence section states: '许可证待定'"
     },
     {
      "id": "GOV-2",
@@ -2986,7 +2965,7 @@
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3001,7 +2980,7 @@
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": false,
-     "evidence": "anchor.yml: workflow-level contents: write (move write scopes to the job)"
+     "evidence": "contrast.yml: workflow-level issues: write (move write scopes to the job)"
     },
     {
      "id": "SEC-8",
@@ -3014,8 +2993,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "ok": true,
+     "evidence": "all five present"
     },
     {
      "id": "SEC-11",
@@ -3028,7 +3007,7 @@
      "id": "DOC-1",
      "level": "MUST",
      "desc": "README has a quickstart",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3084,22 +3063,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": false,
-     "evidence": "https://vertciti.com/ -> 402 in 35 ms"
+     "ok": true,
+     "evidence": "https://vertciti.com/ -> 200 in 145 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "35 ms to first response (budget 800 ms)"
+     "evidence": "145 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
      "level": "SHOULD",
      "desc": "[live] robots.txt, sitemap.xml and llms.txt served (search + AI discoverability)",
-     "ok": false,
-     "evidence": "missing: robots.txt, sitemap.xml, llms.txt"
+     "ok": true,
+     "evidence": "all served"
     },
     {
      "id": "LEGAL-1",
@@ -3116,33 +3095,21 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 86.0,
-   "grade": "A",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-3",
-    "REL-1"
-   ],
-   "unprobed": [
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
+   "unprobed": [],
+   "failing": [],
+   "not_applicable": [
     "SEC-9",
-    "REL-1",
-    "REL-2",
-    "PERF-1"
-   ],
-   "failing": [
-    "SEC-3",
-    "SEC-4",
-    "SEC-5",
-    "SEC-9",
-    "DOC-5",
     "REL-1",
     "REL-2",
     "PERF-1",
     "PUB-2"
    ],
-   "not_applicable": [],
    "checks": [
     {
      "id": "GOV-1",
@@ -3197,21 +3164,21 @@
      "id": "SEC-3",
      "level": "MUST",
      "desc": "CodeQL / SAST runs on PRs",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-4",
      "level": "SHOULD",
      "desc": "Dependency review blocks vulnerable additions on PRs",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
      "id": "SEC-5",
      "level": "SHOULD",
      "desc": "OpenSSF Scorecard published",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3239,8 +3206,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": null,
-     "evidence": "no url (unprobed)"
+     "ok": "n/a",
+     "evidence": "n/a: GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     {
      "id": "SEC-10",
@@ -3323,7 +3290,7 @@
      "id": "DOC-5",
      "level": "SHOULD",
      "desc": "Visual proof (screenshot/GIF) in README",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3421,29 +3388,29 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": null,
-     "evidence": "no url in repos.json (unprobed)"
+     "ok": "n/a",
+     "evidence": "n/a: GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": null,
-     "evidence": "no url (unprobed)"
+     "ok": "n/a",
+     "evidence": "n/a: GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": null,
-     "evidence": "no url (unprobed)"
+     "ok": "n/a",
+     "evidence": "n/a: GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     {
      "id": "PUB-2",
      "level": "SHOULD",
      "desc": "Public demo or product URL registered and named in README (outsiders can see it run)",
-     "ok": false,
-     "evidence": "no public url registered"
+     "ok": "n/a",
+     "evidence": "n/a: GC 发布冻结 GC-20261022-037：冻结期按私有部署登记，解冻后撤销本标记并补检。"
     },
     {
      "id": "CONT-1",
