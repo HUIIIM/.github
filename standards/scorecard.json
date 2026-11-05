@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-04 11:35Z",
+ "generated": "2026-11-05 11:30Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 23,
-  "at_bar": 7,
-  "incidents": 16
+  "at_bar": 4,
+  "incidents": 19
  },
  "repos": [
   {
@@ -398,19 +398,22 @@
    "status": "active",
    "product": "Translator 王牌翻译器",
    "url": "https://vertciti-translator.vercel.app/",
-   "score": 91.4,
-   "grade": "A++",
+   "score": 88.2,
+   "grade": "A",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "REL-1"
+   ],
    "unprobed": [],
    "failing": [
+    "SEC-9",
     "DOC-11",
     "UI-2",
     "OPS-5",
+    "REL-1",
     "REL-2",
-    "PERF-1",
     "CONT-1",
     "PRIV-1",
     "AI-1"
@@ -512,8 +515,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": true,
-     "evidence": "all five present"
+     "ok": false,
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -694,22 +697,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 200 in 1565 ms"
+     "ok": false,
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 84 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 404 in 633 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 336 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "1565 ms to first response (budget 800 ms)"
+     "ok": true,
+     "evidence": "84 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1187,7 +1190,7 @@
     "UI-1",
     "UI-2",
     "REL-1",
-    "PERF-1",
+    "REL-2",
     "CONT-1",
     "CONT-2",
     "AI-1",
@@ -1291,7 +1294,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1473,21 +1476,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
+     "evidence": "https://demo.vertciti.com/ -> 402 in 201 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": true,
-     "evidence": "https://demo.vertciti.com/healthz -> 200 in 556 ms"
+     "ok": false,
+     "evidence": "https://demo.vertciti.com/healthz -> 402 in 163 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": false,
-     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12070 ms"
+     "ok": true,
+     "evidence": "201 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1546,15 +1549,20 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 98.9,
-   "grade": "S",
+   "score": 93.5,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "REL-1"
+   ],
    "unprobed": [],
    "failing": [
-    "SEC-10"
+    "SEC-9",
+    "SEC-10",
+    "REL-1",
+    "REL-2"
    ],
    "not_applicable": [],
    "checks": [
@@ -1653,8 +1661,8 @@
      "id": "SEC-9",
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
-     "ok": true,
-     "evidence": "all five present"
+     "ok": false,
+     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
     },
     {
      "id": "SEC-10",
@@ -1835,22 +1843,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 200 in 137 ms"
+     "ok": false,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 90 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": true,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 200 in 37 ms"
+     "ok": false,
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 74 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "137 ms to first response (budget 800 ms)"
+     "evidence": "90 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3064,14 +3072,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 145 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 148 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "145 ms to first response (budget 800 ms)"
+     "evidence": "148 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3095,14 +3103,22 @@
    "status": "active",
    "product": "FAMA / DPanDian distressed real-estate data layer (not yet audited)",
    "url": "",
-   "score": 100.0,
-   "grade": "S",
+   "score": 89.5,
+   "grade": "A",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
-   "must_failing": [],
+   "meets_bar": false,
+   "severity": "P0",
+   "must_failing": [
+    "SEC-6",
+    "SEC-8",
+    "SEC-11"
+   ],
    "unprobed": [],
-   "failing": [],
+   "failing": [
+    "SEC-6",
+    "SEC-8",
+    "SEC-11"
+   ],
    "not_applicable": [
     "SEC-9",
     "REL-1",
@@ -3185,8 +3201,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": true,
-     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
+     "ok": false,
+     "evidence": "pr-template-check.yml: workflow-level pull-requests: write, issues: write (move write scopes to the job)"
     },
     {
      "id": "SEC-7",
@@ -3199,7 +3215,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": true,
+     "ok": false,
      "evidence": ""
     },
     {
@@ -3220,8 +3236,8 @@
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
-     "ok": true,
-     "evidence": "all action refs pinned by full-length SHA"
+     "ok": false,
+     "evidence": "unpinned: pr-template-check.yml: actions/checkout@v4; pr-template-check.yml: actions/setup-node@v4"
     },
     {
      "id": "QA-1",
