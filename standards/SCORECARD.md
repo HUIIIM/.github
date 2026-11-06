@@ -1,6 +1,6 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-11-05 11:30Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-11-06 11:30Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
@@ -44,8 +44,8 @@ Generated 2026-11-05 11:30Z by `standards/audit.py` (independent assessor; live 
 
 - `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — missing: content-security-policy, x-content-type-options, frame, referrer-policy
 - `SEC-10` SHOULD FAIL: Reproducible dependencies: lockfile or pinned requirements for every manifest
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 90 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 74 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 32 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 97 ms
 
 ### P0 · fama · 89.5 (A)
 
@@ -59,8 +59,8 @@ Generated 2026-11-05 11:30Z by `standards/audit.py` (independent assessor; live 
 - `DOC-11` SHOULD FAIL: Bilingual (zh + en) README or localised UI
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-translator.vercel.app/ -> 402 in 84 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 402 in 336 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-translator.vercel.app/ -> 402 in 35 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-translator.vercel.app/health -> 402 in 31 ms
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `PRIV-1` SHOULD FAIL: Data handling stated: retention / what is stored / redaction (PRIVACY.md or a section)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
@@ -79,8 +79,8 @@ Generated 2026-11-05 11:30Z by `standards/audit.py` (independent assessor; live 
 - `DOC-2` MUST FAIL: Product one-pager docs/PRODUCT.md
 - `UI-1` MUST FAIL: Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)
 - `UI-2` SHOULD FAIL: dna-drift check wired in CI (vendored DNA cannot silently diverge)
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://demo.vertciti.com/ -> 402 in 201 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://demo.vertciti.com/healthz -> 402 in 163 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://demo.vertciti.com/ -> 402 in 142 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://demo.vertciti.com/healthz -> 402 in 33 ms
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
 - `AI-1` SHOULD FAIL: LLM-using app has evals with recorded results (not claims)
