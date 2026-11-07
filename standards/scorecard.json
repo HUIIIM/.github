@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-06 11:30Z",
+ "generated": "2026-11-07 10:41Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -698,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 35 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 195 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 31 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 93 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "35 ms to first response (budget 800 ms)"
+     "evidence": "195 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1476,21 +1476,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://demo.vertciti.com/ -> 402 in 142 ms"
+     "evidence": "https://demo.vertciti.com/ -> 402 in 153 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://demo.vertciti.com/healthz -> 402 in 33 ms"
+     "evidence": "https://demo.vertciti.com/healthz -> 402 in 91 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "142 ms to first response (budget 800 ms)"
+     "evidence": "153 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1844,21 +1844,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 32 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 98 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 97 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 95 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "32 ms to first response (budget 800 ms)"
+     "evidence": "98 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3072,14 +3072,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 131 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 229 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "131 ms to first response (budget 800 ms)"
+     "evidence": "229 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
