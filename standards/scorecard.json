@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-07 10:41Z",
+ "generated": "2026-11-08 10:46Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -698,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 195 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 180 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 93 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 127 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "195 ms to first response (budget 800 ms)"
+     "evidence": "180 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1162,8 +1162,8 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://demo.vertciti.com/",
-   "score": 67.7,
-   "grade": "C",
+   "score": 71.0,
+   "grade": "B",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
@@ -1172,8 +1172,7 @@
     "SEC-6",
     "SEC-8",
     "DOC-2",
-    "UI-1",
-    "REL-1"
+    "UI-1"
    ],
    "unprobed": [],
    "failing": [
@@ -1189,8 +1188,7 @@
     "DOC-2",
     "UI-1",
     "UI-2",
-    "REL-1",
-    "REL-2",
+    "PERF-1",
     "CONT-1",
     "CONT-2",
     "AI-1",
@@ -1294,7 +1292,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "missing: content-security-policy, x-content-type-options, frame, referrer-policy"
+     "evidence": "missing: content-security-policy, strict-transport-security"
     },
     {
      "id": "SEC-10",
@@ -1475,22 +1473,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": false,
-     "evidence": "https://demo.vertciti.com/ -> 402 in 153 ms"
+     "ok": true,
+     "evidence": "https://demo.vertciti.com/ -> 200 in 5008 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
-     "ok": false,
-     "evidence": "https://demo.vertciti.com/healthz -> 402 in 91 ms"
+     "ok": true,
+     "evidence": "https://demo.vertciti.com/healthz -> 200 in 151 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
-     "ok": true,
-     "evidence": "153 ms to first response (budget 800 ms)"
+     "ok": false,
+     "evidence": "5008 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1549,7 +1547,7 @@
    "status": "active",
    "product": "DealDesk 核保台",
    "url": "https://vertciti-dealdesk.vercel.app/app/",
-   "score": 93.5,
+   "score": 94.6,
    "grade": "A++",
    "bar": "A++",
    "meets_bar": false,
@@ -1560,7 +1558,6 @@
    "unprobed": [],
    "failing": [
     "SEC-9",
-    "SEC-10",
     "REL-1",
     "REL-2"
    ],
@@ -1668,7 +1665,7 @@
      "id": "SEC-10",
      "level": "SHOULD",
      "desc": "Reproducible dependencies: lockfile or pinned requirements for every manifest",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -1844,21 +1841,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 98 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 124 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 95 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 131 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "98 ms to first response (budget 800 ms)"
+     "evidence": "124 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3072,14 +3069,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 229 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 204 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "229 ms to first response (budget 800 ms)"
+     "evidence": "204 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3669,7 +3666,7 @@
    "status": "active",
    "product": "Vault App (N=1 personal knowledge-base sync app; working name)",
    "url": "",
-   "score": 36.0,
+   "score": 37.2,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -3694,7 +3691,6 @@
     "GOV-1",
     "GOV-2",
     "GOV-3",
-    "GOV-6",
     "SEC-1",
     "SEC-2",
     "SEC-3",
@@ -3761,7 +3757,7 @@
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -4080,7 +4076,7 @@
    "status": "active",
    "product": "Jarvis architecture",
    "url": "",
-   "score": 35.8,
+   "score": 37.3,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -4104,7 +4100,6 @@
     "GOV-1",
     "GOV-2",
     "GOV-3",
-    "GOV-6",
     "SEC-2",
     "SEC-3",
     "SEC-4",
@@ -4155,7 +4150,7 @@
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -4601,7 +4596,7 @@
    "status": "active",
    "product": "agent-send-gate",
    "url": "",
-   "score": 34.3,
+   "score": 35.8,
    "grade": "C",
    "bar": "A++",
    "meets_bar": false,
@@ -4625,7 +4620,6 @@
     "GOV-2",
     "GOV-3",
     "GOV-4",
-    "GOV-6",
     "SEC-1",
     "SEC-2",
     "SEC-3",
@@ -4677,7 +4671,7 @@
      "id": "GOV-6",
      "level": "SHOULD",
      "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
