@@ -376,6 +376,26 @@ def uses_tool(root, *actions):
 SECRET_SCANNERS = ("gitleaks/gitleaks-action", "zricethezav/gitleaks-action", "trufflesecurity/trufflehog")
 
 
+def verified_scanner_run(root):
+    """SEC-1 for a workflow that runs the gitleaks binary itself: True iff one file
+    downloads it from the official gitleaks release page, checks the archive against
+    a pinned sha256 and runs a real scan. A checksum-verified binary is stronger than
+    an action that downloads an unverified one (SOTA SEC-A5), so it counts; a bare
+    `run: echo gitleaks` or a binary from anywhere else does not."""
+    d = root / ".github" / "workflows"
+    if not d.is_dir():
+        return False
+    source = re.compile(r"https://github\.com/gitleaks/gitleaks/releases/download/")
+    verify = re.compile(r"\bsha256sum\s+(?:-c|--check)\b|\bshasum\s+-a\s*256\s+(?:-c|--check)\b")
+    pinned = re.compile(r"\b[0-9a-f]{64}\b")
+    scan = re.compile(r"^\s*(?:-\s*)?(?:run:\s*)?(?:\./)?gitleaks\s+(?:git|detect|dir|protect)\b", re.MULTILINE)
+    for f in sorted(d.glob("*.y*ml")):
+        text = f.read_text(encoding="utf-8", errors="replace")
+        if all(p.search(text) for p in (source, verify, pinned, scan)):
+            return True
+    return False
+
+
 def unpinned_actions(root):
     """SEC-11 evidence: every workflow `uses:` ref that is not pinned by full SHA."""
     d = root / ".github" / "workflows"
@@ -572,7 +592,7 @@ CHECKS = [
      lambda r: substantive(r, "SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md")),
     # ---- supply chain / security ----
     ("SEC-1", "MUST", ALL, {"active", "archive", "placeholder"}, "Secret scanning in CI (gitleaks or equivalent)",
-     lambda r: uses_tool(r, *SECRET_SCANNERS)),
+     lambda r: uses_tool(r, *SECRET_SCANNERS) or verified_scanner_run(r)),
     ("SEC-2", "MUST", ALL - {"profile"}, {"active"}, "Dependabot covers github-actions + every package ecosystem in repo",
      lambda r: dependabot_ok(r)),
     ("SEC-3", "MUST", CODE, {"active"}, "CodeQL / SAST runs on PRs",

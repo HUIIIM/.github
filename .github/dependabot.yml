@@ -12,3 +12,10 @@ updates:
       interval: "weekly"
     labels: ["dependencies"]
     open-pull-requests-limit: 5
+  # Hash-locked CI tools: Dependabot updates the pins and hashes in .github/ci/requirements.txt.
+  - package-ecosystem: "pip"
+    directory: "/.github/ci"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies"]
+    open-pull-requests-limit: 5
