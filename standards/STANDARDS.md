@@ -40,7 +40,7 @@ python3 standards/audit.py ~/src --incidents     # 低于线的仓库（JSON，�
    **实现状态（如实记，2026-10-30）**：`standards-audit` 工作流用 [`incidents.py`](incidents.py) 对 `active` 仓开、更新（只保留当前严重度标签）、关闭事故 issue。
    **立不了案即整轮失败**：`STANDARDS_TOKEN` 没有该仓的 issues 写权限时，run 标红并列出这些仓库——立不了的事故不算"已处理"（见独立评估 #17 第 4 轮 P1-1）。
    **尚未实现**：bootstrap 自动出 PR；`archive` / `placeholder` 仓低于线时不立案。
-6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。
+6. **公开。** 记分卡（含不及格的）发布在 [`SCORECARD.md`](SCORECARD.md) 与 vertciti.com/standards。红的也发：这是"建造过程公开"的字面意思。**私有仓例外只在明细**（#87 选项 B）：私有仓照常公开分数、等级、是否达线与严重度（红的照发），但**哪些检查不过、证据是什么**只写进该私有仓自己的 `standards-incident` 事故 issue，公开卡与 `scorecard.json` 只给失败项个数。可见性每天从 GitHub 读取；读不到按私有处理（宁可少说，不可泄露）。公开仓的明细照旧全部公开。
 7. **对标再升级。** 每季度把每个产品与同类最强的公开产品逐项对比（功能、性能、安全、可访问性、文档），差距写进该仓库的 `docs/PRODUCT.md`「路线图」，并新增检查项把它变成可测的线。线只升不降。
 
 **流程**
