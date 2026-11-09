@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-08 10:46Z",
+ "generated": "2026-11-09 12:08Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 23,
-  "at_bar": 4,
-  "incidents": 19
+  "at_bar": 5,
+  "incidents": 18
  },
  "repos": [
   {
@@ -698,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 180 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 163 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 127 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 118 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "180 ms to first response (budget 800 ms)"
+     "evidence": "163 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1474,21 +1474,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://demo.vertciti.com/ -> 200 in 5008 ms"
+     "evidence": "https://demo.vertciti.com/ -> 200 in 7721 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://demo.vertciti.com/healthz -> 200 in 151 ms"
+     "evidence": "https://demo.vertciti.com/healthz -> 200 in 116 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "5008 ms to first response (budget 800 ms)"
+     "evidence": "7721 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1841,21 +1841,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 124 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 161 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 131 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 144 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "124 ms to first response (budget 800 ms)"
+     "evidence": "161 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3069,14 +3069,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 204 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 307 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "204 ms to first response (budget 800 ms)"
+     "evidence": "307 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3602,18 +3602,14 @@
    "status": "active",
    "product": "",
    "url": "",
-   "score": 81.2,
-   "grade": "B",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-8"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-8"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -3648,7 +3644,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
