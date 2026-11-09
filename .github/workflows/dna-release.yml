@@ -1,7 +1,8 @@
 # Tags each DNA release (issue #99). design/README.md 更新流程: a merged change that bumps
 # design/tokens.json `version` is released as tag dna-v<version>, which consumer repos pin in
 # dna-drift (`with: { ref: dna-vX.Y.Z }`). Runs on main only; idempotent (an existing tag is left
-# alone); fails if the version has no CHANGELOG entry. Tags the last commit that changed tokens.json.
+# alone); fails if the version has no CHANGELOG entry or design/build.py --check fails. Tags the main
+# commit this run is for ($GITHUB_SHA), i.e. the merged state, so dist/ at the tag is what was released.
 name: dna-release
 
 on:
@@ -19,6 +20,7 @@ concurrency:
 
 jobs:
   tag:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -26,8 +28,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: true   # the tag push below needs the job token
       - name: Tag dna-v<version> if it does not exist
         run: |
           set -euo pipefail
@@ -37,11 +40,17 @@ jobs:
             echo "${tag} already exists: nothing to do"
             exit 0
           fi
-          if ! grep -q "^## \[${version}\]" design/CHANGELOG.md; then
+          heading=$(grep -F "## [${version}]" design/CHANGELOG.md | head -1 || true)
+          if [ -z "${heading}" ]; then
             echo "::error::design/CHANGELOG.md has no '## [${version}]' entry; not tagging ${tag}"
             exit 1
           fi
-          sha=$(git log -1 --format=%H -- design/tokens.json)
+          case "${heading}" in
+            *unreleased*) echo "::warning::CHANGELOG heading for ${version} still says unreleased: ${heading}" ;;
+          esac
+          # the tagged tree must be a consistent build: dist/ matches tokens.json and every gate passes
+          python3 design/build.py --check
+          sha="${GITHUB_SHA}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${tag}" "${sha}" -m "vertciti DNA ${version} (design/CHANGELOG.md [${version}])"
