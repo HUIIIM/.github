@@ -31,7 +31,7 @@ standards audit (`standards/audit.py`), the repository registry
   | `standards-audit.yml` | standards-audit | daily schedule, dispatch, PR | `assess`: grade the fleet, publish the card PR, file incidents; `check`: PR-safe dry run |
   | `codeql.yml` | CodeQL | push, PR, schedule | SAST for this repo's Python |
   | `scorecard.yml` | Scorecard | push, schedule, branch-protection change | OpenSSF Scorecard |
-  | `design.yml` | design | push, PR (design paths) | DNA token build check + contrast gate |
+  | `design.yml` | design | push, PR (design paths) | DNA token build check (stale output, contrast pairs, QA-gate A1/A2 scales) + rendered contrast/layout gate |
   | `dna-drift.yml` | dna-drift | `workflow_call` | reusable: product repos check their vendored DNA |
   | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
 

@@ -4,14 +4,20 @@ All notable changes to the DNA (`design/`) are recorded here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/) via `tokens.json` `version`.
 Releases are tagged `dna-vX.Y.Z` after merge; consumers pin that tag in `dna-drift` (`ref:`).
 
-## [4.1.1] — unreleased
+## [4.1.1] — 2026-11-09
 
 Puts every DNA font size and spacing value on the scales the fleet's website QA gates enforce (#101), so a
 product that vendors the DNA passes gates A1 and A2 with no local overrides. No variable or class was removed.
 
+### Added
+- **`build.py --check` enforces the QA-gate scales** with website-qa-gates' own A1/A2 patterns, over
+  `src/base.css`, both `dist/` stylesheets and the `font.size` tokens, so a DNA change can no longer
+  reintroduce an off-scale value. Tests: `design/test_build.py` (run by the `design` workflow).
+
 ### Changed
 - **Font sizes off the type scale** (gate A1 rejects 13/15/17/19px): hints, the utility bar, footer and
-  `.dna-stat__src` 13px → 14px; `.dna-tab` 15px → 16px; `.dna-empty__text` 17px → 18px.
+  `.dna-stat__src` 13px → 14px; `.dna-tab` 15px → 16px; `.dna-empty__text` 17px → 18px; the
+  `--fs-md` token 17px → 18px (a product writing `font-size: var(--fs-md)` would otherwise fail A1).
 - **Spacing off the 4px scale** (gate A2 allows 0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 120):
   table cells `10px 12px` → `8px 12px`; `.dna-btn` `0 28px` → `0 24px`; `.dna-card` 28px → 24px; inputs
   `12px 14px` → `12px 16px`; `.dna-tab` `0 14px` → `0 16px`; `.dna-badge` `2px 8px` → `4px 8px`;
@@ -20,7 +26,7 @@ product that vendors the DNA passes gates A1 and A2 with no local overrides. No 
 - **`.dna-seg` joins its segments by dropping the left border** of every segment after the first, instead
   of a `-2px` margin.
 
-## [4.1.0] — unreleased
+## [4.1.0] — 2026-11-03
 
 Closes the design-system findings of the independent SOTA assessment (#40). No CSS variable or class was
 removed, so vendored apps keep working; several values changed (listed below), so re-vendor and look.

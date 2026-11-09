@@ -2,13 +2,15 @@
 """Build the vertciti DNA stylesheets from tokens.json.
 
     python3 design/build.py           # regenerate dist/ and preview/surfaces.html
-    python3 design/build.py --check   # CI: fail if an output is stale or a contrast pair fails
+    python3 design/build.py --check   # CI: fail if an output is stale, a contrast pair fails, or a
+                                      # size leaves the QA-gate scales (website-qa-gates A1/A2, #101)
 
 tokens.json is the single source of truth. Never hand-edit dist/ or preview/surfaces.html.
 Outputs: dist/dna.css, dist/dna-tailwind.css, dist/tokens.dtcg.json (W3C DTCG 2025.10 export),
 preview/surfaces.html (every text token on every surface, for the rendered-contrast gate).
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -276,6 +278,34 @@ def surfaces_page():
             f'<body><main class="dna-wrap"><h1 class="dna-h1">表面 × 文字 矩阵</h1>\n{body}\n</main></body></html>\n')
 
 
+# Scales the fleet's website QA gates enforce on every product that vendors the DNA (#101).
+# A1: no 13/15/17/19px font sizes. A2: margin/padding px values on the 4px scale below.
+# Same patterns as website-qa-gates, so a DNA value that passes here passes there.
+A1_SIZES = {13, 15, 17, 19}
+A1 = re.compile(r"font-size:\s*(?:13|15|17|19)px\b")
+A2_DECL = re.compile(r"(?:margin|padding)[^;{}\"'<>]*:[^;{}\"'<>]*")
+A2_PX = re.compile(r"(?<![\w.])([0-9]+)px")
+A2_SCALE = {0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 120}
+
+
+def scale_problems(files, font_tokens):
+    """website-qa-gates A1/A2 violations in the given {name: css} files and font-size tokens."""
+    out = []
+    for name, css in files.items():
+        for n, line in enumerate(css.splitlines(), 1):
+            for m in A1.finditer(line):
+                out.append(f"{name}:{n} A1 {m.group(0)}")
+            for d in A2_DECL.finditer(line):
+                bad = sorted({int(v) for v in A2_PX.findall(d.group(0))} - A2_SCALE)
+                if bad:
+                    out.append(f"{name}:{n} A2 {d.group(0).strip()} (off-scale: {', '.join(f'{b}px' for b in bad)})")
+    for key, value in font_tokens.items():
+        bad = sorted({int(v) for v in re.findall(r"(?<![\w.])([0-9]+)px", str(value))} & A1_SIZES)
+        if bad:
+            out.append(f"tokens.json font.size.{key} A1 {value} (a product using var(--fs-{key}) fails A1)")
+    return out
+
+
 def build():
     base, components = split_base()
     toks = tokens_css()
@@ -302,16 +332,19 @@ def build():
 def main():
     outputs = build()
     fails = contrast_failures() + dtcg_problems(json.loads(outputs["dist/tokens.dtcg.json"]))
+    fails += scale_problems({"src/base.css": BASE, "dist/dna.css": outputs["dist/dna.css"],
+                             "dist/dna-tailwind.css": outputs["dist/dna-tailwind.css"]},
+                            T["font"]["size"])
     if "--check" in sys.argv:
         stale = [p for p, body in outputs.items() if not (HERE / p).exists() or (HERE / p).read_text(encoding="utf-8") != body]
         for f in fails:
-            print("CONTRAST FAIL", f)
+            print("FAIL", f)
         for p in stale:
             print("STALE", p, "— run python3 design/build.py")
         sys.exit(1 if fails or stale else 0)
     if fails:
         for f in fails:
-            print("CONTRAST FAIL", f)
+            print("FAIL", f)
         sys.exit(1)
     for p, body in outputs.items():
         (HERE / p).parent.mkdir(exist_ok=True)
