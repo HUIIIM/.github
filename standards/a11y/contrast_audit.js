@@ -69,18 +69,35 @@ const click = opt('--click', null);
         if (/(hidden|clip)/.test(es.overflow + es.overflowX + es.overflowY)) { const pr = e.getBoundingClientRect();
           if (pr.width < 1 || pr.height < 1 || r.right <= pr.left || r.left >= pr.right || r.bottom <= pr.top || r.top >= pr.bottom) return false; } }
       return true; };
-    const out = []; const seen = new Set();
+    const out = []; const seen = new Set(); let checked = 0;
+    const blockOf = (el) => { // semantic block: the nearest <section> ancestor, else the top-level container
+      // (an id on an inner element - e.g. a table body - does not split one component into two blocks)
+      let top = null;
+      for (let e = el; e && e !== document.body; e = e.parentElement) {
+        if (e.parentElement === document.body || e.parentElement.tagName === 'MAIN') top = top || e;
+        if (e.tagName === 'SECTION') {
+          const cls = (e.getAttribute('class') || '').trim().split(/\s+/)[0];
+          return 'section' + (e.id ? '#' + e.id : '') + (cls ? '.' + cls : '');
+        }
+      }
+      if (top) {
+        const cls = (top.getAttribute('class') || '').trim().split(/\s+/)[0];
+        return top.tagName.toLowerCase() + (top.id ? '#' + top.id : '') + (cls ? '.' + cls : '');
+      }
+      return 'body';
+    };
     const check = (el, text, color, kind) => {
       // WCAG 1.4.3 exempts logotypes: mark them data-contrast-exempt="logo" (explicit, reviewable)
       if (!text.trim() || !visible(el) || el.closest('[data-contrast-exempt="logo"]')) return;
       const s = getComputedStyle(el); const fg = parse(color); if (!fg) return;
+      if (!onlyTagged) checked++;
       const bg = bgOf(el); const eff = over({ ...fg, a: fg.a * opac(el) }, bg);
       const size = parseFloat(s.fontSize), bold = Number(s.fontWeight) >= 700;
       const need = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5;
       const r = ratio(eff, bg);
       const key = kind + '|' + text.trim().slice(0, 40);
       if (onlyTagged && !el.hasAttribute('data-cafail')) return;
-      if (r < need && !seen.has(key)) { seen.add(key); el.setAttribute('data-cafail', '1'); out.push({ kind, text: text.trim().slice(0, 50), ratio: Math.round(r * 100) / 100, need, tag: el.tagName.toLowerCase() + (el.disabled ? '[disabled]' : '') }); }
+      if (r < need && !seen.has(key)) { seen.add(key); el.setAttribute('data-cafail', '1'); out.push({ kind, text: text.trim().slice(0, 50), ratio: Math.round(r * 100) / 100, need, tag: el.tagName.toLowerCase() + (el.disabled ? '[disabled]' : ''), block: blockOf(el) }); }
     };
     const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let n; while ((n = w.nextNode())) { const el = n.parentElement; if (!el || ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) continue;
@@ -90,9 +107,10 @@ const click = opt('--click', null);
       if (el.value && el.type !== 'hidden' && el.type !== 'checkbox' && el.type !== 'radio') check(el, el.value, col, 'value');
       if (!el.value && el.placeholder) { const ps = getComputedStyle(el, '::placeholder'); const pf = ps.webkitTextFillColor; check(el, el.placeholder, pf && parse(pf).a > 0 ? pf : ps.color, 'placeholder'); }
     });
-    return out;
+    return { fails: out, checked };
   }; });
-  let fails = await p.evaluate(() => window.__audit(false));
+  const first = await p.evaluate(() => window.__audit(false));
+  let fails = first.fails; const checkedCount = first.checked;
   if (fails.length) { // second pass: bring each suspect on screen, let reveal effects settle, measure again
     const n = await p.evaluate(() => document.querySelectorAll('[data-cafail]').length);
     for (let i = 0; i < n; i++) {
@@ -101,10 +119,13 @@ const click = opt('--click', null);
     }
     await p.evaluate(() => Promise.race([Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {}))), new Promise((r) => setTimeout(r, 3000))]));
     fails = await p.evaluate(() => { const els = [...document.querySelectorAll('[data-cafail]')];
-      return els.length ? window.__audit(true) : []; });
+      return els.length ? window.__audit(true).fails : []; });
   }
   console.log(`${url} [${width}px ${scheme}] ${fails.length ? 'FAIL ' + fails.length : 'PASS'}`);
   for (const f of fails) console.log(`  ${f.ratio}:1 < ${f.need}  ${f.kind} <${f.tag}> "${f.text}"`);
+  // machine-readable cell record: the gate script grades measurement state (signature M) from this line
+  console.log('CELL ' + JSON.stringify({ page: new URL(url).pathname, width, scheme, checked: checkedCount, fails: fails.length,
+    ratios: fails.map((f) => f.ratio), blocks: [...new Set(fails.map((f) => f.block))] }));
   await b.close();
   process.exit(fails.length ? 1 : 0);
 })();
