@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-09 12:08Z",
+ "generated": "2026-11-10 11:46Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 23,
-  "at_bar": 5,
-  "incidents": 18
+  "at_bar": 7,
+  "incidents": 16
  },
  "repos": [
   {
@@ -698,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 163 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 102 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 118 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 23 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "163 ms to first response (budget 800 ms)"
+     "evidence": "102 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1474,21 +1474,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://demo.vertciti.com/ -> 200 in 7721 ms"
+     "evidence": "https://demo.vertciti.com/ -> 200 in 11164 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://demo.vertciti.com/healthz -> 200 in 116 ms"
+     "evidence": "https://demo.vertciti.com/healthz -> 200 in 51 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "7721 ms to first response (budget 800 ms)"
+     "evidence": "11164 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1841,21 +1841,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 161 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 42 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 144 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 30 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "161 ms to first response (budget 800 ms)"
+     "evidence": "42 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2910,18 +2910,14 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 94.6,
-   "grade": "A++",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P0",
-   "must_failing": [
-    "SEC-6"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-6"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -2984,8 +2980,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
-     "evidence": "contrast.yml: workflow-level issues: write (move write scopes to the job)"
+     "ok": true,
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3069,14 +3065,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 307 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 167 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "307 ms to first response (budget 800 ms)"
+     "evidence": "167 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3475,18 +3471,14 @@
    "status": "active",
    "product": "Miao public lab",
    "url": "",
-   "score": 92.7,
-   "grade": "A++",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-2"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-2"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -3528,7 +3520,7 @@
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
