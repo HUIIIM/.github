@@ -7,6 +7,7 @@ assessment (issue #17) showed was wrong: checks passed by a comment or an empty
 file, grades that depended on the checkout path, a lost dot in a Dependabot
 directory. Old code red, new code green.
 """
+import json
 import sys
 import tempfile
 import unittest
@@ -205,6 +206,74 @@ class LicenseCheck(unittest.TestCase):
         with tempfile.TemporaryDirectory() as a:
             root = make(a, {"README.md": "# x\n\nOur proprietary engine.\n\n## Usage\n\nrun it\n"})
             self.assertIs(result(root, "GOV-1"), False)
+
+
+class PublishCard(unittest.TestCase):
+    """#70 verdict (VER-2): the Assess step must not publish, or leave in place, a card the audit
+    did not produce. Old Assess logic (main before #70) copied whatever was there; this is red there."""
+
+    OLD_JSON, OLD_MD = '{"repos": [{"repo": "yesterday"}]}', "# yesterday's card\n"
+
+    def setUp(self):
+        import publish_card
+        self.pc = publish_card
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dest = Path(self.tmp.name)
+        (self.dest / "scorecard.json").write_text(self.OLD_JSON, encoding="utf-8")
+        (self.dest / "SCORECARD.md").write_text(self.OLD_MD, encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def runner(self, code, card_json=None, card_md=None):
+        def run(args, json_out, md_out):
+            if card_json is not None:
+                Path(json_out).write_text(card_json, encoding="utf-8")
+            Path(md_out).write_text(card_md or "", encoding="utf-8")  # the shell redirect always creates it
+            return code
+        return run
+
+    def assert_untouched(self):
+        self.assertEqual((self.dest / "scorecard.json").read_text(encoding="utf-8"), self.OLD_JSON)
+        self.assertEqual((self.dest / "SCORECARD.md").read_text(encoding="utf-8"), self.OLD_MD)
+
+    def test_crash_before_any_output_keeps_the_previous_card(self):
+        ok, msg = self.pc.publish([], self.dest, self.runner(1))  # a Python traceback also exits 1
+        self.assertFalse(ok)
+        self.assertIn("no readable scorecard", msg)
+        self.assert_untouched()
+
+    def test_crash_after_json_but_before_markdown_keeps_the_previous_card(self):
+        ok, msg = self.pc.publish([], self.dest, self.runner(1, '{"repos": []}', ""))
+        self.assertFalse(ok)
+        self.assertIn("empty SCORECARD.md", msg)
+        self.assert_untouched()
+
+    def test_unexpected_exit_code_is_a_crash(self):
+        ok, msg = self.pc.publish([], self.dest, self.runner(137, '{"repos": []}', "# card\n"))
+        self.assertFalse(ok)
+        self.assertIn("exited 137", msg)
+        self.assert_untouched()
+
+    def test_json_without_repos_is_not_a_card(self):
+        ok, _ = self.pc.publish([], self.dest, self.runner(0, '{"error": "x"}', "# card\n"))
+        self.assertFalse(ok)
+        self.assert_untouched()
+
+    def test_a_real_card_is_published_whatever_the_grade(self):
+        for code in (0, 1, 2):
+            ok, msg = self.pc.publish([], self.dest, self.runner(code, '{"repos": [{"repo": "today"}]}', "# today\n"))
+            self.assertTrue(ok, msg)
+            self.assertIn("today", (self.dest / "scorecard.json").read_text(encoding="utf-8"))
+            self.assertEqual((self.dest / "SCORECARD.md").read_text(encoding="utf-8"), "# today\n")
+
+    def test_end_to_end_with_the_real_assessor(self):
+        with tempfile.TemporaryDirectory() as portfolio:  # empty: every registered repo is MISSING (exit 2)
+            ok, msg = self.pc.publish([portfolio], self.dest)
+        self.assertTrue(ok, msg)
+        card = json.loads((self.dest / "scorecard.json").read_text(encoding="utf-8"))
+        self.assertTrue(card["repos"] and all(r.get("missing") for r in card["repos"]))
+        self.assertIn("graded MISSING", (self.dest / "SCORECARD.md").read_text(encoding="utf-8"))
 
 
 class CheckoutPathDoesNotChangeGrades(unittest.TestCase):
