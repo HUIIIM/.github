@@ -73,7 +73,7 @@
     "vertciti-website": {
       "kind": "site",
       "status": "active",
-      "product": "vertciti.com source (merge to main deploys production)",
+      "product": "vertciti.com source (production via Cloudflare Pages upload; merge to main does not deploy)",
       "url": "https://vertciti.com/"
     },
     "fama": {
@@ -143,6 +143,23 @@
     "vertciti-auto-gpt": {
       "kind": "app",
       "status": "archive"
+    },
+    "fit-app": {
+      "kind": "app",
+      "status": "active",
+      "product": "vertciti Helm — Miao 的个人 AI 团队 App（N=1）",
+      "ui": "static",
+      "url": "https://huiiim.github.io/fit-app/"
+    },
+    "skill-card-gate": {
+      "kind": "skill",
+      "status": "active",
+      "product": "skill-card-gate"
+    },
+    "vertciti-anchors": {
+      "kind": "tool",
+      "status": "archive",
+      "product": "audit-anchor stub (retired) — live chain: vertciti-website branch audit-anchors"
     }
   }
 }
