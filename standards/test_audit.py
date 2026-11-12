@@ -346,5 +346,108 @@ class BootstrapHarden(unittest.TestCase):
             bootstrap._BRANCH_ONLY.discard(("someone/action", "main"))
 
 
+SHA = "3d3c42e5aac5ba805825da76410c181273ba90b1"
+PLACEHOLDER = "0" * 40
+
+
+class TextIsNotExecution(unittest.TestCase):
+    """#83: a workflow that runs nothing must not pass the tool checks."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.base = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def wf(self, steps, extra=None):
+        files = {".github/workflows/ci.yml": (
+            "name: ci\non: pull_request\npermissions:\n  contents: read\njobs:\n  a:\n"
+            "    runs-on: ubuntu-24.04\n    timeout-minutes: 5\n    steps:\n" + steps)}
+        files.update(extra or {})
+        return make(self.base, files)
+
+    def test_fixture_from_issue_83_fails_every_tool_check(self):
+        steps = (f"      - uses: gitleaks/gitleaks-action@{PLACEHOLDER}\n        if: false\n"
+                 f"      - uses: actions/dependency-review-action@{PLACEHOLDER}\n        if: false\n"
+                 f"      - uses: ossf/scorecard-action@{PLACEHOLDER}\n        if: ${{{{ false }}}}\n"
+                 "      - run: echo pytest ruff mypy playwright dna-drift\n")
+        root = self.wf(steps, {"a.py": 'x = "/healthz"  # Content-Security-Policy request_id injection\n'})
+        for cid in ("SEC-1", "SEC-4", "SEC-5", "SEC-11", "QA-4", "QA-5", "UI-2", "OPS-1", "OPS-3", "OPS-5"):
+            self.assertIsNot(result(root, cid), True, cid)
+
+    def test_disabled_job_does_not_count(self):
+        root = make(self.base, {".github/workflows/ci.yml": (
+            "name: ci\non: pull_request\npermissions:\n  contents: read\njobs:\n  scan:\n    if: false\n"
+            f"    runs-on: ubuntu-24.04\n    timeout-minutes: 5\n    steps:\n      - uses: gitleaks/gitleaks-action@{SHA}\n")})
+        self.assertFalse(result(root, "SEC-1"))
+
+    def test_enabled_steps_after_a_disabled_one_still_count(self):
+        steps = (f"      - uses: ossf/scorecard-action@{SHA}\n        if: false\n"
+                 f"      - uses: gitleaks/gitleaks-action@{SHA}\n      - run: mypy app\n")
+        root = self.wf(steps)
+        self.assertTrue(result(root, "SEC-1"))
+        self.assertFalse(result(root, "SEC-5"))
+        self.assertTrue(result(root, "QA-4"))
+
+    def test_conditional_step_is_not_disabled(self):
+        root = self.wf(f"      - uses: gitleaks/gitleaks-action@{SHA}\n        if: github.event_name == 'pull_request'\n")
+        self.assertTrue(result(root, "SEC-1"))
+
+    def test_placeholder_sha_is_not_a_pin(self):
+        self.assertFalse(result(self.wf(f"      - uses: gitleaks/gitleaks-action@{PLACEHOLDER}\n"), "SEC-11"))
+        self.assertTrue(result(self.wf(f"      - uses: gitleaks/gitleaks-action@{SHA}\n"), "SEC-11"))
+
+    def test_typecheck_through_a_package_script_counts(self):
+        # vertciti-translator: CI runs `npm run lint`, scripts.lint = "tsc --noEmit"
+        root = self.wf("      - run: npm run lint\n", {"frontend/package.json": '{"scripts": {"lint": "tsc --noEmit"}}'})
+        self.assertTrue(result(root, "QA-4"))
+
+    def test_package_script_that_does_not_typecheck_does_not_count(self):
+        root = self.wf("      - run: npm run lint\n", {"package.json": '{"scripts": {"lint": "eslint ."}}'})
+        self.assertFalse(result(root, "QA-4"))
+
+    def test_browser_gate_direct_and_through_script(self):
+        self.assertTrue(result(self.wf("      - run: scripts/check-contrast.sh\n"), "QA-5"))
+        # vertciti-dealdesk: `npm run e2e`, scripts.e2e = "playwright test"
+        root = self.wf("      - run: npm run e2e\n", {"package.json": '{"scripts": {"e2e": "playwright test"}}'})
+        self.assertTrue(result(root, "QA-5"))
+        self.assertFalse(result(self.wf("      - run: npx playwright install chromium\n"), "QA-5"))
+
+    def test_dna_drift_must_be_the_reusable_workflow(self):
+        root = make(self.base, {".github/workflows/ci.yml": (
+            "name: ci\non: pull_request\npermissions:\n  contents: read\njobs:\n  dna:\n"
+            f"    uses: HUIIIM/.github/.github/workflows/dna-drift.yml@{SHA}\n"
+            "    with:\n      vendored: static/dna.css\n      flavor: dna.css\n")})
+        self.assertTrue(result(root, "UI-2"))
+
+    def test_health_route_registration_counts_client_fetch_does_not(self):
+        self.assertTrue(result(make(self.base, {"app/main.py": '@app.get("/healthz")\ndef h():\n    return {}\n'}), "OPS-1"))
+
+    def test_client_fetch_of_health_is_not_an_endpoint(self):
+        self.assertFalse(result(make(self.base, {"web/api.ts": 'fetch("/api/v1/health")\n'}), "OPS-1"))
+
+    def test_next_route_file_is_an_endpoint(self):
+        self.assertTrue(result(make(self.base, {"frontend/src/app/api/healthz/route.ts": "export function GET() {}\n"}), "OPS-1"))
+
+    def test_headers_in_code_json_and_headers_file_count(self):
+        self.assertTrue(result(make(self.base, {"app.py": 'h.setdefault("X-Content-Type-Options", "nosniff")\n'}), "OPS-3"))
+        self.assertTrue(result(make(self.base, {"vercel.json": '{"headers": [{"key": "Content-Security-Policy", "value": "x"}]}'}), "OPS-3"))
+        self.assertTrue(result(make(self.base, {"site/_headers": "/*\n  Content-Security-Policy: default-src 'self'\n"}), "OPS-3"))
+
+    def test_header_named_in_a_comment_does_not_count(self):
+        self.assertFalse(result(make(self.base, {"app.py": "# TODO: Content-Security-Policy, frame-ancestors\nx = 1\n"}), "OPS-3"))
+        self.assertFalse(result(make(self.base, {"app.ts": "// set Content-Security-Policy later\nconst x = 1\n"}), "OPS-3"))
+
+    def test_hash_inside_a_python_string_is_not_a_comment(self):
+        src = 'CSP = "default-src #x; frame-ancestors \'none\'"\n'
+        self.assertTrue(result(make(self.base, {"app.py": src}), "OPS-3"))
+
+    def test_injection_tests_must_live_in_test_files(self):
+        llm = {"app/llm.py": "import anthropic\n"}
+        self.assertFalse(result(make(self.base, {**llm, "app/guard.py": "INJECTION = 1\n"}), "AI-2"))
+        self.assertTrue(result(make(self.base, {**llm, "tests/test_guard.py": "def test_prompt_injection(): pass\n"}), "AI-2"))
+
+
 if __name__ == "__main__":
     unittest.main()
