@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-08 10:46Z",
+ "generated": "2026-11-11 11:27Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 23,
-  "at_bar": 4,
-  "incidents": 19
+  "at_bar": 7,
+  "incidents": 16
  },
  "repos": [
   {
@@ -698,21 +698,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 180 ms"
+     "evidence": "https://vertciti-translator.vercel.app/ -> 402 in 141 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 127 ms"
+     "evidence": "https://vertciti-translator.vercel.app/health -> 402 in 30 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "180 ms to first response (budget 800 ms)"
+     "evidence": "141 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1162,8 +1162,8 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://demo.vertciti.com/",
-   "score": 71.0,
-   "grade": "B",
+   "score": 67.7,
+   "grade": "C",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
@@ -1172,7 +1172,8 @@
     "SEC-6",
     "SEC-8",
     "DOC-2",
-    "UI-1"
+    "UI-1",
+    "REL-1"
    ],
    "unprobed": [],
    "failing": [
@@ -1188,6 +1189,7 @@
     "DOC-2",
     "UI-1",
     "UI-2",
+    "REL-1",
     "PERF-1",
     "CONT-1",
     "CONT-2",
@@ -1292,7 +1294,7 @@
      "level": "SHOULD",
      "desc": "[live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy",
      "ok": false,
-     "evidence": "missing: content-security-policy, strict-transport-security"
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12043 ms"
     },
     {
      "id": "SEC-10",
@@ -1473,22 +1475,22 @@
      "id": "REL-1",
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
-     "ok": true,
-     "evidence": "https://demo.vertciti.com/ -> 200 in 5008 ms"
+     "ok": false,
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12043 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": true,
-     "evidence": "https://demo.vertciti.com/healthz -> 200 in 151 ms"
+     "evidence": "https://demo.vertciti.com/healthz -> 200 in 293 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": false,
-     "evidence": "5008 ms to first response (budget 800 ms)"
+     "evidence": "https://demo.vertciti.com/ -> The read operation timed out in 12043 ms"
     },
     {
      "id": "PUB-2",
@@ -1841,21 +1843,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 124 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 61 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 131 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 150 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "124 ms to first response (budget 800 ms)"
+     "evidence": "61 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2910,18 +2912,14 @@
    "status": "active",
    "product": "vertciti.com source (merge to main deploys production)",
    "url": "https://vertciti.com/",
-   "score": 94.6,
-   "grade": "A++",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P0",
-   "must_failing": [
-    "SEC-6"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-6"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -2984,8 +2982,8 @@
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
-     "ok": false,
-     "evidence": "contrast.yml: workflow-level issues: write (move write scopes to the job)"
+     "ok": true,
+     "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
     },
     {
      "id": "SEC-8",
@@ -3069,14 +3067,14 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://vertciti.com/ -> 200 in 204 ms"
+     "evidence": "https://vertciti.com/ -> 200 in 123 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "204 ms to first response (budget 800 ms)"
+     "evidence": "123 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-1",
@@ -3475,18 +3473,14 @@
    "status": "active",
    "product": "Miao public lab",
    "url": "",
-   "score": 92.7,
-   "grade": "A++",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-2"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-2"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -3528,7 +3522,7 @@
      "id": "SEC-2",
      "level": "MUST",
      "desc": "Dependabot covers github-actions + every package ecosystem in repo",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {
@@ -3602,18 +3596,14 @@
    "status": "active",
    "product": "",
    "url": "",
-   "score": 81.2,
-   "grade": "B",
+   "score": 100.0,
+   "grade": "S",
    "bar": "A++",
-   "meets_bar": false,
-   "severity": "P1",
-   "must_failing": [
-    "SEC-8"
-   ],
+   "meets_bar": true,
+   "severity": null,
+   "must_failing": [],
    "unprobed": [],
-   "failing": [
-    "SEC-8"
-   ],
+   "failing": [],
    "not_applicable": [],
    "checks": [
     {
@@ -3648,7 +3638,7 @@
      "id": "SEC-8",
      "level": "MUST",
      "desc": "Workflows set timeout-minutes (no 6h runaway jobs)",
-     "ok": false,
+     "ok": true,
      "evidence": ""
     },
     {

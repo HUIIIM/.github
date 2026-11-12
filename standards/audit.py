@@ -33,11 +33,13 @@ applicable MUST check fails, else 0.
 from __future__ import annotations
 
 import datetime as _dt
+import io
 import json
 import re
 import ssl
 import sys
 import time
+import tokenize
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -87,6 +89,46 @@ def iter_files(root, suffixes):
             yield p
 
 
+JS_COMMENT = re.compile(r"/\*.*?\*/|(?<![:\w\"'])//[^\n]*", re.DOTALL)
+
+
+def strip_comments(path, text):
+    """Source text with comments removed: a word in a comment is not code (#83).
+
+    Python uses the tokenizer (so a '#' inside a string survives); JS/TS drop // and /* */
+    comments (a '//' right after ':' or a quote, as in https:// or "//", is kept)."""
+    if path.suffix == ".py":
+        try:
+            toks = [t for t in tokenize.generate_tokens(io.StringIO(text).readline) if t.type != tokenize.COMMENT]
+            return tokenize.untokenize(toks)
+        except (tokenize.TokenError, IndentationError, SyntaxError):
+            return re.sub(r"(^|\s)#[^\n]*", r"\1", text)
+    if path.suffix in (".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx"):
+        return JS_COMMENT.sub("", text)
+    return text
+
+
+def code_grep(root, pattern, suffixes, path_filter=None):
+    """grep over source with comments stripped; path_filter(rel_path) limits which files count."""
+    rx = re.compile(pattern, re.MULTILINE)
+    for p in iter_files(root, suffixes):
+        if path_filter and not path_filter(p.relative_to(root)):
+            continue
+        try:
+            if rx.search(strip_comments(p, p.read_text(encoding="utf-8", errors="replace"))):
+                return True
+        except OSError:
+            continue
+    return False
+
+
+def is_test_file(rel):
+    """tests/, __tests__/, e2e/ directories, or test_*.py / *_test.py / *.test.* / *.spec.* files."""
+    name = rel.name
+    return (any(part in ("tests", "test", "__tests__", "e2e") for part in rel.parts[:-1])
+            or name.startswith("test_") or re.search(r"_test\.py$|\.(test|spec)\.[cm]?[jt]sx?$", name) is not None)
+
+
 def grep(root, pattern, suffixes):
     rx = re.compile(pattern, re.MULTILINE)
     for p in iter_files(root, suffixes):
@@ -101,10 +143,47 @@ def grep(root, pattern, suffixes):
 COMMENT = re.compile(r"(^|\s)#.*$", re.MULTILINE)
 
 
+CONST_FALSE_IF = re.compile(r"""^(\s*)(-\s+)?if:\s*(?:false|'false'|"false"|\$\{\{\s*false\s*\}\})\s*$""")
+
+
+def drop_disabled(text):
+    """Remove every step or job whose own `if:` is a constant false: it can never run (#83).
+
+    A step is the `- ` list item that holds the `if:`; a job is the mapping under `jobs:` whose key
+    line sits one level above the `if:`. The block ends at the next line indented no deeper than
+    the block's own start."""
+    lines = text.splitlines()
+    changed = True
+    while changed:
+        changed = False
+        for i, line in enumerate(lines):
+            m = CONST_FALSE_IF.match(line)
+            if not m:
+                continue
+            if m.group(2):  # `- if: false` opens the step itself
+                start, base = i, len(m.group(1))
+            else:
+                key_indent = len(m.group(1))
+                start = i - 1
+                while start >= 0 and (not lines[start].strip() or len(lines[start]) - len(lines[start].lstrip()) >= key_indent):
+                    start -= 1
+                if start < 0:
+                    break
+                base = len(lines[start]) - len(lines[start].lstrip())
+            end = start + 1
+            while end < len(lines) and (not lines[end].strip() or len(lines[end]) - len(lines[end].lstrip()) > base):
+                end += 1
+            lines = lines[:start] + lines[end:]
+            changed = True
+            break
+    return "\n".join(lines)
+
+
 def workflows(root):
-    """All workflow files, YAML comments removed: a tool named in a comment is not a tool that runs."""
+    """All workflow files, YAML comments and never-running (`if: false`) steps/jobs removed:
+    a tool named in a comment, or wired up but disabled, is not a tool that runs."""
     d = root / ".github" / "workflows"
-    return "\n".join(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+    return "\n".join(drop_disabled(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace")))
                      for f in sorted(d.glob("*.y*ml"))) if d.is_dir() else ""
 
 
@@ -289,7 +368,7 @@ def run_commands(root, pr_only=False):
     if not d.is_dir():
         return cmds
     for f in sorted(d.glob("*.y*ml")):
-        text = COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace"))
+        text = drop_disabled(COMMENT.sub("", f.read_text(encoding="utf-8", errors="replace")))
         if pr_only and not PR_TRIGGER.search(text):
             continue
         lines = text.splitlines()
@@ -325,6 +404,64 @@ def runs_tool(root, pattern):
     """A workflow `run:` command starts with one of these tools (not `echo pytest`)."""
     rx = re.compile(rf"^(?:{pattern})(?:\s|$)")
     return any(rx.match(c) for c in run_commands(root, pr_only=True))
+
+
+SCRIPT_RUN = re.compile(r"^(?:npm|pnpm|yarn|bun)\s+(?:run(?:-script)?\s+)?(?:--?[\w-]+(?:=\S+)?\s+)*([\w:.-]+)")
+
+
+def package_scripts(root):
+    """name -> [script bodies] across every package.json in the repo (monorepos have several)."""
+    out = {}
+    for f in iter_files(root, ("package.json",)):
+        try:
+            scripts = json.loads(f.read_text(encoding="utf-8", errors="replace")).get("scripts") or {}
+        except (ValueError, AttributeError):
+            continue
+        for k, v in scripts.items():
+            if isinstance(v, str):
+                out.setdefault(k, []).append(v)
+    return out
+
+
+def ci_runs(root, pattern):
+    """A PR workflow runs the tool: directly (`mypy app`), or through a package script it calls
+    (`npm run lint` where scripts.lint is `tsc --noEmit`). Text that merely names the tool does not
+    count (#83: `run: echo mypy playwright` passed QA-4/QA-5)."""
+    rx = re.compile(rf"^(?:{pattern})(?:\s|$)")
+    scripts = None
+    for c in run_commands(root, pr_only=True):
+        if rx.match(c):
+            return True
+        m = SCRIPT_RUN.match(c)
+        if not m or m.group(1) in ("ci", "install", "i", "add", "init", "exec", "dlx"):
+            continue
+        if scripts is None:
+            scripts = package_scripts(root)
+        for body in scripts.get(m.group(1), []):
+            for part in re.split(r"&&|\|\||;", body):
+                if rx.match(RUN_PREFIX.sub("", part.strip())):
+                    return True
+    return False
+
+
+TYPECHECK_TOOLS = r"mypy|pyright|basedpyright|tsc|vue-tsc|next build"
+BROWSER_GATES = r"playwright test|cypress run|(?:bash\s+|sh\s+|node\s+)?\S*(?:check[-_]contrast|contrast_audit|layout_audit)\S*"
+HEALTH_PATH = r"(?:/api)?(?:/v\d+)?/(?:healthz|health|livez|readyz)"
+HEALTH_ROUTE = (rf"(?:\.(?:get|head|route|api_route|all)\s*\(\s*|@\w+(?:\.\w+)*\s*\(\s*|pathname\s*===?\s*|case\s+)"
+                rf"[\"'`]{HEALTH_PATH}[\"'`]")
+HEADER_SET = (r"[\"'`](?:Content-Security-Policy|X-Content-Type-Options)[\"'`]"
+              r"|[\"'`][^\"'`\n]*frame-ancestors[^\"'`\n]*[\"'`]"
+              r"|^\s*(?:Content-Security-Policy|X-Content-Type-Options)\s*:")
+
+
+def health_endpoint(root):
+    """OPS-1: a route is registered for the health path (decorator, router call, Workers pathname
+    match) or a framework route file exists for it. A string in a client fetch or a comment is not
+    an endpoint (#83)."""
+    if code_grep(root, HEALTH_ROUTE, (".py", ".ts", ".tsx", ".js", ".mjs")):
+        return True
+    return any(re.search(r"(?:^|/)(?:healthz|health|livez|readyz)/route\.[jt]sx?$|(?:^|/)pages/api/(?:healthz|health)\.[jt]sx?$",
+                         p.relative_to(root).as_posix()) for p in iter_files(root, (".ts", ".tsx", ".js")))
 
 
 def all_jobs_have_timeouts(root):
@@ -413,6 +550,8 @@ def unpinned_actions(root):
                 bad.append(f"{f.name}: {ref} (no ref)")
             elif not FULL_SHA.match(ref.rsplit("@", 1)[1]):
                 bad.append(f"{f.name}: {ref}")
+            elif re.fullmatch(r"(.)\1{39}", ref.rsplit("@", 1)[1]):
+                bad.append(f"{f.name}: {ref} (placeholder SHA, not a commit)")
     return bad
 
 
@@ -624,9 +763,9 @@ CHECKS = [
     ("QA-3", "SHOULD", CODE, {"active"}, "pre-commit hooks mirror CI",
      lambda r: exists(r, ".pre-commit-config.yaml")),
     ("QA-4", "SHOULD", {"app"}, {"active"}, "Type checking in CI (mypy/pyright/tsc)",
-     lambda r: bool(re.search(r"mypy|pyright|tsc|typecheck|type-check", workflows(r) + read(r, "package.json", "frontend/package.json")))),
+     lambda r: ci_runs(r, TYPECHECK_TOOLS)),
     ("QA-5", "SHOULD", {"app"}, {"active"}, "Browser-level test or contrast gate in CI (playwright / contrast)",
-     lambda r: bool(re.search(r"playwright|contrast", workflows(r), re.IGNORECASE))),
+     lambda r: ci_runs(r, BROWSER_GATES)),
     # ---- product kit / docs ----
     ("DOC-1", "MUST", ALL - {"meta", "profile", "docs"}, {"active"}, "README has a quickstart",
      lambda r: has_section(readme(r), r"quick ?start", r"快速开始", r"getting started", r"30 ?秒", r"30-second")),
@@ -654,18 +793,19 @@ CHECKS = [
     ("UI-1", "MUST", {"app", "skill", "site"}, {"active"}, "Vendored vertciti DNA stylesheet (dna.css / dna-tailwind.css)",
      lambda r: ui_repo(r) is False or any(r.rglob("dna*.css"))),
     ("UI-2", "SHOULD", {"app", "site"}, {"active"}, "dna-drift check wired in CI (vendored DNA cannot silently diverge)",
-     lambda r: ui_repo(r) is False or "dna-drift" in workflows(r)),
+     lambda r: ui_repo(r) is False or uses_tool(r, "huiiim/.github/.github/workflows/dna-drift.yml")
+     or bool(re.search(r"^\s*uses:\s*['\"]?\./\.github/workflows/dna-drift\.ya?ml", workflows(r), re.MULTILINE))),
     # ---- ops / reliability (apps and sites) ----
     ("OPS-1", "MUST", {"app"}, {"active"}, "Health endpoint (/healthz or /health)",
-     lambda r: grep(r, r"[\"'](/api)?(/v1)?/(healthz|health|livez|readyz)[\"']", (".py", ".ts", ".tsx", ".js"))),
+     health_endpoint),
     ("OPS-2", "SHOULD", {"app"}, {"active"}, "Container HEALTHCHECK or compose healthcheck",
      lambda r: not exists(r, "Dockerfile", "backend/Dockerfile", "docker-compose.yml") or grep(r, r"HEALTHCHECK|healthcheck:", ("Dockerfile", ".yml", ".yaml"))),
     ("OPS-3", "SHOULD", {"app"}, {"active"}, "Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)",
-     lambda r: grep(r, r"Content-Security-Policy|X-Content-Type-Options|frame-ancestors", (".py", ".ts", ".js", ".mjs", ".json"))),
+     lambda r: code_grep(r, HEADER_SET, (".py", ".ts", ".js", ".mjs", ".json", "_headers"))),
     ("OPS-4", "SHOULD", {"app"}, {"active"}, "Container runs as non-root",
      lambda r: not exists(r, "Dockerfile", "backend/Dockerfile", "frontend/Dockerfile") or grep(r, r"^\s*USER\s+(?!root)", ("Dockerfile",))),
     ("OPS-5", "SHOULD", {"app"}, {"active"}, "Structured logs with a request/trace id (OpenTelemetry-style)",
-     lambda r: grep(r, r"request_id|trace_id|structlog|JsonFormatter|json.*log|opentelemetry", (".py", ".ts", ".js"))),
+     lambda r: code_grep(r, r"request_id|trace_id|structlog|JsonFormatter|json.*log|opentelemetry", (".py", ".ts", ".js"))),
     ("REL-1", "MUST", {"app", "site"}, {"active"}, "[live] Deployed URL answers (2xx/3xx) within 12 s",
      probe_ok),
     ("REL-2", "SHOULD", {"app"}, {"active"}, "[live] Health endpoint returns 200 on the deployment",
@@ -686,7 +826,7 @@ CHECKS = [
     ("AI-1", "SHOULD", {"app"}, {"active"}, "LLM-using app has evals with recorded results (not claims)",
      lambda r: (not uses_llm(r)) or any(d.is_dir() and d.name in ("evals", "benchmarks") and not skipped(r, d) for d in r.rglob("*")) or grep(r, r"\beval(s|uation)?\b", ("CHANGELOG.md", "PRODUCT.md"))),
     ("AI-2", "SHOULD", {"app"}, {"active"}, "LLM-using app tests prompt-injection / untrusted-content handling",
-     lambda r: (not uses_llm(r)) or grep(r, r"injection|untrusted|prompt.?inject", (".py", ".ts", ".tsx"))),
+     lambda r: (not uses_llm(r)) or code_grep(r, r"injection|untrusted|prompt.?inject", (".py", ".ts", ".tsx", ".js"), is_test_file)),
     ("LEGAL-1", "MUST", ALL - {"profile", "meta"}, {"active"}, "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
      lambda r: (not meta_of(r).get("third_party")) or exists(r, "THIRD_PARTY_NOTICES.md", "ATTRIBUTION.md", "NOTICE", "NOTICE.md")),
 ]

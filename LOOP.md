@@ -16,6 +16,9 @@ when one changes, the PR that changes it updates this file.
 
 - Verdicts bind to head SHAs: a merge requires a PASS verdict for the
   current head where a verdict regime applies; a new head voids coverage.
+- The `ivv-gate` workflow posts commit status `ivv/verdict` (success / failure / pending)
+  from the verdict comments on each PR head. It is not yet a required check: binding it
+  needs `ivv/verdict` added to `main`'s required checks (admin setting, #84).
 - The Claude GitHub App's repository selection covers every active own
   repo; new repos are added to the selection the day they are created.
   (The 2026-11-01 note "20 repositories" had no stated basis and is not
