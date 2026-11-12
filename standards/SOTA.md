@@ -1,4 +1,4 @@
-# SOTA 定义 · 什么叫"业内最高水平"（v1.0 · 2026-10-25）
+# SOTA 定义 · 什么叫"业内最高水平"（v1.1 · 2026-11-09）
 
 "State of the art"不是形容词，是一组**可测量、有出处**的条款。本文件是 HUIIIM 全部产品判断"是否达到最高水平"的唯一依据；
 由独立评估 AI（见 [`IVV.md`](IVV.md)）按条判定，作者本人（包括写代码的 Claude 会话）不能给自己打分。
@@ -6,8 +6,9 @@
 - **来源**：条款尽量引一手资料，研究底稿见 [`research/2026-10-25-motion-interaction-nasa-dossier.md`](research/2026-10-25-motion-interaction-nasa-dossier.md)（含逐条 URL 与"未核实"标注）。
   如实记：出处为「—」（VER-5、OPS-2）或「独立审查 2026-10-25」（ARCH-5、ARCH-6、ARCH-9）的条款尚无外部一手来源；MOT-6 所引 WCAG 2.2.2、OPS-1 所引 SOC 2 在底稿中标注为 **[from prior knowledge]**，未在研究时取原文。这些在下次月度复核时补证或改写。
 - **修订**：每月由独立研究会话重新取证一次；来源超过 12 个月未复核的条款降为 SHOULD，直到复核（逐条核实日期尚未记录，此规则目前由月度复核人工执行）。定义的改动走 PR，由主人合并——评估者与被评估者都不能单方面改尺子。
+- **修订记录**：v1.1（2026-11-09，#88 选项 A）DES-1 增列第五义「青＝中性信息」，DNA `--info` 由 ✗ 转为可判；v1.0（2026-10-25）初版。v1.0 下作出的判定不因修订失效。
 - **判定**：MUST 全过 + SHOULD ≥ 80% = 达到本阶段 SOTA；任一 MUST 不过 = 未达到，按 [`STANDARDS.md`](STANDARDS.md) §考核 记事故。
-- **口径**：对外只说"按 SOTA v1.0 条款独立评估：通过 N/M"；与 NASA 相关只说"映射到 / 对齐 NPR 7150.2D（自评，Class D 画像）"，**永不**说 NASA 认证、合规、批准或"NASA 级"。
+- **口径**：对外只说"按 SOTA v1.1 条款独立评估：通过 N/M"；与 NASA 相关只说"映射到 / 对齐 NPR 7150.2D（自评，Class D 画像）"，**永不**说 NASA 认证、合规、批准或"NASA 级"。
 
 ---
 
@@ -15,7 +16,7 @@
 
 | ID | 级别 | 条款 | 怎么测 | 出处 |
 |---|---|---|---|---|
-| DES-1 | MUST | 颜色只承担一种语义：橙＝指针、黄＝注意、绿＝正常、红＝失败/拦截；限值越界前不着色 | 静态扫描组件 class/token；截图审 | vertciti DNA；Open MCT limit evaluators |
+| DES-1 | MUST | 颜色只承担一种语义：橙＝指针、黄＝注意、绿＝正常、红＝失败/拦截、青＝中性信息（提示、说明、数据链接；**非状态、非指针**，不得用作状态灯或代替绿/红/黄）；限值越界前不着色 | 静态扫描组件 class/token；截图审（青色只出现在 info 变体与数据链接上） | vertciti DNA；Open MCT limit evaluators；[GOV.UK notification banner](https://design-system.service.gov.uk/components/notification-banner/)（中性信息与成功分立）；[Carbon notification](https://carbondesignsystem.com/components/notification/usage/)（info 与 success/warning/error 四态分立） |
 | DES-2 | MUST | 白天/深夜两套主题全部走 token，无硬编码色值；文本对比度 WCAG AA | `Contrast` CI 任务 + `grep '#[0-9a-f]{6}'` 于组件 | WCAG 2.2；Stripe 感知均匀色阶 |
 | DES-3 | MUST | 数字一律等宽数字（tabular-nums），位置稳定，刷新不跳版 | 组件审；截图对比 | Vercel Web Interface Guidelines；Bloomberg |
 | DES-4 | SHOULD | 高密度：一屏回答"安全吗、在干什么、花了多少、可信吗"四问，无需滚动（1440×900） | 截图 + 任务计时（见 INT-6） | Linear UI redesign（密度、降噪） |
