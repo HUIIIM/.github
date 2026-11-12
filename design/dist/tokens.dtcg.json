@@ -1,8 +1,8 @@
 {
- "$description": "vertciti DNA v4.1.0 -- generated from design/tokens.json by design/build.py. Do not edit.",
+ "$description": "vertciti DNA v4.1.1 -- generated from design/tokens.json by design/build.py. Do not edit.",
  "$extensions": {
   "com.vertciti.dna": {
-   "version": "4.1.0",
+   "version": "4.1.1",
    "source": "https://vertciti.com/ (官网 v4, site.css) — extracted 2026-10-22"
   }
  },
@@ -1513,7 +1513,7 @@
    "md": {
     "$type": "dimension",
     "$value": {
-     "value": 17.0,
+     "value": 18.0,
      "unit": "px"
     }
    },

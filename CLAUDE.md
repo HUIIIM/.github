@@ -32,7 +32,7 @@ standards audit (`standards/audit.py`), the repository registry
   | `card-freshness.yml` | card-freshness | daily schedule, dispatch | fails when the published card on `main` is older than 36 h (freshness SLO, STANDARDS §考核 6) |
   | `codeql.yml` | CodeQL | push, PR, schedule | SAST for this repo's Python |
   | `scorecard.yml` | Scorecard | push, schedule, branch-protection change | OpenSSF Scorecard |
-  | `design.yml` | design | push, PR (design paths) | DNA token build check (contrast matrix, DTCG export) + browser contrast and layout gates |
+  | `design.yml` | design | push, PR (design paths) | DNA token build check (stale output, contrast matrix, DTCG export, QA-gate A1/A2 scales) + browser contrast and layout gates |
   | `dna-drift.yml` | dna-drift | `workflow_call` | reusable: product repos check their vendored DNA |
   | `dna-release.yml` | dna-release | push to main (`design/tokens.json`), dispatch | tags `dna-v<version>` for each DNA release (needs a CHANGELOG entry; idempotent) |
   | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
