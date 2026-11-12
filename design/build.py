@@ -150,8 +150,12 @@ def tokens_css():
         + "".join(f"--z-{k}:{v};" for k, v in z.items())
     )
     dark = theme_block("dark") + "--orange:#FF4713;--verd:" + T["color"]["brand"]["verd-dark"] + ";color-scheme:dark;"
+    # --focus-ring is "3px solid var(--pointer)": a custom property's var() resolves where it is declared,
+    # so a surface that only re-declares --pointer still inherits :root's orange ring (2.28:1 on accent,
+    # measured by nontext_audit.js). Re-declare the ring on every scoped surface so it follows the surface.
+    ring = f"--focus-ring:{sh['focus']};"
     surfaces = "".join(
-        f"{sel}{{{theme_block(name)}{'color-scheme:dark;' if name == 'ink' else ''}}}\n"
+        f"{sel}{{{theme_block(name)}{ring}{'color-scheme:dark;' if name == 'ink' else ''}}}\n"
         for name, sel in SURFACE_SELECTORS.items()
     )
     return (
