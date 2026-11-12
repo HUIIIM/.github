@@ -27,13 +27,15 @@ standards audit (`standards/audit.py`), the repository registry
   |---|---|---|---|
   | `gitleaks.yml` | Secret scan (gitleaks) | push, PR, schedule | secret scanning (required) |
   | `quality.yml` | Quality gate | push, PR | `lint` (ruff) + `typecheck` (mypy) (required) |
-  | `standards-tests.yml` | standards-tests | push, PR | unit tests for `standards/*.py` |
+  | `standards-tests.yml` | standards-tests | push, PR | unit tests: discovers every `standards/test_*.py` |
   | `standards-audit.yml` | standards-audit | daily schedule, dispatch, PR | `assess`: grade the fleet, publish the card PR, file incidents; `check`: PR-safe dry run |
+  | `card-freshness.yml` | card-freshness | daily schedule, dispatch | fails when the published card on `main` is older than 36 h (freshness SLO, STANDARDS §考核 6) |
   | `codeql.yml` | CodeQL | push, PR, schedule | SAST for this repo's Python |
   | `scorecard.yml` | Scorecard | push, schedule, branch-protection change | OpenSSF Scorecard |
-  | `design.yml` | design | push, PR (design paths) | DNA token build check (stale output, contrast pairs, QA-gate A1/A2 scales) + rendered contrast/layout/non-text (WCAG 1.4.11) gates |
+  | `design.yml` | design | push, PR (design paths) | DNA token build check (stale output, contrast matrix, DTCG export, QA-gate A1/A2 scales) + browser contrast, layout and non-text (WCAG 1.4.11) gates |
   | `dna-drift.yml` | dna-drift | `workflow_call` | reusable: product repos check their vendored DNA |
   | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
+  | `ivv-gate.yml` | ivv-gate | `pull_request_target`, PR comments | posts commit status `ivv/verdict` from independent verdict comments (not yet a required check; #84) |
 
 ## Working rules
 

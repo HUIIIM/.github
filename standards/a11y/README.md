@@ -28,6 +28,8 @@ node standards/a11y/contrast_audit.js <url> [--width 390|1280] [--scheme light|d
   颜色走浏览器 canvas 转换，`lab()`/`oklab()`（Tailwind v4）也对。
 - 先整页滚动、等动画结束；可疑项再逐个滚到屏幕中央复测（避免"滚动淡入"误报）。
 - 不可见的（`display:none`、被 `overflow:hidden` 裁掉、屏幕外）不算。
+- 登录后的界面：`--fixtures api.json` 用一份 JSON（`{"GET /api/v1/x": {status, contentType, body}}`，按「方法 + 路径」匹配、忽略查询串、缺的一律 404）回放全部 `/api/` 请求，CI 不必起后端；fixture 只能放合成数据，不放个人数据和密钥。
+- 应用自带的主题开关（不走 `prefers-color-scheme` 的深夜模式等）：`--ls key=value` 在应用启动前预置 localStorage。
 - 有不达标即退出码 1，可直接放进 CI。
 
 ## 接入

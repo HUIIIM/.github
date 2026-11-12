@@ -4,6 +4,10 @@
 // iOS uses for disabled inputs) x cumulative ancestor opacity, over the composited
 // background stack. Exits non-zero on any failure.
 //   node contrast_audit.js <url> [--width 390] [--scheme light|dark] [--inject file.html] [--click selector]
+//                          [--fixtures api.json] [--ls key=value,key2=value2]
+// --fixtures serves every /api/ request from a JSON map {"GET /api/v1/x": {status, contentType, body}}
+// (query strings ignored; anything not in the map answers 404), so signed-in screens can be
+// audited without a backend. --ls presets localStorage before the app boots (e.g. a theme switch).
 const { chromium } = require('playwright');
 
 const args = process.argv.slice(2);
@@ -13,10 +17,21 @@ const width = Number(opt('--width', 390));
 const scheme = opt('--scheme', 'light');
 const inject = opt('--inject', null);
 const click = opt('--click', null);
+const fixtures = opt('--fixtures', null);
+const ls = opt('--ls', null);
 
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width, height: 900 }, colorScheme: scheme });
+  if (ls) await p.addInitScript((kv) => { for (const pair of kv.split(',')) { const i = pair.indexOf('='); localStorage.setItem(pair.slice(0, i), pair.slice(i + 1)); } }, ls);
+  if (fixtures) {
+    const map = JSON.parse(require('fs').readFileSync(fixtures, 'utf8'));
+    await p.route('**/api/**', (route) => {
+      const req = route.request(); const hit = map[`${req.method()} ${new URL(req.url()).pathname}`];
+      return hit ? route.fulfill({ status: hit.status, contentType: hit.contentType || 'application/json', body: hit.body })
+        : route.fulfill({ status: 404, contentType: 'application/json', body: '{"detail":"no fixture"}' });
+    });
+  }
   // apps that poll or stream never go network-idle: load first, then give idle at most 10 s
   await p.goto(url, { waitUntil: 'load' });
   await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
