@@ -4,6 +4,8 @@
     python3 standards/audit.py ~/src                 # every repo in repos.json found under ~/src
     python3 standards/audit.py ~/src --md            # markdown scorecard (SCORECARD.md)
     python3 standards/audit.py ~/src --json out.json # machine scorecard (scorecard.json)
+    ... --visibility vis.json        # {"repo": "PUBLIC"|"PRIVATE"|...}; see redact() (#87)
+    ... --json-full full.json        # unredacted card, for incidents.py only -- never publish it
     python3 standards/audit.py ~/src --live          # also probe deployed URLs (repos.json "url")
     python3 standards/audit.py ~/src --only echowatch
     python3 standards/audit.py ~/src --incidents     # JSON list of repos below the bar
@@ -904,6 +906,29 @@ def missing_row(name, meta, base):
     }
 
 
+# Fields of a private repository's row that name its weaknesses (#87, option B). The public card
+# keeps score, grade, bar and severity (red grades are still published, STANDARDS §考核 6); which
+# checks fail, with their evidence, goes only to the repository's own incident issue.
+DETAIL_FIELDS = ("must_failing", "failing", "unprobed", "not_applicable", "checks")
+
+
+def is_private(name, visibility):
+    """Fail-safe: a repository whose visibility could not be read is treated as private."""
+    if name == ".github":
+        return False  # this repository, public by construction
+    return (visibility or {}).get(name, "UNKNOWN").upper() != "PUBLIC"
+
+
+def redact(row, visibility):
+    """The public form of a row: unchanged for public repositories, detail-free for the rest."""
+    if row.get("missing") or not is_private(row["repo"], visibility):
+        return row
+    out = {k: v for k, v in row.items() if k not in DETAIL_FIELDS}
+    out.update({"private": True, "must_failing_count": len(row["must_failing"]),
+                "failing_count": len(row["failing"])})
+    return out
+
+
 def to_markdown(rows, generated):
     out = []
     out.append("# Portfolio scorecard · 组合记分卡\n")
@@ -913,7 +938,11 @@ def to_markdown(rows, generated):
     out.append("| repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |")
     out.append("|---|---|---:|---|---|---|---|")
     for r in rows:
-        fails = ", ".join((f"**{c}**" if c in r["must_failing"] else c) for c in r["failing"]) or "—"
+        if r.get("private"):
+            fails = (f"{r['failing_count']} failing ({r['must_failing_count']} MUST); private repo: detail in its own incident issue"
+                     if r["failing_count"] else "—")
+        else:
+            fails = ", ".join((f"**{c}**" if c in r["must_failing"] else c) for c in r["failing"]) or "—"
         out.append(f"| {r['repo']} | {r['kind']}/{r['status']} | {r['score']} | {r['grade']} | {'✓' if r['meets_bar'] else '✗'} | {r['severity'] or '—'} | {fails} |")
     below = [r for r in rows if not r["meets_bar"]]
     missing = [r["repo"] for r in rows if r.get("missing")]
@@ -926,6 +955,12 @@ def to_markdown(rows, generated):
         out.append("## Incidents · 事故\n")
         for r in sorted(below, key=lambda x: (x["severity"], -x["score"])):
             out.append(f"### {r['severity']} · {r['repo']} · {r['score']} ({r['grade']})\n")
+            if r.get("private"):
+                out.append(f"- Private repository: {r['failing_count']} failing check(s), {r['must_failing_count']} of them MUST. "
+                           "Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue "
+                           "(STANDARDS.md §考核 6).")
+                out.append("")
+                continue
             for c in r["checks"]:
                 if c["ok"] is not True and c["ok"] != "n/a":
                     state = "unprobed" if c["ok"] is None else "FAIL"
@@ -942,6 +977,9 @@ def main():
     base = Path(args[0]).expanduser()
     only = args[args.index("--only") + 1] if "--only" in args else None
     json_out = args[args.index("--json") + 1] if "--json" in args else None
+    json_full = args[args.index("--json-full") + 1] if "--json-full" in args else None
+    vis_file = args[args.index("--visibility") + 1] if "--visibility" in args else None
+    visibility = json.loads(Path(vis_file).read_text(encoding="utf-8")) if vis_file else None
     md = "--md" in args
     incidents = "--incidents" in args
     LIVE["enabled"] = "--live" in args
@@ -962,24 +1000,34 @@ def main():
         rows.append(audit(root, meta))
 
     failed_must = sum(len(r["must_failing"]) for r in rows)
-    if json_out:
-        Path(json_out).write_text(json.dumps({
+    # Without --visibility every repository's detail is shown (local use); with it, the
+    # published outputs (--json, --md, --incidents, stdout) carry only the redacted rows.
+    public = [redact(r, visibility) for r in rows] if visibility is not None else rows
+
+    def card(rs):
+        return json.dumps({
             "generated": generated, "bar": BAR, "bar_min": BAR_MIN, "live": LIVE["enabled"],
             "grades": dict(GRADES), "weights": WEIGHT, "missing_repos": missing,
-            "summary": {"repos": len(rows), "at_bar": sum(1 for r in rows if r["meets_bar"]),
-                        "incidents": sum(1 for r in rows if not r["meets_bar"])},
-            "repos": rows,
-        }, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+            "summary": {"repos": len(rs), "at_bar": sum(1 for r in rs if r["meets_bar"]),
+                        "incidents": sum(1 for r in rs if not r["meets_bar"])},
+            "repos": rs,
+        }, ensure_ascii=False, indent=1) + "\n"
+    if json_out:
+        Path(json_out).write_text(card(public), encoding="utf-8")
+    if json_full:
+        Path(json_full).write_text(card(rows), encoding="utf-8")
     if incidents:
-        print(json.dumps([{k: r[k] for k in ("repo", "score", "grade", "severity", "must_failing", "failing", "unprobed")}
-                          for r in rows if not r["meets_bar"]], ensure_ascii=False, indent=1))
+        keys = ("repo", "score", "grade", "severity", "must_failing", "failing", "unprobed",
+                "private", "must_failing_count", "failing_count")
+        print(json.dumps([{k: r[k] for k in keys if k in r} for r in public if not r["meets_bar"]],
+                         ensure_ascii=False, indent=1))
     elif md:
-        print(to_markdown(rows, generated))
+        print(to_markdown(public, generated))
     else:
-        for r in rows:
+        for r in public:
             print(f"\n{r['repo']}  [{r['kind']}/{r['status']}]  {r['score']} {r['grade']}  "
                   f"{'at bar' if r['meets_bar'] else 'INCIDENT ' + r['severity']}")
-            for c in r["checks"]:
+            for c in r.get("checks", []):
                 if c["ok"] is not True and c["ok"] != "n/a":
                     state = "?" if c["ok"] is None else "✗"
                     print(f"  {state} {c['id']:7} {c['level']:6} {c['desc']}" + (f"  [{c['evidence']}]" if c["evidence"] else ""))

@@ -346,6 +346,56 @@ class BootstrapHarden(unittest.TestCase):
             bootstrap._BRANCH_ONLY.discard(("someone/action", "main"))
 
 
+class PrivateRepoDetail(unittest.TestCase):
+    """#87 option B: a private repo's failing-check detail stays off the public card."""
+
+    def run_audit(self, visibility, *extra):
+        import json
+        import subprocess
+        with tempfile.TemporaryDirectory() as d:
+            make(d, {"README.md": "# echowatch\n"})
+            vis = Path(d) / "vis.json"
+            vis.write_text(json.dumps(visibility), encoding="utf-8")
+            card, full = Path(d) / "card.json", Path(d) / "full.json"
+            p = subprocess.run([sys.executable, str(Path(audit.__file__)), d, "--only", NAME, "--visibility", str(vis),
+                                "--json", str(card), "--json-full", str(full), *extra],
+                               capture_output=True, text=True)
+            return (json.loads(card.read_text())["repos"][0], json.loads(full.read_text())["repos"][0], p.stdout)
+
+    def test_private_repo_card_keeps_grade_and_drops_detail(self):
+        pub, full, md = self.run_audit({NAME: "PRIVATE"}, "--md")
+        for k in ("score", "grade", "severity", "meets_bar"):
+            self.assertEqual(pub[k], full[k], k)
+        for k in audit.DETAIL_FIELDS:
+            self.assertNotIn(k, pub)
+        self.assertTrue(pub["private"])
+        self.assertEqual(pub["failing_count"], len(full["failing"]))
+        self.assertGreater(len(full["failing"]), 0)
+        for cid in full["failing"]:
+            self.assertNotIn(f"`{cid}`", md)
+            self.assertNotIn(f" {cid},", md)
+        self.assertIn("detail in its own incident issue", md)
+
+    def test_unknown_visibility_is_treated_as_private(self):
+        pub, _, _ = self.run_audit({})
+        self.assertTrue(pub.get("private"))
+        self.assertNotIn("checks", pub)
+
+    def test_public_repo_keeps_full_detail(self):
+        pub, full, _ = self.run_audit({NAME: "PUBLIC"})
+        self.assertEqual(pub, full)
+
+    def test_incident_listing_is_redacted_too(self):
+        import json
+        _, _, out = self.run_audit({NAME: "PRIVATE"}, "--incidents")
+        row = json.loads(out)[0]
+        self.assertNotIn("failing", row)
+        self.assertIn("failing_count", row)
+
+    def test_this_repo_and_missing_rows_are_never_redacted(self):
+        self.assertFalse(audit.is_private(".github", {}))
+        miss = audit.missing_row(NAME, audit.REGISTRY[NAME], "/nowhere")
+        self.assertEqual(audit.redact(miss, {NAME: "PRIVATE"}), miss)
 SHA = "3d3c42e5aac5ba805825da76410c181273ba90b1"
 PLACEHOLDER = "0" * 40
 
