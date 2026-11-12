@@ -77,7 +77,7 @@
 2. CI（`design.yml`）跑 `build.py --check`（产物一致、对比度矩阵全过、DTCG 导出合规），并在 Chromium 里对
    `components.html` 与 `surfaces.html` 跑对比度门禁与版式门禁（`standards/a11y/layout_audit.js`：无横向溢出、
    无"一字一行"、触控目标 ≥ 44px），浅/深 × 390/1280。
-3. 在 [`CHANGELOG.md`](CHANGELOG.md) 记一条并按 SemVer 改 `tokens.json` 的 `version`；合并后打 `dna-vX.Y.Z` 标签。
+3. 在 [`CHANGELOG.md`](CHANGELOG.md) 记一条并按 SemVer 改 `tokens.json` 的 `version`；CHANGELOG 标题写发布日期（`## [X.Y.Z] — YYYY-MM-DD`），不写 unreleased。合并后 [`dna-release`](../.github/workflows/dna-release.yml) 工作流在合并后的 main 提交上自动打 `dna-vX.Y.Z` 标签（版本没有 CHANGELOG 条目、或该提交上 `build.py --check` 不过，则失败，不打标签）。标签可被有 `contents: write` 的令牌移动或删除：要强保证，消费仓在 `dna-drift` 里钉标签指向的提交 SHA，或由管理员给 `refs/tags/dna-v*` 加标签保护规则集。
 4. 各仓库重新拷贝 `dist/` 文件；`dna-drift` 的 `ref` 钉在标签上，升级时一起改——上游合并不会让下游 CI 突然变红。
 
 ## 不做什么

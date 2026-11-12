@@ -34,6 +34,7 @@ standards audit (`standards/audit.py`), the repository registry
   | `scorecard.yml` | Scorecard | push, schedule, branch-protection change | OpenSSF Scorecard |
   | `design.yml` | design | push, PR (design paths) | DNA token build check (contrast matrix, DTCG export) + browser contrast and layout gates |
   | `dna-drift.yml` | dna-drift | `workflow_call` | reusable: product repos check their vendored DNA |
+  | `dna-release.yml` | dna-release | push to main (`design/tokens.json`), dispatch | tags `dna-v<version>` for each DNA release (needs a CHANGELOG entry; idempotent) |
   | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
   | `ivv-gate.yml` | ivv-gate | `pull_request_target`, PR comments | posts commit status `ivv/verdict` from independent verdict comments (not yet a required check; #84) |
 
