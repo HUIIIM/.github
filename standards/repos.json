@@ -130,7 +130,8 @@
     },
     "vertciti-ts-spaces": {
       "kind": "docs",
-      "status": "placeholder"
+      "status": "archive",
+      "product": "TS spaces experiments archive - history slimmed 2026-11-11 (311MB to 2.01MiB working clone; API size field still counts legacy objects pinned by immutable PR refs); pre-rewrite tip bede2445e921a454ca552b9079e90d876cc2dda6; full pre-rewrite mirror+bundle held by Claude Control Loop (ts-spaces-rescue, 2026-11-11)"
     },
     "tenacity": {
       "kind": "library",
