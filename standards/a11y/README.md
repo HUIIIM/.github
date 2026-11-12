@@ -45,3 +45,13 @@ node standards/a11y/layout_audit.js <url> [--width 390|1280] [--scheme light|dar
 - **溢出**：页面宽于视口（WCAG 1.4.10 重排）即失败。
 - **一字一行**：一段文字折行数 ≥ 字数的一半（例：v4.0 画廊里没有 `dna-span-*` 的卡片被挤成 1/12 宽）。
 - **触控目标**：链接、按钮、表单控件、标签页 < 44×44px 即失败；句中链接豁免（同 WCAG 2.2 SC 2.5.8）。其他刻意例外标 `data-target-exempt="理由"`，留痕可审。
+
+## 非文本对比度门禁 · Non-text contrast gate（WCAG 2.2 SC 1.4.11，SOTA DS-1）
+
+`node standards/a11y/nontext_audit.js <url> [--width 390] [--scheme light|dark] [--min 3]`
+
+- **组件边界**：画成形状的控件（有填充或描边：输入框、按钮、标签页）靠填充或描边与周围拉开 ≥ 3:1。只有文字的控件（文字按钮、链接）靠文字识别，由上面的文字门禁管，这里跳过。
+- **焦点指示**：像键盘用户一样逐个 Tab；每个拿到焦点的元素必须画出 outline 或 box-shadow，颜色对其背后实际渲染的颜色 ≥ 3:1。
+- 刻意的例外标 `data-nontext-exempt="<原因>"`，可审。
+- **反例夹具**：`fixtures/nontext-bad.html` 有 4 个已知缺陷，CI 要求门禁在这一页上报告恰好 4 个，证明门禁没有退化成永远通过。
+- 首次运行就抓到 DNA 4.1.1 的真实缺陷：黄色强调卡里的焦点环是橙色，2.28:1（见 `design/CHANGELOG.md` 4.1.2）。
