@@ -1,0 +1,124 @@
+{
+  "registry": "mcp-json",
+  "version": 1,
+  "updated": "2026-11-12",
+  "maintained_by": "GitHub 团队（舰队登记与合并面）",
+  "scope_note": "全域盘点（2026-11-12，K4）：HUIIIM 自有 26 仓内 .mcp.json 为 0 份；全域 10 份均在本机 workspace 技能/评估/沙盒面。下表为唯一登记正本，后续新增 .mcp.json 先登记后使用。",
+  "entries": [
+    {
+      "host": "workspace/skills",
+      "path": "skills/deal-intake/connectors/.mcp.json",
+      "purpose": "deal-intake 技能的地产数据源连接（筛选 memo 数据面）",
+      "servers": [
+        "acris",
+        "census-bls",
+        "county-recorder",
+        "dob-now",
+        "zillow-redfin"
+      ],
+      "maintainer": "GitHub 团队（技能库登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/custom-skills",
+      "path": "custom-skills/local-deal-intake/connectors/.mcp.json",
+      "purpose": "local-deal-intake 自定义技能的同名连接副本",
+      "servers": [
+        "acris",
+        "census-bls",
+        "county-recorder",
+        "dob-now",
+        "zillow-redfin"
+      ],
+      "maintainer": "GitHub 团队（技能库登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/eval-financial-services（anthropics/financial-services 本地评估镜像）",
+      "path": "financial-services/plugins/partner-built/lseg/.mcp.json",
+      "purpose": "评估镜像 partner-built 插件：LSEG 数据连接",
+      "servers": [
+        "lseg"
+      ],
+      "maintainer": "评估镜像代管（GitHub 团队登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/eval-financial-services（anthropics/financial-services 本地评估镜像）",
+      "path": "financial-services/plugins/partner-built/spglobal/.mcp.json",
+      "purpose": "评估镜像 partner-built 插件：S&P Global 数据连接",
+      "servers": [
+        "spglobal"
+      ],
+      "maintainer": "评估镜像代管（GitHub 团队登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/eval-financial-services（anthropics/financial-services 本地评估镜像）",
+      "path": "financial-services/plugins/vertical-plugins/financial-analysis/.mcp.json",
+      "purpose": "评估镜像 vertical 插件：金融分析多源数据连接",
+      "servers": [
+        "daloopa",
+        "morningstar",
+        "sp-global",
+        "factset",
+        "moodys",
+        "mtnewswire",
+        "aiera",
+        "lseg",
+        "pitchbook",
+        "chronograph",
+        "egnyte",
+        "box"
+      ],
+      "maintainer": "评估镜像代管（GitHub 团队登记）",
+      "status": "repaired-2026-11-12：上游原文 JSON 损坏（egnyte 后缺逗号＋mcpServers 未闭合），本地修复分支 local-fix/mcp-json-comma（47d5ac3＋40623c9），回读解析通过（12 servers）；未向上游提 PR（不在本登记任务面）"
+    },
+    {
+      "host": "workspace/eval-financial-services（anthropics/financial-services 本地评估镜像）",
+      "path": "financial-services/plugins/vertical-plugins/investment-banking/.mcp.json",
+      "purpose": "评估镜像 vertical 插件占位（mcpServers 为空）",
+      "servers": [],
+      "maintainer": "评估镜像代管（GitHub 团队登记）",
+      "status": "valid-empty"
+    },
+    {
+      "host": "workspace/eval-financial-services（anthropics/financial-services 本地评估镜像）",
+      "path": "financial-services/plugins/vertical-plugins/private-equity/.mcp.json",
+      "purpose": "评估镜像 vertical 插件占位（mcpServers 为空）",
+      "servers": [],
+      "maintainer": "评估镜像代管（GitHub 团队登记）",
+      "status": "valid-empty"
+    },
+    {
+      "host": "workspace/grey-scout-r1",
+      "path": "grey-scout-r1/sandbox-security/open-reverselab/.mcp.json",
+      "purpose": "grey-scout 沙盒：open-reverselab 逆向工具连接",
+      "servers": [
+        "reverse_lab_tools"
+      ],
+      "maintainer": "grey-scout 线（GitHub 团队登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/grey-scout-r2",
+      "path": "grey-scout-r2/sandbox/invisible_playwright_mcp/.mcp.json",
+      "purpose": "grey-scout 沙盒：invisible playwright MCP 连接",
+      "servers": [
+        "invisible_playwright_mcp"
+      ],
+      "maintainer": "grey-scout 线（GitHub 团队登记）",
+      "status": "valid"
+    },
+    {
+      "host": "workspace/.scratch",
+      "path": ".scratch/mcp-servers-td/files/.mcp.json",
+      "purpose": "暂存面：MCP 文档服务试验件",
+      "servers": [
+        "mcp-docs"
+      ],
+      "maintainer": "GitHub 团队（暂存登记）",
+      "status": "valid-scratch"
+    }
+  ]
+}
