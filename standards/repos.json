@@ -161,6 +161,13 @@
       "kind": "tool",
       "status": "archive",
       "product": "audit-anchor stub (retired) — live chain: vertciti-website branch audit-anchors"
+    },
+    "family-crest": {
+      "kind": "library",
+      "status": "active",
+      "product": "Family crest — family establishment materials",
+      "public": false,
+      "public_reason": "family establishment materials; private by design (migrated 2026-11-12 from an exposed public branch)"
     }
   }
 }
