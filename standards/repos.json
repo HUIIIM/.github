@@ -145,12 +145,12 @@
       "kind": "app",
       "status": "archive"
     },
-    "fit-app": {
+    "helm": {
       "kind": "app",
       "status": "active",
       "product": "vertciti Helm — Miao 的个人 AI 团队 App（N=1）",
       "ui": "static",
-      "url": "https://huiiim.github.io/fit-app/"
+      "url": "https://huiiim.github.io/helm/"
     },
     "skill-card-gate": {
       "kind": "skill",
