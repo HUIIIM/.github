@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-12 11:51Z",
+ "generated": "2026-11-13 11:34Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -16,9 +16,9 @@
  },
  "missing_repos": [],
  "summary": {
-  "repos": 26,
+  "repos": 27,
   "at_bar": 10,
-  "incidents": 16
+  "incidents": 17
  },
  "repos": [
   {
@@ -72,14 +72,14 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://demo.vertciti.com/",
-   "score": 81.7,
-   "grade": "B",
+   "score": 87.1,
+   "grade": "A",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "private": true,
-   "must_failing_count": 4,
-   "failing_count": 9
+   "must_failing_count": 3,
+   "failing_count": 6
   },
   {
    "repo": "vertciti-dealdesk",
@@ -381,21 +381,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 162 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 83 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 268 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 57 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "162 ms to first response (budget 800 ms)"
+     "evidence": "83 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2339,11 +2339,11 @@
    "failing_count": 5
   },
   {
-   "repo": "fit-app",
+   "repo": "helm",
    "kind": "app",
    "status": "active",
    "product": "vertciti Helm — Miao 的个人 AI 团队 App（N=1）",
-   "url": "https://huiiim.github.io/fit-app/",
+   "url": "https://huiiim.github.io/helm/",
    "score": 38.7,
    "grade": "C",
    "bar": "A++",
@@ -2678,21 +2678,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://huiiim.github.io/fit-app/ -> 200 in 127 ms"
+     "evidence": "https://huiiim.github.io/helm/ -> 200 in 130 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://huiiim.github.io/fit-app/healthz -> 404 in 109 ms"
+     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 64 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "127 ms to first response (budget 800 ms)"
+     "evidence": "130 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -3045,6 +3045,21 @@
      "evidence": ""
     }
    ]
+  },
+  {
+   "repo": "family-crest",
+   "kind": "library",
+   "status": "active",
+   "product": "Family crest — family establishment materials",
+   "url": "",
+   "score": 89.6,
+   "grade": "A",
+   "bar": "A++",
+   "meets_bar": false,
+   "severity": "P1",
+   "private": true,
+   "must_failing_count": 1,
+   "failing_count": 5
   }
  ],
  "messaging": {
