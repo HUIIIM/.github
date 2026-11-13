@@ -1,13 +1,13 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-11-12 11:51Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-11-13 11:34Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
 | miao-ai | app/active | 100.0 | S | ✓ | — | — |
 | vertciti-translator | app/active | 88.2 | A | ✗ | P0 | 9 failing (1 MUST); private repo: detail in its own incident issue |
 | vertciti-chat | app/active | 71.0 | B | ✗ | P1 | 19 failing (4 MUST); private repo: detail in its own incident issue |
-| echowatch | app/active | 81.7 | B | ✗ | P0 | 9 failing (4 MUST); private repo: detail in its own incident issue |
+| echowatch | app/active | 87.1 | A | ✗ | P0 | 6 failing (3 MUST); private repo: detail in its own incident issue |
 | vertciti-dealdesk | app/active | 94.6 | A++ | ✗ | P0 | SEC-9, **REL-1**, REL-2 |
 | phonehands | library/active | 98.5 | S | ✓ | — | SEC-10 |
 | founder-visual-director | skill/active | 98.2 | S | ✓ | — | DOC-5 |
@@ -27,27 +27,28 @@ Generated 2026-11-12 11:51Z by `standards/audit.py` (independent assessor; live 
 | vertciti-prototype | app/archive | 77.4 | B | ✗ | P1 | 3 failing (2 MUST); private repo: detail in its own incident issue |
 | vertciti-ts-spaces | docs/archive | 58.1 | C | ✗ | P0 | 5 failing (4 MUST); private repo: detail in its own incident issue |
 | vertciti-auto-gpt | app/archive | 58.1 | C | ✗ | P0 | 5 failing (4 MUST); private repo: detail in its own incident issue |
-| fit-app | app/active | 38.7 | C | ✗ | P0 | **GOV-1**, **GOV-2**, GOV-3, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, SEC-9, **QA-1**, **QA-2**, QA-3, QA-4, QA-5, **DOC-1**, **DOC-2**, **DOC-3**, DOC-4, DOC-5, **DOC-6**, DOC-7, **UI-1**, UI-2, **OPS-1**, OPS-3, OPS-5, REL-2, PUB-2, CONT-1, CONT-2, PRIV-1 |
+| helm | app/active | 38.7 | C | ✗ | P0 | **GOV-1**, **GOV-2**, GOV-3, **SEC-1**, **SEC-2**, **SEC-3**, SEC-4, SEC-5, SEC-9, **QA-1**, **QA-2**, QA-3, QA-4, QA-5, **DOC-1**, **DOC-2**, **DOC-3**, DOC-4, DOC-5, **DOC-6**, DOC-7, **UI-1**, UI-2, **OPS-1**, OPS-3, OPS-5, REL-2, PUB-2, CONT-1, CONT-2, PRIV-1 |
 | skill-card-gate | skill/active | 42.9 | C | ✗ | P0 | **GOV-2**, GOV-3, **GOV-4**, **SEC-1**, **SEC-2**, SEC-5, **DOC-2**, **DOC-3**, DOC-5, **DOC-6**, DOC-7, **DOC-8**, **DOC-9**, DOC-11 |
 | vertciti-anchors | tool/archive | 67.7 | C | ✗ | P0 | **GOV-1**, **GOV-2**, GOV-3, **SEC-1** |
+| family-crest | library/active | 89.6 | A | ✗ | P1 | 5 failing (1 MUST); private repo: detail in its own incident issue |
 
-**10 of 26 at or above the bar; 16 incident(s).**
+**10 of 27 at or above the bar; 17 incident(s).**
 
 ## Incidents · 事故
 
 ### P0 · vertciti-dealdesk · 94.6 (A++)
 
 - `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — missing: content-security-policy, x-content-type-options, frame, referrer-policy
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 162 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 268 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 83 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 57 ms
 
 ### P0 · vertciti-translator · 88.2 (A)
 
 - Private repository: 9 failing check(s), 1 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
 
-### P0 · echowatch · 81.7 (B)
+### P0 · echowatch · 87.1 (A)
 
-- Private repository: 9 failing check(s), 4 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
+- Private repository: 6 failing check(s), 3 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
 
 ### P0 · vertciti-anchors · 67.7 (C)
 
@@ -96,7 +97,7 @@ Generated 2026-11-12 11:51Z by `standards/audit.py` (independent assessor; live 
 - `DOC-9` MUST FAIL: README has no badge strip (shields.io / badge.svg render as '?' in private repos and the mobile app)
 - `DOC-11` SHOULD FAIL: Bilingual (zh + en) README or localised UI
 
-### P0 · fit-app · 38.7 (C)
+### P0 · helm · 38.7 (C)
 
 - `GOV-1` MUST FAIL: LICENSE file present (or README states proprietary/pending) — no LICENSE/LICENSE.md/LICENSE.txt/COPYING, and no README licence section stating the status (proprietary / all rights reserved / pending)
 - `GOV-2` MUST FAIL: CODEOWNERS routes reviews
@@ -124,7 +125,7 @@ Generated 2026-11-12 11:51Z by `standards/audit.py` (independent assessor; live 
 - `OPS-1` MUST FAIL: Health endpoint (/healthz or /health)
 - `OPS-3` SHOULD FAIL: Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/fit-app/healthz -> 404 in 109 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/helm/healthz -> 404 in 64 ms
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention huiiim.github.io
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
@@ -164,6 +165,10 @@ Generated 2026-11-12 11:51Z by `standards/audit.py` (independent assessor; live 
 
 - `SEC-2` MUST FAIL: Dependabot covers github-actions + every package ecosystem in repo
 - `DOC-5` SHOULD FAIL: Visual proof (screenshot/GIF) in README
+
+### P1 · family-crest · 89.6 (A)
+
+- Private repository: 5 failing check(s), 1 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
 
 ### P1 · vertciti-sp07-builder · 77.4 (B)
 
