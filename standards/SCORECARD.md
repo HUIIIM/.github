@@ -1,6 +1,6 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-11-13 11:34Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-11-14 10:56Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
@@ -39,8 +39,8 @@ Generated 2026-11-13 11:34Z by `standards/audit.py` (independent assessor; live 
 ### P0 · vertciti-dealdesk · 94.6 (A++)
 
 - `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — missing: content-security-policy, x-content-type-options, frame, referrer-policy
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 83 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 57 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 127 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 98 ms
 
 ### P0 · vertciti-translator · 88.2 (A)
 
@@ -125,7 +125,7 @@ Generated 2026-11-13 11:34Z by `standards/audit.py` (independent assessor; live 
 - `OPS-1` MUST FAIL: Health endpoint (/healthz or /health)
 - `OPS-3` SHOULD FAIL: Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/helm/healthz -> 404 in 64 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/helm/healthz -> 404 in 116 ms
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention huiiim.github.io
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
