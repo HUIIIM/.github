@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-15 11:30Z",
+ "generated": "2026-11-16 12:03Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -381,21 +381,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 33 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 58 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 23 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 46 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "33 ms to first response (budget 800 ms)"
+     "evidence": "58 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2678,21 +2678,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://huiiim.github.io/helm/ -> 200 in 64 ms"
+     "evidence": "https://huiiim.github.io/helm/ -> 200 in 134 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 61 ms"
+     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 186 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "64 ms to first response (budget 800 ms)"
+     "evidence": "134 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
