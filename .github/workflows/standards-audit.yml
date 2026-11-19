@@ -101,15 +101,24 @@ jobs:
             if ! gh repo clone "HUIIIM/$src" "/tmp/portfolio/$name" -- --depth 1 -q 2>/tmp/err; then
               echo "::error::$name: clone failed ($(tail -1 /tmp/err)) — graded MISSING (0, C, P0)"
             fi
+            # Visibility decides what the public card may say about the repo (#87). Unreadable = UNKNOWN,
+            # which audit.py treats as private: a lookup failure can only hide detail, never leak it.
+            vis=$(gh repo view "HUIIIM/$src" --json visibility -q .visibility 2>/dev/null || true)
+            printf '%s\t%s\n' "$name" "${vis:-UNKNOWN}" >> /tmp/visibility.tsv
           done < /tmp/repos.txt
+          python3 -c 'import json; print(json.dumps(dict(l.rstrip("\n").split("\t") for l in open("/tmp/visibility.tsv"))))' > /tmp/visibility.json
+          cat /tmp/visibility.json
           ls /tmp/portfolio
 
       - name: Assess (live probes on)
         run: |
           set +e
-          python3 standards/audit.py /tmp/portfolio --live --json standards/scorecard.json --md > standards/SCORECARD.md
+          # Private repos: score/grade/severity on the public card, failing-check detail only in their own
+          # incident issue (#87, STANDARDS §考核 6). /tmp/card-full.json is unredacted and never committed.
+          python3 standards/audit.py /tmp/portfolio --live --visibility /tmp/visibility.json \
+            --json standards/scorecard.json --json-full /tmp/card-full.json --md > standards/SCORECARD.md
           echo "audit exit code: $? (2 = repos MISSING, 1 = at least one MUST failing; the scorecard is still published)"
-          python3 standards/audit.py /tmp/portfolio --live --incidents > /tmp/incidents.json
+          python3 standards/audit.py /tmp/portfolio --live --visibility /tmp/visibility.json --incidents > /tmp/incidents.json
           cat standards/SCORECARD.md >> "$GITHUB_STEP_SUMMARY"
 
       # MSG-1 (STANDARDS.md): the company sending domain passes the AUTH checks of
@@ -266,7 +275,7 @@ jobs:
             cat /tmp/incidents.json
             exit 0
           fi
-          python3 standards/incidents.py standards/scorecard.json
+          python3 standards/incidents.py /tmp/card-full.json   # unredacted: detail goes to each repo's own issue
 
       # Last, after the honest card is published everywhere: an incomplete card
       # must not pass silently. Any MISSING repository fails the run.

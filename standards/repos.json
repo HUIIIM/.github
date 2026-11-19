@@ -73,7 +73,7 @@
     "vertciti-website": {
       "kind": "site",
       "status": "active",
-      "product": "vertciti.com source (merge to main deploys production)",
+      "product": "vertciti.com source (production via Cloudflare Pages upload; merge to main does not deploy)",
       "url": "https://vertciti.com/"
     },
     "fama": {
@@ -122,7 +122,7 @@
     },
     "vertciti-sp07-builder": {
       "kind": "tool",
-      "status": "archive"
+      "status": "active"
     },
     "vertciti-prototype": {
       "kind": "app",
@@ -130,7 +130,8 @@
     },
     "vertciti-ts-spaces": {
       "kind": "docs",
-      "status": "placeholder"
+      "status": "archive",
+      "product": "TS spaces experiments archive - history slimmed 2026-11-11 (311MB to 2.01MiB working clone; API size field still counts legacy objects pinned by immutable PR refs); pre-rewrite tip bede2445e921a454ca552b9079e90d876cc2dda6; full pre-rewrite mirror+bundle held by Claude Control Loop (ts-spaces-rescue, 2026-11-11)"
     },
     "tenacity": {
       "kind": "library",
@@ -143,6 +144,30 @@
     "vertciti-auto-gpt": {
       "kind": "app",
       "status": "archive"
+    },
+    "helm": {
+      "kind": "app",
+      "status": "active",
+      "product": "vertciti Helm — Miao 的个人 AI 团队 App（N=1）",
+      "ui": "static",
+      "url": "https://huiiim.github.io/helm/"
+    },
+    "skill-card-gate": {
+      "kind": "skill",
+      "status": "active",
+      "product": "skill-card-gate"
+    },
+    "vertciti-anchors": {
+      "kind": "tool",
+      "status": "archive",
+      "product": "audit-anchor stub (retired) — live chain: vertciti-website branch audit-anchors"
+    },
+    "family-crest": {
+      "kind": "library",
+      "status": "active",
+      "product": "Family crest — family establishment materials",
+      "public": false,
+      "public_reason": "family establishment materials; private by design (migrated 2026-11-12 from an exposed public branch)"
     }
   }
 }
