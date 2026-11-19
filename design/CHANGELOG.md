@@ -4,6 +4,22 @@ All notable changes to the DNA (`design/`) are recorded here.
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) · Versioning: [SemVer](https://semver.org/) via `tokens.json` `version`.
 Releases are tagged `dna-vX.Y.Z` after merge; consumers pin that tag in `dna-drift` (`ref:`).
 
+## [4.1.2] — 2026-11-12
+
+### Fixed
+- **Focus ring on the accent (yellow) surface measured 2.28:1** (2.02:1 on its soft fill), under WCAG 2.2
+  SC 1.4.11's 3:1. `--focus-ring` is `3px solid var(--pointer)`, and a custom property's `var()` resolves
+  where it is declared, so `.dna-card--accent` re-declaring only `--pointer` (black) still inherited the
+  orange ring from `:root`. Every scoped surface now re-declares `--focus-ring`, so the ring follows the
+  surface: black on accent (14.08:1). Found by the new non-text gate; the token-level pair check could not
+  see it because it compares `--pointer`, not the ring that is drawn.
+
+### Added
+- **Non-text contrast gate** `standards/a11y/nontext_audit.js` (SOTA DS-1, #125): component boundaries
+  and keyboard focus indicators must reach 3:1 against what is painted around them, measured in a real
+  browser. Runs in the `design` workflow on both preview pages × light/dark × 390/1280, and must still fail
+  its known-bad fixture (`standards/a11y/fixtures/nontext-bad.html`, 4 defects).
+
 ## [4.1.1] — 2026-11-09
 
 Puts every DNA font size and spacing value on the scales the fleet's website QA gates enforce (#101), so a
