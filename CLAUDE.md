@@ -19,8 +19,9 @@ standards audit (`standards/audit.py`), the repository registry
 
 ## Repository map
 
-- `standards/` — audit engine, registry (`repos.json`), generated cards.
+- `standards/` — audit engine, registry (`repos.json`), generated cards; loop patrol (`loop_watch.py`, thresholds in `loop_sla.json`), receipt read-back gate (`receipt_check.py`), session patrol procedure (`session-patrol.md`).
 - `profile/` — organization profile surfaces.
+- `docs/audits/` — dated audit reports (the issue is the delivery surface; the file is the document copy).
 - Workflows (`.github/workflows/`). Required checks: **gitleaks**, **lint**,
   **typecheck** (lint and typecheck are the two jobs of `quality.yml`).
   | File | Name | Runs on | Role |
@@ -37,6 +38,7 @@ standards audit (`standards/audit.py`), the repository registry
   | `dna-release.yml` | dna-release | push to main (`design/tokens.json`), dispatch | tags `dna-v<version>` for each DNA release (needs a CHANGELOG entry; idempotent) |
   | `claude.yml` | Claude Code | dispatch, `@claude` in issues/comments/reviews | Claude Code action for jarvis-task runs |
   | `ivv-gate.yml` | ivv-gate | `pull_request_target`, PR comments | posts commit status `ivv/verdict` from independent verdict comments (not yet a required check; #84) |
+  | `loop-watch.yml` | loop-watch | dispatch only | 闭环末态巡检: runs `standards/loop_watch.py` over the fleet's open issues and PRs; optionally keeps the one `loop-watch` roll-call issue current (audit 2026-11, #150) |
 
 ## Working rules
 
