@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-17 12:28Z",
+ "generated": "2026-11-19 12:09Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -381,21 +381,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 99 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 47 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 32 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 46 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "99 ms to first response (budget 800 ms)"
+     "evidence": "47 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -2194,23 +2194,34 @@
   {
    "repo": "vertciti-sp07-builder",
    "kind": "tool",
-   "status": "archive",
+   "status": "active",
    "product": "",
    "url": "",
-   "score": 77.4,
-   "grade": "B",
+   "score": 67.6,
+   "grade": "C",
    "bar": "A++",
    "meets_bar": false,
-   "severity": "P1",
+   "severity": "P0",
    "must_failing": [
     "GOV-2",
-    "SEC-8"
+    "SEC-8",
+    "QA-1",
+    "QA-2",
+    "DOC-2",
+    "DOC-3"
    ],
    "unprobed": [],
    "failing": [
     "GOV-2",
     "GOV-3",
-    "SEC-8"
+    "SEC-8",
+    "QA-1",
+    "QA-2",
+    "DOC-2",
+    "DOC-3",
+    "DOC-5",
+    "DOC-7",
+    "DOC-11"
    ],
    "not_applicable": [],
    "checks": [
@@ -2236,9 +2247,16 @@
      "evidence": ""
     },
     {
-     "id": "GOV-5",
+     "id": "GOV-4",
      "level": "MUST",
-     "desc": "Archive banner at top of README",
+     "desc": "Status is stated honestly in README (active/archive/early/etc.)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "GOV-6",
+     "level": "SHOULD",
+     "desc": "SECURITY.md in repo (vulnerability reporting route, not only the org default)",
      "ok": true,
      "evidence": ""
     },
@@ -2250,11 +2268,46 @@
      "evidence": ""
     },
     {
+     "id": "SEC-2",
+     "level": "MUST",
+     "desc": "Dependabot covers github-actions + every package ecosystem in repo",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-3",
+     "level": "MUST",
+     "desc": "CodeQL / SAST runs on PRs",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-4",
+     "level": "SHOULD",
+     "desc": "Dependency review blocks vulnerable additions on PRs",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "SEC-5",
+     "level": "SHOULD",
+     "desc": "OpenSSF Scorecard published",
+     "ok": true,
+     "evidence": ""
+    },
+    {
      "id": "SEC-6",
      "level": "MUST",
      "desc": "Workflows declare least-privilege `permissions:`",
      "ok": true,
      "evidence": "every workflow declares least-privilege permissions (workflow-level read-only, or on every job)"
+    },
+    {
+     "id": "SEC-7",
+     "level": "SHOULD",
+     "desc": ".env.example documents config; .env is git-ignored",
+     "ok": true,
+     "evidence": ""
     },
     {
      "id": "SEC-8",
@@ -2264,11 +2317,88 @@
      "evidence": ""
     },
     {
+     "id": "SEC-10",
+     "level": "SHOULD",
+     "desc": "Reproducible dependencies: lockfile or pinned requirements for every manifest",
+     "ok": true,
+     "evidence": ""
+    },
+    {
      "id": "SEC-11",
      "level": "MUST",
      "desc": "Every action referenced by a workflow is pinned by full-length commit SHA (no tag or branch pins)",
      "ok": true,
      "evidence": "all action refs pinned by full-length SHA"
+    },
+    {
+     "id": "QA-1",
+     "level": "MUST",
+     "desc": "CI workflow runs tests on PRs",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "QA-2",
+     "level": "MUST",
+     "desc": "Linter/formatter enforced in CI (ruff/eslint/biome/prettier)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "QA-3",
+     "level": "SHOULD",
+     "desc": "pre-commit hooks mirror CI",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-1",
+     "level": "MUST",
+     "desc": "README has a quickstart",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-2",
+     "level": "MUST",
+     "desc": "Product one-pager docs/PRODUCT.md",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-3",
+     "level": "MUST",
+     "desc": "CHANGELOG.md (Keep a Changelog)",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-4",
+     "level": "SHOULD",
+     "desc": "Architecture doc or diagram",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-5",
+     "level": "SHOULD",
+     "desc": "Visual proof (screenshot/GIF) in README",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-6",
+     "level": "MUST",
+     "desc": "README links back to vertciti.com",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-7",
+     "level": "SHOULD",
+     "desc": "README has security + license section",
+     "ok": false,
+     "evidence": ""
     },
     {
      "id": "DOC-8",
@@ -2288,6 +2418,20 @@
      "id": "DOC-10",
      "level": "MUST",
      "desc": "README images are public https URLs (relative images break in private repos and the mobile app)",
+     "ok": true,
+     "evidence": ""
+    },
+    {
+     "id": "DOC-11",
+     "level": "SHOULD",
+     "desc": "Bilingual (zh + en) README or localised UI",
+     "ok": false,
+     "evidence": ""
+    },
+    {
+     "id": "LEGAL-1",
+     "level": "MUST",
+     "desc": "Third-party code copied into the repo (repos.json third_party) carries THIRD_PARTY_NOTICES / ATTRIBUTION",
      "ok": true,
      "evidence": ""
     }
@@ -2678,21 +2822,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://huiiim.github.io/helm/ -> 200 in 159 ms"
+     "evidence": "https://huiiim.github.io/helm/ -> 200 in 160 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 43 ms"
+     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 152 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "159 ms to first response (budget 800 ms)"
+     "evidence": "160 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
