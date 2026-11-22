@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-21 11:46Z",
+ "generated": "2026-11-22 11:59Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -388,7 +388,7 @@
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 15 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 16 ms"
     },
     {
      "id": "PERF-1",
@@ -2680,21 +2680,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://huiiim.github.io/helm/ -> 200 in 44 ms"
+     "evidence": "https://huiiim.github.io/helm/ -> 200 in 291 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 36 ms"
+     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 41 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "44 ms to first response (budget 800 ms)"
+     "evidence": "291 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
