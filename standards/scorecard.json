@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-24 14:17Z",
+ "generated": "2026-11-26 13:10Z",
  "bar": "A++",
  "bar_min": 90,
  "live": true,
@@ -17,8 +17,8 @@
  "missing_repos": [],
  "summary": {
   "repos": 27,
-  "at_bar": 10,
-  "incidents": 17
+  "at_bar": 9,
+  "incidents": 18
  },
  "repos": [
   {
@@ -72,14 +72,14 @@
    "status": "active",
    "product": "EchoWatch",
    "url": "https://demo.vertciti.com/",
-   "score": 90.3,
-   "grade": "A++",
+   "score": 87.1,
+   "grade": "A",
    "bar": "A++",
    "meets_bar": false,
    "severity": "P0",
    "private": true,
-   "must_failing_count": 2,
-   "failing_count": 5
+   "must_failing_count": 3,
+   "failing_count": 6
   },
   {
    "repo": "vertciti-dealdesk",
@@ -381,21 +381,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 32 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/ -> 402 in 46 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 57 ms"
+     "evidence": "https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 52 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "32 ms to first response (budget 800 ms)"
+     "evidence": "46 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
@@ -1433,14 +1433,14 @@
    "status": "active",
    "product": "vertciti.com source (production via Cloudflare Pages upload; merge to main does not deploy)",
    "url": "https://vertciti.com/",
-   "score": 100.0,
-   "grade": "S",
+   "score": 94.6,
+   "grade": "A++",
    "bar": "A++",
-   "meets_bar": true,
-   "severity": null,
+   "meets_bar": false,
+   "severity": "P1",
    "private": true,
-   "must_failing_count": 0,
-   "failing_count": 0
+   "must_failing_count": 1,
+   "failing_count": 1
   },
   {
    "repo": "fama",
@@ -2680,21 +2680,21 @@
      "level": "MUST",
      "desc": "[live] Deployed URL answers (2xx/3xx) within 12 s",
      "ok": true,
-     "evidence": "https://huiiim.github.io/helm/ -> 200 in 57 ms"
+     "evidence": "https://huiiim.github.io/helm/ -> 200 in 181 ms"
     },
     {
      "id": "REL-2",
      "level": "SHOULD",
      "desc": "[live] Health endpoint returns 200 on the deployment",
      "ok": false,
-     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 61 ms"
+     "evidence": "https://huiiim.github.io/helm/healthz -> 404 in 116 ms"
     },
     {
      "id": "PERF-1",
      "level": "SHOULD",
      "desc": "[live] Landing response within 800 ms from the assessor",
      "ok": true,
-     "evidence": "57 ms to first response (budget 800 ms)"
+     "evidence": "181 ms to first response (budget 800 ms)"
     },
     {
      "id": "PUB-2",
