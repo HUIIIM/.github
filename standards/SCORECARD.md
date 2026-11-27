@@ -1,13 +1,13 @@
 # Portfolio scorecard · 组合记分卡
 
-Generated 2026-11-26 13:10Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
+Generated 2026-11-27 13:08Z by `standards/audit.py` (independent assessor; live probes on). Bar = **A++** (score ≥ 90 and no failing MUST). Below the bar is an incident with the severity shown. Grades: S ≥95 · A++ ≥90 · A ≥85 · B ≥70 · C <70. Unprobed checks count as failed.
 
 | repo | kind/status | score | grade | bar | incident | failing (MUST in bold) |
 |---|---|---:|---|---|---|---|
 | miao-ai | app/active | 100.0 | S | ✓ | — | — |
 | vertciti-translator | app/active | 88.2 | A | ✗ | P0 | 9 failing (1 MUST); private repo: detail in its own incident issue |
 | vertciti-chat | app/active | 71.0 | B | ✗ | P1 | 19 failing (4 MUST); private repo: detail in its own incident issue |
-| echowatch | app/active | 87.1 | A | ✗ | P0 | 6 failing (3 MUST); private repo: detail in its own incident issue |
+| echowatch | app/active | 90.3 | A++ | ✗ | P0 | 5 failing (2 MUST); private repo: detail in its own incident issue |
 | vertciti-dealdesk | app/active | 94.6 | A++ | ✗ | P0 | SEC-9, **REL-1**, REL-2 |
 | phonehands | library/active | 98.5 | S | ✓ | — | SEC-10 |
 | founder-visual-director | skill/active | 98.2 | S | ✓ | — | DOC-5 |
@@ -39,16 +39,16 @@ Generated 2026-11-26 13:10Z by `standards/audit.py` (independent assessor; live 
 ### P0 · vertciti-dealdesk · 94.6 (A++)
 
 - `SEC-9` SHOULD FAIL: [live] Security headers on the deployed site: CSP, nosniff, frame protection, HSTS, Referrer-Policy — missing: content-security-policy, x-content-type-options, frame, referrer-policy
-- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 46 ms
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 52 ms
+- `REL-1` MUST FAIL: [live] Deployed URL answers (2xx/3xx) within 12 s — https://vertciti-dealdesk.vercel.app/app/ -> 402 in 62 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://vertciti-dealdesk.vercel.app/app/healthz -> 402 in 47 ms
+
+### P0 · echowatch · 90.3 (A++)
+
+- Private repository: 5 failing check(s), 2 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
 
 ### P0 · vertciti-translator · 88.2 (A)
 
 - Private repository: 9 failing check(s), 1 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
-
-### P0 · echowatch · 87.1 (A)
-
-- Private repository: 6 failing check(s), 3 of them MUST. Which checks, with evidence, is recorded only in the repository's own `standards-incident` issue (STANDARDS.md §考核 6).
 
 ### P0 · vertciti-anchors · 67.7 (C)
 
@@ -125,7 +125,7 @@ Generated 2026-11-26 13:10Z by `standards/audit.py` (independent assessor; live 
 - `OPS-1` MUST FAIL: Health endpoint (/healthz or /health)
 - `OPS-3` SHOULD FAIL: Security response headers set in code (CSP / X-Content-Type-Options / frame-ancestors)
 - `OPS-5` SHOULD FAIL: Structured logs with a request/trace id (OpenTelemetry-style)
-- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/helm/healthz -> 404 in 116 ms
+- `REL-2` SHOULD FAIL: [live] Health endpoint returns 200 on the deployment — https://huiiim.github.io/helm/healthz -> 404 in 145 ms
 - `PUB-2` SHOULD FAIL: Public demo or product URL registered and named in README (outsiders can see it run) — README does not mention huiiim.github.io
 - `CONT-1` SHOULD FAIL: Runbook (docs/RUNBOOK.md): deploy, rollback, backup, restore, key rotation
 - `CONT-2` SHOULD FAIL: Backup and restore are written down (a restore never tested is not a backup)
@@ -214,5 +214,5 @@ Generated 2026-11-26 13:10Z by `standards/audit.py` (independent assessor; live 
 | AUTH-3 DMARC | MUST | ✅ PASS | p=reject +rua |
 | AUTH-4 MTA-STS | MUST | ❌ FAIL | mode=testing |
 | AUTH-4 TLS-RPT | MUST | ✅ PASS | v=TLSRPTv1; rua=mailto:contact@vertciti.com |
-| AUTH-5 CAA | MUST | ✅ PASS | 0 issue "pki.goog", 0 iodef "mailto:contact@vertciti.com", 0 issue "letsencrypt.org" |
+| AUTH-5 CAA | MUST | ✅ PASS | 0 iodef "mailto:contact@vertciti.com", 0 issue "pki.goog", 0 issue "letsencrypt.org" |
 | AUTH-6 BIMI | SHOULD | 🟡 WARN | 无 BIMI（DMARC 到 reject 后再做） |
